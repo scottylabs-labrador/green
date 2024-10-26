@@ -1,8 +1,45 @@
 import { View, Text, TextInput, Pressable } from "react-native";
 import React, { useState } from "react";
-import { Link } from "expo-router";
 import { writeUserData } from "../api/firebase";
-import { createUser, userSignIn } from "../api/firebase";
+import { createUser } from "../api/firebase";
+
+async function handleSubmit(
+  email: string,
+  password: string,
+  confirmPassword: string,
+  name: string,
+  phoneNumber: string,
+) {
+  // check that all fields are filled
+  if (!email || !password || !confirmPassword || !name) {
+    return "Please fill missing fields";
+  }
+
+  if (phoneNumber.length != 10) {
+    return "Invalid phone number";
+  }
+
+  // check password is minimum length
+  if (password.length < 6) {
+    return "Password must be at least 6 characters";
+  }
+
+  // check that passwords match on register
+  if (password !== confirmPassword) {
+    return "Passwords do not match";
+  }
+
+  // handle signup/login
+  if (password === confirmPassword) {
+    // check that username is available and signup
+    try {
+      createUser(email, password);
+      window.location.href = "/joinhouse";
+    } catch (err) {
+      return err;
+    }
+  }
+}
 
 export default function SignUp({ route, navigation, ...props }) {
   // TODO: Implement the sign up page
@@ -12,6 +49,7 @@ export default function SignUp({ route, navigation, ...props }) {
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
   const [confirmPassword, onChangeConfirmPassword] = useState("");
+  const [errorText, onChangeErrorText] = useState("");
 
   return (
     <View className="flex-1 items-center padding-24">
@@ -51,18 +89,26 @@ export default function SignUp({ route, navigation, ...props }) {
           secureTextEntry={true}
           value={confirmPassword}
         />
-        <Link href="/joinhouse" asChild>
-          <Pressable
-            className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
-            onPress={() => {
-              // writeUserData(name, email, phoneNumber);
-              createUser(email, password);
-              userSignIn(email, password);
-            }}
-          >
-            <Text className="text-white text-center self-center">Sign Up</Text>
-          </Pressable>
-        </Link>
+        <Text className="text-red-500">{errorText}</Text>
+        <Pressable
+          className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
+          onPress={async () => {
+            // writeUserData(name, email, phoneNumber);
+            const result = await handleSubmit(
+              email,
+              password,
+              confirmPassword,
+              name,
+              phoneNumber,
+            );
+
+            if (result) {
+              onChangeErrorText(result);
+            }
+          }}
+        >
+          <Text className="text-white text-center self-center">Sign Up</Text>
+        </Pressable>
       </View>
     </View>
   );

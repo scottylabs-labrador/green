@@ -9,12 +9,21 @@ import { Link } from "expo-router";
 import { userSignIn } from "../api/firebase";
 import React, { useState, useCallback } from "react";
 
+async function handleSubmit(email: string, password: string) {
+  try {
+    await userSignIn(email, password);
+  } catch (error) {
+    return error;
+  }
+}
+
 export default function Login() {
   // TODO: Implement the sign up page
   // Allow users to input name, email
 
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
+  const [errorText, onChangeErrorText] = useState("");
 
   return (
     <View className="flex-1 items-center padding-24">
@@ -33,11 +42,17 @@ export default function Login() {
           secureTextEntry={true}
           value={password}
         />
+        <Text className="text-red-500">{errorText}</Text>
         <Link href="/joinhouse" asChild>
           <Pressable
             className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
-            onPress={() => {
-              userSignIn(email, password);
+            onPress={async () => {
+              // writeUserData(name, email, phoneNumber);
+              const result = await handleSubmit(email, password);
+
+              if (result) {
+                onChangeErrorText(result);
+              }
             }}
           >
             <Text className="text-white text-center self-center">Log In</Text>
