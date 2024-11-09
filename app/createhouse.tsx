@@ -10,12 +10,15 @@ import { writeHouseData } from "../api/firebase";
 export default function Page() {
     const [name, onChangeName] = useState('');
     const [code, onChangeCode] = useState('');
-    const id: [string, string] = ["temp", "FF0000"];
+    const [userid, setUserId] = useState('');
+    const [username, setUserName] = useState('');
 
-    async function changetojoin(name, id){
+    async function changetojoin(name){
         const housecode = window.crypto.randomUUID();
-        writeHouseData(name, id, housecode);
+        // const id: {"name":string, "color": string, "userid": string} = {"name": username, "color": "N/A", "userid": userid};
+        writeHouseData(name, housecode);
         // window.location.href ='/joinhouse?key='+housecode;
+        // Slight problem where user needs to reload themself, needs to be fixed
         router.replace('/joinhouse?key='+housecode);
     }
 
@@ -31,7 +34,7 @@ export default function Page() {
             />
             <TouchableOpacity 
                 className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
-                onPress = {() => changetojoin(name, id)}
+                onPress = {() => changetojoin(name)}
                 >
                 <Text className="text-white text-center self-center">Create House</Text>
             </TouchableOpacity>

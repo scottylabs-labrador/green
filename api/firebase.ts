@@ -59,9 +59,9 @@ export function readGroceryItems() {
   })
 }
 
-export function writeHouseData(name, id, housecode) {
+export function writeHouseData(name, housecode) {
   const db = getDatabase();
-  const house = new schema.House(name, id);
+  const house = new schema.House(name);
   const postListRef = ref(db, 'houses/'+ housecode);
   set(postListRef, {
     name: house.name,

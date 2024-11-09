@@ -19,7 +19,7 @@ export default function Page() {
     const [choosencolor, setColor] = useState([]);
     const [name, setNameHouse] = useState([]);
     const [datahousecode, setData] = useState([]);
-    const userid = "temp1"
+    const [userid, setuserid] = useState("tempuser");
 
     useEffect(() => {
         const fetchData = () => {

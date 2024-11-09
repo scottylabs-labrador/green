@@ -23,10 +23,18 @@ export class House {
   grocery_list: GroceryList;
   receipts: Array<Receipt>;
 
-  constructor(name, id) {
+  // constructor(name, id) {
+  //   this.name = name;
+  //   this.housecode = "";
+  //   this.members = id;
+  //   this.grocery_list = new GroceryList();
+  //   this.receipts = [];
+  // }
+
+  constructor(name) {
     this.name = name;
     this.housecode = "";
-    this.members = [id];
+    this.members = [];
     this.grocery_list = new GroceryList();
     this.receipts = [];
   }
