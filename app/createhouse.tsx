@@ -2,6 +2,7 @@ import { Text, View, Button, TextInput, TouchableOpacity} from "react-native";
 import { Link } from "expo-router";
 import React, { useState, useCallback } from 'react';
 import { router } from "expo-router"
+import * as crypto from "crypto";
 
 import "../main.css";
 import { writeHouseData } from "../api/firebase";
@@ -11,10 +12,11 @@ export default function Page() {
     const [code, onChangeCode] = useState('');
     const id: [string, string] = ["temp", "FF0000"];
 
-    function changetojoin(name, id){
-        const housecode = "HIHIHIHIHI";
+    async function changetojoin(name, id){
+        const housecode = window.crypto.randomUUID();
         writeHouseData(name, id, housecode);
-        router.replace('/joinhouse?key='+housecode)
+        // window.location.href ='/joinhouse?key='+housecode;
+        router.replace('/joinhouse?key='+housecode);
     }
 
     return (

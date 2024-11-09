@@ -14,28 +14,43 @@ export default function Page() {
     const [code, onChangeCode] = useState('');
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
-    const housecode = urlParams.get('key');
-    const [name, setNameHouse] = useState([]);
+    const [housecode, onHouseCodeChange] = useState('');
     const [members, setMembersHouse] = useState([]);
     const [choosencolor, setColor] = useState([]);
+    const [name, setNameHouse] = useState([]);
+    const [datahousecode, setData] = useState([]);
     const userid = "temp1"
 
     useEffect(() => {
         const fetchData = () => {
+            console.log("You working?");
             const db = getDatabase();
-            const itemRef = ref(db, 'houses/');
-            get(itemRef).then((snapshot) => {
+            const itemRef = ref(db, 'houses/'+housecode);
+            console.log(db);
+            console.log(itemRef);
+            onValue(itemRef, (snapshot) => {
                 const data = snapshot.val();
-                setNameHouse(data[housecode].name)
-                setMembersHouse(data[housecode].members)
+                console.log(data);
+                onHouseCodeChange(urlParams.get('key'));
+                console.log(data);
+                console.log(data);
+                setNameHouse(data.name);
+                setMembersHouse(data.members);
             });
         }
 
         fetchData();
-    });
+        console.log("Loaded");
+    }, [name]); 
+
+    useEffect(() => {
+        // Update the document title using the browser API
+        console.log("HERE");
+        console.log(choosencolor);
+    },[choosencolor]);
 
     function setcolor(color){
-        setColor(color)
+        setColor((prev) => color)
         console.log(choosencolor)
     }
 
@@ -60,37 +75,43 @@ export default function Page() {
             <View className="flex-row justify-evenly items-center padding-24">
                 <TouchableOpacity 
                     className="w-8 h-8 bg-red-600"
-                    onPress = {()=>setcolor("red")}
+                    onPress = {()=>setcolor("CA3A31")}
+                    // red
                     >
                     <Text className="text-white text-center self-center"></Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                     className="w-8 h-8 bg-orange-600"
-                    onPress = {()=>setcolor("orange")}
+                    onPress = {()=>setcolor("D9622A")}
+                    // orange
                     >
                     <Text className="text-white text-center self-center"></Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                     className="w-8 h-8 bg-yellow-600"
-                    onPress = {()=>setcolor("yellow")}
+                    onPress = {()=>setcolor("C18D2F")}
+                    // yellow
                     >
                     <Text className="text-white text-center self-center"></Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                     className="w-8 h-8 bg-green-600"
-                    onPress = {()=>setcolor("green")}
+                    onPress = {()=>setcolor("4CA154")}
+                    // green
                     >
                     <Text className="text-white text-center self-center"></Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                     className="w-8 h-8 bg-blue-600"
-                    onPress = {()=>setcolor("blue")}
+                    onPress = {()=>setcolor("3662E3")}
+                    //blue
                     >
                     <Text className="text-white text-center self-center"></Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                     className="w-8 h-8 bg-purple-600"
-                    onPress = {()=>setcolor("purple")}
+                    onPress = {()=>setcolor("883AE1")}
+                    //purple
                     >
                     <Text className="text-white text-center self-center"></Text>
                 </TouchableOpacity>

@@ -26,9 +26,10 @@ export default function Page() {
                 setHousesItem(data);
             });
         }
+        
 
         fetchData();
-    });
+    }, []);
 
     function redirectToHouse(){
         console.log("Here")
@@ -37,12 +38,14 @@ export default function Page() {
             const data = snapshot.val();
             var keys = Object.keys(data);
             if (keys.includes(code)){
-                router.replace('/joinhouse?key='+code)
+                window.location.href ='/joinhouse?key='+code
+                // router.push('/joinhouse?key='+code)
                 // return true;
             }
             else{
                 console.log(code);
-                router.replace('/joinhousecode')
+                window.location.href = '/joinhousecode'
+                // router.replace('/joinhousecode')
                 // return false;
             }
             console.log("Reached :))))")
