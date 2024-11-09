@@ -33,7 +33,7 @@ async function handleSubmit(
   // handle signup/login
   if (password === confirmPassword) {
     try {
-      await createUser(email, password);
+      await createUser(name, phoneNumber, email, password);
 
       return "";
     } catch (err) {

@@ -82,8 +82,15 @@ export function writeHouseData(name: string) {
   });
 }
 
-export function createUser(email: string, password: string) {
-  return createUserWithEmailAndPassword(auth, email, password);
+export async function createUser(
+  name: string,
+  phone_number: string,
+  email: string,
+  password: string,
+) {
+  return createUserWithEmailAndPassword(auth, email, password).then(() => {
+    writeUserData(name, email, phone_number);
+  });
 }
 
 export function userSignIn(email: string, password: string) {
@@ -92,4 +99,9 @@ export function userSignIn(email: string, password: string) {
 
 export function userSignOut() {
   return signOut(auth);
+}
+
+export function getCurrentUser() {
+  const user = auth.currentUser;
+  return user;
 }
