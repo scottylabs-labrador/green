@@ -1,5 +1,6 @@
-import { Text, View, Button, TextInput, TouchableOpacity} from "react-native";
+import { Text, View, Button, TextInput, TouchableOpacity } from "react-native";
 import { Link } from "expo-router";
+
 import React, { useState, useCallback } from 'react';
 import { router } from "expo-router"
 import * as crypto from "crypto";
@@ -8,6 +9,7 @@ import "../main.css";
 import { writeHouseData } from "../api/firebase";
 
 export default function Page() {
+
     const [name, onChangeName] = useState('');
     const [code, onChangeCode] = useState('');
     const [userid, setUserId] = useState('');
