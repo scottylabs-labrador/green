@@ -1,29 +1,23 @@
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  TouchableOpacity,
-} from "react-native";
-import { Link } from "expo-router";
+import { View, Text, TextInput, Pressable } from "react-native";
 import { userSignIn } from "../api/firebase";
 import React, { useState, useCallback } from "react";
+import { useRouter } from "expo-router";
 
 async function handleSubmit(email: string, password: string) {
   try {
     await userSignIn(email, password);
+
+    return "";
   } catch (error) {
-    return error;
+    return "Invalid email or password.";
   }
 }
 
 export default function Login() {
-  // TODO: Implement the sign up page
-  // Allow users to input name, email
-
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
   const [errorText, onChangeErrorText] = useState("");
+  const router = useRouter();
 
   return (
     <View className="flex-1 items-center padding-24">
@@ -43,21 +37,21 @@ export default function Login() {
           value={password}
         />
         <Text className="text-red-500">{errorText}</Text>
-        <Link href="/joinhouse" asChild>
-          <Pressable
-            className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
-            onPress={async () => {
-              // writeUserData(name, email, phoneNumber);
-              const result = await handleSubmit(email, password);
+        <Pressable
+          className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
+          onPress={async () => {
+            // writeUserData(name, email, phoneNumber);
+            const result = await handleSubmit(email, password);
 
-              if (result) {
-                onChangeErrorText(result);
-              }
-            }}
-          >
-            <Text className="text-white text-center self-center">Log In</Text>
-          </Pressable>
-        </Link>
+            if (result === "") {
+              router.push("/joinhouse");
+            } else {
+              onChangeErrorText(result);
+            }
+          }}
+        >
+          <Text className="text-white text-center self-center">Log In</Text>
+        </Pressable>
       </View>
     </View>
   );

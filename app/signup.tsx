@@ -2,6 +2,7 @@ import { View, Text, TextInput, Pressable } from "react-native";
 import React, { useState } from "react";
 import { writeUserData } from "../api/firebase";
 import { createUser } from "../api/firebase";
+import { useRouter } from "expo-router";
 
 async function handleSubmit(
   email: string,
@@ -12,44 +13,43 @@ async function handleSubmit(
 ) {
   // check that all fields are filled
   if (!email || !password || !confirmPassword || !name) {
-    return "Please fill missing fields";
+    return "Please fill missing fields.";
   }
 
   if (phoneNumber.length != 10) {
-    return "Invalid phone number";
+    return "Invalid phone number.";
   }
 
   // check password is minimum length
   if (password.length < 6) {
-    return "Password must be at least 6 characters";
+    return "Password must be at least 6 characters.";
   }
 
   // check that passwords match on register
   if (password !== confirmPassword) {
-    return "Passwords do not match";
+    return "Passwords do not match.";
   }
 
   // handle signup/login
   if (password === confirmPassword) {
-    // check that username is available and signup
     try {
-      createUser(email, password);
-      window.location.href = "/joinhouse";
+      await createUser(email, password);
+
+      return "";
     } catch (err) {
-      return err;
+      return "Unable to create user. Please try again.";
     }
   }
 }
 
 export default function SignUp({ route, navigation, ...props }) {
-  // TODO: Implement the sign up page
-  // Allow users to input name, email
   const [name, onChangeName] = useState("");
   const [phoneNumber, onChangePhoneNumber] = useState("");
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
   const [confirmPassword, onChangeConfirmPassword] = useState("");
   const [errorText, onChangeErrorText] = useState("");
+  const router = useRouter();
 
   return (
     <View className="flex-1 items-center padding-24">
@@ -102,7 +102,9 @@ export default function SignUp({ route, navigation, ...props }) {
               phoneNumber,
             );
 
-            if (result) {
+            if (result === "") {
+              router.push("/joinhouse");
+            } else {
               onChangeErrorText(result);
             }
           }}
