@@ -16,6 +16,7 @@ import * as schema from "./classes";
 // databaseURL: process.env.EXPO_PUBLIC_FIREBASE_DB_URL,
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
   databaseURL: process.env.EXPO_PUBLIC_FIREBASE_DB_URL,
   projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
@@ -72,14 +73,15 @@ export function readGroceryItems() {
   });
 }
 
-export function writeHouseData(name: string) {
+export function writeHouseData(name, housecode) {
   const db = getDatabase();
   const house = new schema.House(name);
-  const postListRef = ref(db, "houses/");
-  const newPostRef = push(postListRef);
-  set(newPostRef, {
+  const postListRef = ref(db, 'houses/'+ housecode);
+  set(postListRef, {
     name: house.name,
-  });
+    members: house.members
+  })
+  return postListRef;
 }
 
 export async function createUser(
