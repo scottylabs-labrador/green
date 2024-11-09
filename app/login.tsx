@@ -44,7 +44,7 @@ export default function Login() {
             const result = await handleSubmit(email, password);
 
             if (result === "") {
-              router.push("/joinhouse");
+              router.push("/choosehouse");
             } else {
               onChangeErrorText(result);
             }

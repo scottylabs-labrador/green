@@ -103,7 +103,7 @@ export default function SignUp({ route, navigation, ...props }) {
             );
 
             if (result === "") {
-              router.push("/joinhouse");
+              router.push("/choosehouse");
             } else {
               onChangeErrorText(result);
             }
