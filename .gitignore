@@ -1,8 +1,8 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 ocr/__pycache__/
-ocr/imgs/
-ocr/output/
+ocr/imgs/*
+ocr/output/*
 
 # dependencies
 node_modules/
