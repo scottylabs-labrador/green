@@ -50,7 +50,8 @@ export default function Page() {
       }).then((response) => {
         console.log(response);
         // receipt lines
-        response.json();}
+        response.json();
+      }
       );
       // .then((data) => {
       //   console.log(data);
@@ -62,17 +63,17 @@ export default function Page() {
 
   return (
     <View style={styles.container}>
-      <CameraView style={styles.camera} facing={facing}>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-            <Text style={styles.text}>Flip Camera</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={takePicture}>
-            <Text style={styles.text}>Take Picture</Text>
-          </TouchableOpacity>
-        </View>
-      </CameraView>          
-      {imageUri && <Image source={{ uri: imageUri }} style={{ width: 100, height: 100 }} />}
+      {imageUri ? <Image source={{ uri: imageUri }} style={{ width: 100, height: 100 }} /> :
+        <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
+              <Text style={styles.text}>Flip Camera</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={takePicture}>
+              <Text style={styles.text}>Take Picture</Text>
+            </TouchableOpacity>
+          </View>
+        </CameraView>}
     </View>
   );
 }
