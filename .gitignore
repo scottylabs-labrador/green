@@ -171,3 +171,5 @@ dist
 .pnp.*
 
 ocr/env/*
+
+ocr/.venv
