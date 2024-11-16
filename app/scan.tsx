@@ -63,7 +63,7 @@ export default function Page() {
 
   return (
     <View style={styles.container}>
-      {imageUri ? <Image source={{ uri: imageUri }} style={{ width: 100, height: 100 }} /> :
+      {imageUri ? <Image source={{ uri: imageUri }} style={{ width: 500, height: 500 }} /> :
         <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
