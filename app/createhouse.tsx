@@ -7,6 +7,7 @@ import * as crypto from "crypto";
 
 import "../main.css";
 import { writeHouseData } from "../api/firebase";
+import { writeGroceryList } from "../api/firebase";
 
 export default function Page() {
 
@@ -17,8 +18,10 @@ export default function Page() {
 
     async function changetojoin(name){
         const housecode = window.crypto.randomUUID();
+        const grocerylist = window.crypto.randomUUID();
         // const id: {"name":string, "color": string, "userid": string} = {"name": username, "color": "N/A", "userid": userid};
-        writeHouseData(name, housecode);
+        writeHouseData(name, housecode, grocerylist);
+        writeGroceryList(grocerylist, name);
         // window.location.href ='/joinhouse?key='+housecode;
         // Slight problem where user needs to reload themself, needs to be fixed
         router.replace('/joinhouse?key='+housecode);
