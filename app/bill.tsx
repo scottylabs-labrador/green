@@ -75,7 +75,7 @@ export default function Bill() {
                     <Text className="text-1xl text-right text-white font-light">Change</Text>
                 </View>
             </View>
-            <View className="flex gap-2 w-full h-[200px] flex-grow bg-white self-end rounded-t-[40px] px-4 pt-6 pb-24 overflow-hidden ">
+            <View className="flex gap-4 w-full h-[200px] flex-grow bg-white self-end rounded-t-[40px] px-4 pt-6 pb-24 overflow-hidden ">
                 {Object.keys(unmatchedItems).length > 0 ? (
                     <View className="h-1/2">
                         <Text className="text-1xl text-left font-medium text-black w-1/2 mx-4 mb-4">Unmatched Items:</Text>
