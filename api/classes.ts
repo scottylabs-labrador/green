@@ -6,13 +6,18 @@ export class Housemate {
   phone_number: string;
   email: string;
   house_ids: Array<House["housecode"]>;
- 
-  constructor(userid: string, name: string, email: string, phone_number: string) {
+
+  constructor(
+    userid: string,
+    name: string,
+    email: string,
+    phone_number: string,
+  ) {
     this.userid = userid;
     this.name = name;
     this.phone_number = phone_number;
     this.email = email;
-    this.house_ids = ["test1", "test2"];
+    this.house_ids = [];
   }
 }
 
@@ -23,7 +28,15 @@ export class House {
   grocery_list: GroceryList;
   receipts: Array<Receipt>;
 
-  constructor(name) {
+  // constructor(name, id) {
+  //   this.name = name;
+  //   this.housecode = "";
+  //   this.members = id;
+  //   this.grocery_list = new GroceryList();
+  //   this.receipts = [];
+  // }
+  
+  constructor(name: string) {
     this.name = name;
     this.housecode = "";
     this.members = [];
@@ -38,8 +51,12 @@ export class GroceryItem {
   quantity: number;
   price: number;
   splits: Array<Housemate["userid"]>;
- 
-  constructor(name: string, quantity: number = 1, splits: Array<Housemate["userid"]> = []) {
+
+  constructor(
+    name: string,
+    quantity: number = 1,
+    splits: Array<Housemate["userid"]> = [],
+  ) {
     this.name = name;
     this.quantity = quantity;
     this.splits = splits;
@@ -49,7 +66,7 @@ export class GroceryItem {
 export class GroceryList {
   listid: string;
   items: Array<GroceryItem>;
- 
+
   constructor() {
     this.items = [];
   }
@@ -61,8 +78,9 @@ export class Receipt {
   image: Image;
   items: Array<GroceryItem>;
 
-  constructor(name) {
+  constructor(name: string) {
     this.name = name;
     this.items = [];
   }
 }
+

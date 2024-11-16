@@ -12,6 +12,7 @@ Start Expo App: `npx expo start --tunnel`
 
 [Expo Docs](https://docs.expo.dev/tutorial/create-your-first-app/)
 [NativeWind/Tailwind with Expo](https://www.nativewind.dev/quick-starts/expo)
+[Clerk with Expo](https://clerk.com/docs/references/expo/overview)
 
 ## Project Structure
 

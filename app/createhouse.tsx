@@ -1,13 +1,28 @@
-import { Text, View, Button, TextInput, TouchableOpacity} from "react-native";
+import { Text, View, Button, TextInput, TouchableOpacity } from "react-native";
 import { Link } from "expo-router";
+
 import React, { useState, useCallback } from 'react';
+import { router } from "expo-router"
+import * as crypto from "crypto";
 
 import "../main.css";
 import { writeHouseData } from "../api/firebase";
 
 export default function Page() {
+
     const [name, onChangeName] = useState('');
     const [code, onChangeCode] = useState('');
+    const [userid, setUserId] = useState('');
+    const [username, setUserName] = useState('');
+
+    async function changetojoin(name){
+        const housecode = window.crypto.randomUUID();
+        // const id: {"name":string, "color": string, "userid": string} = {"name": username, "color": "N/A", "userid": userid};
+        writeHouseData(name, housecode);
+        // window.location.href ='/joinhouse?key='+housecode;
+        // Slight problem where user needs to reload themself, needs to be fixed
+        router.replace('/joinhouse?key='+housecode);
+    }
 
     return (
         <View className="flex-1 items-center padding-24">
@@ -19,14 +34,12 @@ export default function Page() {
                 onChangeText={onChangeName}
                 value={name}
             />
-            <Link href="/createhouse" asChild>
             <TouchableOpacity 
                 className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
-                onPress = {() => writeHouseData(name)}
+                onPress = {() => changetojoin(name)}
                 >
                 <Text className="text-white text-center self-center">Create House</Text>
             </TouchableOpacity>
-            </Link>
         </View>
         </View>
     );
