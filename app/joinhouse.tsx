@@ -3,6 +3,7 @@ import { Text, View, Button, TextInput, TouchableOpacity} from "react-native";
 import { Link } from "expo-router";
 import React, { useState, useCallback , useEffect } from 'react';
 import { getDatabase, ref, set, push, onValue, get } from "firebase/database";
+import { getCurrentUser } from "../api/firebase";
 import { router } from "expo-router"
 
 import "../main.css";
@@ -21,7 +22,9 @@ export default function Page() {
     const [name, setNameHouse] = useState([]);
     const [datahousecode, setData] = useState([]);
     const [userid, setuserid] = useState("tempuser");
+    const [username, setusername] = useState("username");
 
+    let user;
     useEffect(() => {
         const fetchData = () => {
             console.log("You working?");
@@ -42,6 +45,8 @@ export default function Page() {
 
         fetchData();
         console.log("Loaded");
+        user = getCurrentUser();
+        console.log(user);
     }, [name]); 
 
     useEffect(() => {
@@ -60,7 +65,7 @@ export default function Page() {
         const db = getDatabase();
         const postListRef = ref(db, 'houses/'+housecode+'/members/'+userid);
         set(postListRef, {
-            name: "name",
+            name: username,
             color: choosencolor
         });
         console.log(housecode)

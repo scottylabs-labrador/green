@@ -73,13 +73,24 @@ export function readGroceryItems() {
   });
 }
 
-export function writeHouseData(name, housecode) {
+export function writeHouseData(name, housecode, gl) {
   const db = getDatabase();
   const house = new schema.House(name);
   const postListRef = ref(db, 'houses/'+ housecode);
   set(postListRef, {
     name: house.name,
-    members: house.members
+    members: house.members, 
+    grocerylist: gl
+  })
+  return postListRef;
+}
+
+export function writeGroceryList(grocerylist, name) {
+  const db = getDatabase();
+  const postListRef = ref(db, 'grocerylists/'+ grocerylist);
+  set(postListRef, {
+    name: name,
+    groceryitems: {}
   })
   return postListRef;
 }
