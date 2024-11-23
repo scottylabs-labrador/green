@@ -2,6 +2,7 @@ import { View, Text, TextInput, Pressable } from "react-native";
 import { userSignIn } from "../api/firebase";
 import React, { useState, useCallback } from "react";
 import { useRouter } from "expo-router";
+import Button from "../components/Button";
 
 async function handleSubmit(email: string, password: string) {
   try {
@@ -37,21 +38,17 @@ export default function Login() {
           value={password}
         />
         <Text className="text-red-500">{errorText}</Text>
-        <Pressable
-          className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
-          onPress={async () => {
-            // writeUserData(name, email, phoneNumber);
-            const result = await handleSubmit(email, password);
+        <Button buttonLabel="Log In" onPress={async () => {
+          // writeUserData(name, email, phoneNumber);
+          const result = await handleSubmit(email, password);
 
-            if (result === "") {
-              router.push("/choosehouse");
-            } else {
-              onChangeErrorText(result);
-            }
-          }}
-        >
-          <Text className="text-white text-center self-center">Log In</Text>
-        </Pressable>
+          if (result === "") {
+            router.push("/choosehouse");
+          } else {
+            onChangeErrorText(result);
+          }
+        }}>
+      </Button>
       </View>
     </View>
   );
