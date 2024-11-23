@@ -1,33 +1,58 @@
-import { Text, View, Button, TouchableOpacity, StyleSheet } from "react-native";
-import { Link } from "expo-router";
+import { View, Text, TextInput, Pressable } from "react-native";
+import { userSignIn } from "../api/firebase";
+import React, { useState, useCallback } from "react";
+import { useRouter } from "expo-router";
 
-import "../main.css";
-import { writeGroceryItem } from "../api/firebase";
+async function handleSubmit(email: string, password: string) {
+  try {
+    await userSignIn(email, password);
 
-export default function Page() {
-    // TODO: Implement the list page
-    // Display a list of grocery items
-    // Allow users to add, remove, and update items
+    return "";
+  } catch (error) {
+    return "Invalid email or password.";
+  }
+}
 
-    return (
-      <View className="flex-1 items-center padding-24">
-      <View className="flex-1 justify-center max-w-4xl mx-auto">
-        <Text className="text-4xl font-bold self-center">You're In!</Text>
-        <Link href="/joinhousecode" asChild>
-          <TouchableOpacity 
-              className="bg-gray-500 hover:bg-gray-600 mt-14 py-2.5 px-4 w-fit self-center rounded-lg"
-              >
-              <Text className="text-white text-center self-center">Join House</Text>
-          </TouchableOpacity>
-        </Link>
-        <Link href="/createhouse" asChild>
-          <TouchableOpacity 
-              className="bg-gray-500 hover:bg-gray-600 mt-4 mb-2 py-2.5 px-4 w-fit self-center rounded-lg"
-              >
-              <Text className="text-white text-center self-center">Create House</Text>
-          </TouchableOpacity>
-        </Link>
+export default function Login() {
+  const [email, onChangeEmail] = useState("");
+  const [password, onChangePassword] = useState("");
+  const [errorText, onChangeErrorText] = useState("");
+  const router = useRouter();
+
+  return (
+    <View className="flex-1 items-center padding-24">
+      <View className="flex-1 justify-center w-9/12 max-w-6xl mx-auto mb-20">
+        <Text className="mb-9 text-4xl justify-left font-semibold">Login</Text>
+        <Text className="mb-2">Email</Text>
+        <TextInput
+          className="block bg-gray-50 mb-4 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 align-middle"
+          onChangeText={onChangeEmail}
+          value={email}
+        />
+        <Text className="mb-2">Password</Text>
+        <TextInput
+          className="block bg-gray-50 mb-4 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 align-middle"
+          onChangeText={onChangePassword}
+          secureTextEntry={true}
+          value={password}
+        />
+        <Text className="text-red-500">{errorText}</Text>
+        <Pressable
+          className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
+          onPress={async () => {
+            // writeUserData(name, email, phoneNumber);
+            const result = await handleSubmit(email, password);
+
+            if (result === "") {
+              router.push("/choosehouse");
+            } else {
+              onChangeErrorText(result);
+            }
+          }}
+        >
+          <Text className="text-white text-center self-center">Log In</Text>
+        </Pressable>
       </View>
     </View>
-    );
+  );
 }
