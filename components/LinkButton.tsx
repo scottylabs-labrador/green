@@ -8,12 +8,10 @@ type LinkButtonProps = {
 
 const LinkButton = ({ buttonLabel, page }: LinkButtonProps) => {
   return (
-    <Pressable 
-        className="flex justify-items-center items-center bg-gray-500 hover:bg-gray-600 w-1/3 h-fit self-center rounded-lg"
-        >
-        <Link href={page} className="flex justify-center items-center py-2.5 px-4 w-full h-full">
-          <Text className="text-white text-center self-center justify-items-center">{buttonLabel}</Text>
-        </Link>
+    <Pressable className="bg-emerald-900 rounded-lg py-3 px-6 self-center hover:bg-emerald-950 mb-4">
+      <Link href={page} className="flex items-center justify-center">
+        <Text className="text-white text-lg font-semibold">{buttonLabel}</Text>
+      </Link>
     </Pressable>
   )
 }
