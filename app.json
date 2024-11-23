@@ -37,7 +37,13 @@
     },
     "owner": "labrador-housemates",
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Green to access your camera"
+        }
+      ]
     ],
     "scheme": "app-scheme"
   }
