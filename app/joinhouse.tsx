@@ -23,23 +23,24 @@ export default function Page() {
     const [datahousecode, setData] = useState([]);
     const [userid, setuserid] = useState("tempuser");
     const [username, setusername] = useState("username");
+    const [email, setemail] = useState("email");
+    const [grocerylistid, setgrocerylistid] = useState("");
 
     let user;
     useEffect(() => {
         const fetchData = () => {
-            console.log("You working?");
             const db = getDatabase();
+            onHouseCodeChange(urlParams.get('key'));
             const itemRef = ref(db, 'houses/'+housecode);
-            console.log(db);
-            console.log(itemRef);
             onValue(itemRef, (snapshot) => {
-                const data = snapshot.val();
-                console.log(data);
-                onHouseCodeChange(urlParams.get('key'));
-                console.log(data);
-                console.log(data);
-                setNameHouse(data.name);
-                setMembersHouse(data.members);
+                try{
+                    const data = snapshot.val();
+                    onHouseCodeChange(urlParams.get('key'));
+                    setNameHouse(data.name);
+                    setMembersHouse(data.members);
+                    setgrocerylistid(data.grocerylist);
+                }
+                catch{}
             });
         }
 
@@ -47,31 +48,47 @@ export default function Page() {
         console.log("Loaded");
         user = getCurrentUser();
         console.log(user);
+        try{
+            console.log(user.email);
+            var emailparts = user.email.split(".")
+            var filteredemail = emailparts[0]+":"+emailparts[1]
+            console.log(filteredemail)
+            setemail(filteredemail);
+        }
+        catch{
+
+        }
     }, [name]); 
 
     useEffect(() => {
-        // Update the document title using the browser API
-        console.log("HERE");
-        console.log(choosencolor);
-    },[choosencolor]);
+        console.log("Here")
+        const fetchData = () => {
+            const db = getDatabase();
+            const itemRef = ref(db, 'housemates/'+email);
+            onValue(itemRef, (snapshot) => {
+                try{
+                    const data = snapshot.val();
+                    setusername(data.name);
+                    setuserid(email);
+                }
+                catch{}
+            });
+        }
+        fetchData();
+    },[email]);
 
     function setcolor(color){
         setColor((prev) => color)
-        console.log(choosencolor)
     }
 
     function addMember(){
-        console.log(choosencolor)
         const db = getDatabase();
         const postListRef = ref(db, 'houses/'+housecode+'/members/'+userid);
         set(postListRef, {
             name: username,
             color: choosencolor
         });
-        console.log(housecode)
-        
-        console.log(name)
-        console.log(members)
+        window.location.href ='/list?grocerylist='+grocerylistid;
     }
 
     return (
@@ -131,14 +148,14 @@ export default function Page() {
                     <Text className="text-white text-center self-center">Back</Text>
                 </TouchableOpacity>
                 </Link>
-                <Link href="/list" asChild>
+                {/* <Link href="/list" asChild> */}
                 <TouchableOpacity 
                     className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
                     onPress = {()=>addMember()}
                     >
                     <Text className="text-white text-center self-center">Join House</Text>
                 </TouchableOpacity>
-                </Link>
+                {/* </Link> */}
             </View>
         </View>
         </View>

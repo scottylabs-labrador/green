@@ -41,10 +41,11 @@ export function writeUserData(
   phone_number: string,
 ) {
   const db = getDatabase();
-  const postListRef = ref(db, "housemates/");
-  const newPostRef = push(postListRef);
-  const user = new schema.Housemate(newPostRef.key, name, email, phone_number);
-  set(newPostRef, {
+  const emailparts = email.split(".");
+  const filteredemail = emailparts[0]+":"+emailparts[1];
+  const postListRef = ref(db, "housemates/"+filteredemail);
+  const user = new schema.Housemate(email, name, email, phone_number);
+  set(postListRef, {
     name: user.name,
     email: user.email,
     phone_number: user.phone_number,
@@ -101,7 +102,9 @@ export async function createUser(
   email: string,
   password: string,
 ) {
+  console.log("Here1");
   return createUserWithEmailAndPassword(auth, email, password).then(() => {
+    console.log("Here2");
     writeUserData(name, email, phone_number);
   });
 }
