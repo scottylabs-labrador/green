@@ -120,7 +120,7 @@ if __name__ == "__main__":
     parser.add_argument("--receipt_name", type=str, help="receipt image file name")
     args = parser.parse_args()
 
-    receipt_path = Path("test") / args.receipt_name
+    receipt_path = Path("imgs") / args.receipt_name
 
     print(
         "\n".join([

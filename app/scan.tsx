@@ -48,15 +48,12 @@ export default function Page() {
           "image": photo.base64
         }),
       }).then((response) => {
-        console.log(response);
         // receipt lines
-        response.json();
-      }
-      );
-      // .then((data) => {
-      //   console.log(data);
-      //   setReceiptLines(data)
-      // });
+        return response.json()
+      }).then((data) => {
+        console.log("data:", data);
+        setReceiptLines(data);
+      });
     }
   }
 
