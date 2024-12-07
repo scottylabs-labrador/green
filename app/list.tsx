@@ -5,6 +5,7 @@ import { removeGroceryItem, writeGroceryItem } from "../api/firebase";
 import { Link } from "expo-router"; 
 import { Ionicons, FontAwesome } from '@expo/vector-icons'
 
+
 export default function List() {
     // TODO: Implement the list page
     // Display a list of grocery items
@@ -29,8 +30,7 @@ export default function List() {
 
     const toggleModal = () => {
         setModalVisible(!modalVisible);
-    }
-
+    };
 
     const renderItem = ({ item }) => {
         return (
@@ -60,6 +60,23 @@ export default function List() {
                     <Text className="text-1xl text-right text-gray-400 w-1/5 pr-[2%]">Split by:</Text>
                 </View>
                 {/* <ScrollView>
+  return (
+    <View className="flex-1 items-center">
+      <View className="flex-1 w-full h-full bg-[#3e5636]">
+        <View className="my-16 h-fit">
+          <Text className="text-1xl text-center text-white">Home</Text>
+          <Text className="text-4xl text-center text-white">
+            This week's list
+          </Text>
+        </View>
+        <View className="w-full h-[200px] flex-grow bg-white self-end rounded-t-[40px] pt-6 pb-32 overflow-hidden mb-0">
+          <View className="flex-row items-stretch justify-center w-9/12 h-10 self-center">
+            <Text className="text-1xl text-left text-gray-400 w-1/2">Item</Text>
+            <Text className="text-1xl text-right text-gray-400 w-1/2">
+              Split by:
+            </Text>
+          </View>
+          {/* <ScrollView>
                     {Object.keys(groceryItems).length > 0 ? (
                         Object.keys(groceryItems).map(key => (
                         <GroceryItem

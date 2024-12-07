@@ -1,35 +1,69 @@
-import { Text, View, Button, TextInput, TouchableOpacity} from "react-native";
+import { Text, View, Button, TextInput, TouchableOpacity } from "react-native";
 import { Link } from "expo-router";
+
 import React, { useState, useCallback , useEffect } from 'react';
-import { getDatabase, ref, set, push, onValue } from "firebase/database";
+import { getDatabase, ref, set, push, onValue, get } from "firebase/database";
 import { router } from "expo-router"
+
 
 import "../main.css";
 import { writeGroceryItem } from "../api/firebase";
+import { House } from "../api/classes";
 
 export default function Page() {
     // TODO: Implement the list page
     // Display a list of grocery items
     // Allow users to add, remove, and update items
     const [code, onChangeCode] = useState('');
+    const [houses, setHousesItem] = useState([]);
+    const db = getDatabase();
+    const itemRef = ref(db, 'houses/');
 
-    function stuff(){
-        const db = getDatabase();
-        const itemRef = ref(db, 'houses/');
+    useEffect(() => {
+        const fetchData = () => {
+            const db = getDatabase();
+            const itemRef = ref(db, 'houses/');
+            get(itemRef).then((snapshot) => {
+                const data = snapshot.val();
+                setHousesItem(data);
+            });
+        }
+        
+
+        fetchData();
+    }, []);
+
+    function redirectToHouse(){
+        console.log("Here")
         onValue(itemRef, (snapshot) => {
+            console.log("Problem")
             const data = snapshot.val();
             var keys = Object.keys(data);
             if (keys.includes(code)){
-                console.log("yay");
-                router.replace('/joinhouse')
-                return true;
+                window.location.href ='/joinhouse?key='+code
+                // router.push('/joinhouse?key='+code)
+                // return true;
             }
             else{
-                console.log("boo");
-                return false;
+                console.log(code);
+                window.location.href = '/joinhousecode'
+                // router.replace('/joinhousecode')
+                // return false;
             }
-        })
+            console.log("Reached :))))")
+        });
     }
+
+    function stuff(code: string){
+        onChangeCode(code);
+        console.log(code);
+        return false;
+    }
+
+    function test(){
+        console.log(code);
+    }
+
 
     return (
         <View className="flex-1 items-center padding-24">
@@ -43,7 +77,7 @@ export default function Page() {
             />
             <TouchableOpacity 
                 className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
-                onPress = {() => stuff()}
+                onPress = {() => redirectToHouse()}
                 >
                 <Text className="text-white text-center self-center">Join House</Text>
             </TouchableOpacity>
