@@ -1,6 +1,8 @@
 import { Text, View, Button, TextInput, TouchableOpacity } from "react-native";
 import { Link } from "expo-router";
 
+import CustomButton from "../components/CustomButton";
+
 import React, { useState, useCallback } from 'react';
 import { router } from "expo-router"
 import * as crypto from "crypto";
@@ -37,12 +39,14 @@ export default function Page() {
                 onChangeText={onChangeName}
                 value={name}
             />
-            <TouchableOpacity 
+            {/* <TouchableOpacity 
                 className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
                 onPress = {() => changetojoin(name)}
                 >
                 <Text className="text-white text-center self-center">Create House</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
+                <CustomButton buttonLabel="Create House" onPress={() => changetojoin(name)}></CustomButton>
+
         </View>
         </View>
     );

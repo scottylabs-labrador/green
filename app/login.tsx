@@ -3,7 +3,7 @@ import BackButton from '../components/BackButton';
 import { userSignIn } from "../api/firebase";
 import React, { useState, useCallback } from "react";
 import { useRouter } from "expo-router";
-import Button from "../components/Button";
+import Button from "../components/CustomButton";
 
 async function handleSubmit(email: string, password: string) {
   try {

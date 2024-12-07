@@ -8,7 +8,7 @@ import { router } from "expo-router"
 
 import "../main.css";
 import { writeGroceryItem } from "../api/firebase";
-import Button from "../components/Button";
+import CustomButton from "../components/CustomButton";
 
 export default function Page() {
     // TODO: Implement the list page
@@ -139,7 +139,7 @@ export default function Page() {
                     >
                     <Text className="text-white text-center self-center">Join House</Text>
                 </TouchableOpacity> */}
-                        <Button buttonLabel="Join House" onPress={() => addMember()}></Button>
+                        <CustomButton buttonLabel="Join House" onPress={() => addMember()}></CustomButton>
                 </Link>
             </View>
         </View>
