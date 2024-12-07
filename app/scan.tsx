@@ -3,6 +3,7 @@ import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import React, { useRef } from 'react';
 import { useState } from 'react';
 import { Button, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 export default function Page() {
   const [facing, setFacing] = useState<CameraType>('back');
@@ -59,18 +60,26 @@ export default function Page() {
 
 
   return (
-    <View style={styles.container}>
+    <View className="w-full h-full flex-1 justify-center">
       {imageUri ? <Image source={{ uri: imageUri }} style={{ width: 500, height: 500 }} /> :
-        <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-              <Text style={styles.text}>Flip Camera</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={takePicture}>
-              <Text style={styles.text}>Take Picture</Text>
+        <View className="h-full w-full">
+        <CameraView ref={cameraRef} className="flex-1" facing={facing}>
+          <View className="flex-1 flex-row m-6 justify-center">
+            <Text className="text-white font-medium">Make sure receipt is flat and lighting is good</Text>
+          </View>
+        </CameraView>
+        <View className="absolute bottom-0 left-0 w-full flex-row items-center justify-center px-2 py-4">
+          <View className="w-16 h-16"></View>
+          <View className="flex-1 justify-center items-center">
+            <TouchableOpacity className='w-16 h-16 rounded-full bg-white shadow-lg' onPress={takePicture}></TouchableOpacity>
+          </View>
+          <View className="flex justify-center items-center w-16 h-16">
+            <TouchableOpacity className='w-14 h-14 rounded-full bg-black shadow-lg justify-center items-center' onPress={toggleCameraFacing}>
+              <FontAwesome6 name="arrows-rotate" size={24} color="white" />
             </TouchableOpacity>
           </View>
-        </CameraView>}
+        </View>
+        </View>}
     </View>
   );
 }
@@ -97,6 +106,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'flex-end',
     alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: '50%'
   },
   text: {
     fontSize: 24,
