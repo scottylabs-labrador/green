@@ -1,7 +1,7 @@
-import { View, Text, Pressable, ScrollView, Modal, FlatList, TextInput } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { getDatabase, ref, set, push, onValue, get } from "firebase/database";
-import { writeGroceryItem } from "../api/firebase";
+import { View, Text, Pressable, ScrollView, Modal, FlatList, TextInput} from 'react-native';
+import React, { useState, useEffect} from 'react';
+import { getDatabase, ref, set, push, onValue, get, remove} from "firebase/database";
+import { removeGroceryItem, writeGroceryItem } from "../api/firebase";
 import { Link } from "expo-router"; 
 import { Ionicons, FontAwesome } from '@expo/vector-icons'
 
@@ -25,11 +25,12 @@ export default function List() {
         }
 
         fetchData();
-    });
+    }, [groceryItems]);
 
     const toggleModal = () => {
         setModalVisible(!modalVisible);
     }
+
 
     const renderItem = ({ item }) => {
         return (
@@ -41,12 +42,10 @@ export default function List() {
         );
     }
 
-    const handleAddItem = (e) => {
-        const key = e.nativeEvent.key 
-        if (key === "Enter") {
-            writeGroceryItem(item)
-        }
+    const handleAddItem = () => {
+        writeGroceryItem(groceryItems[item].name, groceryItems[item].name + 1)
     }
+
 
     return (
         <View className="flex-1 items-center">
@@ -56,9 +55,9 @@ export default function List() {
                 <Text className="text-4xl text-center text-white">This week's list</Text>
             </View>
             <View className="w-full h-[200px] flex-grow bg-white self-end rounded-t-[40px] pt-6 pb-32 overflow-hidden mb-0">
-                <View className="flex-row items-stretch justify-center w-9/12 h-10 self-center">
-                    <Text className="text-1xl text-left text-gray-400 w-1/2">Item</Text>
-                    <Text className="text-1xl text-right text-gray-400 w-1/2">Split by:</Text>
+                <View className="flex-row items-stretch justify-left w-9/12 h-10 self-center">
+                    <Text className="text-1xl text-left text-gray-400 w-1/2 pl-[8%]">Item</Text>
+                    <Text className="text-1xl text-right text-gray-400 w-1/5 pr-[2%]">Split by:</Text>
                 </View>
                 {/* <ScrollView>
                     {Object.keys(groceryItems).length > 0 ? (
@@ -161,10 +160,38 @@ export default function List() {
 }
 
 const GroceryItem = ({name, quantity}) => {
+
+    const handleAddItem = (name, quantity) => {
+        writeGroceryItem(name, quantity + 1)
+    }
+
+    const handleSubItem = (name, quantity) => {
+        if (quantity != 1){
+            writeGroceryItem(name, quantity - 1)
+            //TODO: make setGroceryItem instead of writing so there's no 
+            //time delay
+        }
+        removeGroceryItem(name, quantity - 1)
+    }
+   
     return (
         <View className="flex-row items-stretch justify-center w-[85%] h-12 self-center my-2 px-2 border border-gray-300 rounded-lg">
             <Text className="text-1xl text-left w-1/2 self-center">{name}</Text>
-            <Text className="text-1xl text-right w-1/2 self-center">{quantity}</Text>
+            <View className="flex-row self-center items-center w-[25%]">
+                <Pressable className="center-right justify-center margin-right-50" onPress={() => handleSubItem(name, quantity)}>
+                    <Ionicons 
+                        name="remove-circle" 
+                        size={20} 
+                        color="#3e5636"/>
+                </Pressable>
+                <Text className="text-1xl text-center w-[5%] justify-center margin-50">{quantity}</Text>
+                <Pressable className="center-left justify-center margin-left-50" onPress={() => handleAddItem(name, quantity)}>
+                    <Ionicons 
+                        name="add-circle" 
+                        size={20} 
+                        color="#3e5636"/>
+                </Pressable>
+            </View>
         </View>
     )
 }
