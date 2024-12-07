@@ -45,7 +45,8 @@ export default function Login() {
             const result = await handleSubmit(email, password);
 
             if (result === "") {
-              router.push("/choosehouse");
+              // router.push("/choosehouse");
+              router.push("/list");
             } else {
               onChangeErrorText(result);
             }

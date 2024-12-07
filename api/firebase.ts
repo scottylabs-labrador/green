@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, push, onValue, remove, orderByChild, query, equalTo, get } from "firebase/database";
+import { getDatabase, ref, set, push, onValue, remove, update, orderByChild, query, equalTo, get } from "firebase/database";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -61,6 +61,14 @@ export function writeGroceryItem(name: string, quantity = 1, splits = []) {
     name: item.name,
     quantity: item.quantity,
     splits: item.splits,
+  });
+}
+
+export function updateGroceryItem(id, name: string, quantity = 1) {
+  const db = getDatabase();
+  update(ref(db, 'groceryitems/' + id), {
+    name: name,
+    quantity: quantity,
   });
 }
 

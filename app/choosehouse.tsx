@@ -9,7 +9,7 @@ export default function House() {
   // Should this exist for users who
 
   return (
-    <View className="flex-1 items-center p-6">
+    <View className="flex-1 items-center justify-center p-6">
       <View className="flex justify-center items-center max-w-lg w-full gap-6">
         <Text className="text-4xl font-bold text-center">Join a House!</Text>
         <View className="w-full flex flex-col items-center">

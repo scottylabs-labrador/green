@@ -1,8 +1,6 @@
 import { Text, View, TouchableOpacity, TextInput } from "react-native";
 import React, { useState, useCallback } from "react";
 import LinkButton from "../components/LinkButton";
-
-import { writeGroceryItem } from "../api/firebase";
 import "../main.css";
 
 export default function Home() {
