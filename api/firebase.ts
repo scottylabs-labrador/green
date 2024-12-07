@@ -75,7 +75,7 @@ export function removeGroceryItem(name, quantity, splits=[]) {
       console.log('val: ', items);
 
       Object.entries(items).forEach(([key, item]) => {
-        // Check if the name matches and quantity is 0
+        // Check if the name matches and quantity matches one removed
         if (item.name === name && item.quantity === quantity + 1) {
           const itemRef = ref(db, `groceryitems/${key}`);
           remove(itemRef) // Remove the item
