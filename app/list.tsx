@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { getDatabase, ref, set, push, onValue, get } from "firebase/database";
-import { writeGroceryItem } from "../api/firebase";
+import { writeGroceryItem, writeGroceryItemGrocerylist } from "../api/firebase";
 import { Link } from "expo-router";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 
@@ -21,19 +21,33 @@ export default function List() {
   const [groceryItems, setGroceryItems] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [item, onChangeItem] = useState("");
+  const [grocerylist, onChangeList] = useState("");
 
   useEffect(() => {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
     const fetchData = () => {
       const db = getDatabase();
-      const itemRef = ref(db, "groceryitems/");
-      get(itemRef).then((snapshot) => {
-        const data = snapshot.val();
-        setGroceryItems(data);
+      const grocerylistid = urlParams.get('grocerylist');
+      // const itemRef = ref(db, "groceryitems/");
+      // get(itemRef).then((snapshot) => {
+      //   const data = snapshot.val();
+      //   setGroceryItems(data);
+      // });
+      onChangeList(grocerylistid);
+      const itemRef = ref(db, "grocerylists/"+grocerylistid+"/groceryitems");
+      onValue(itemRef, (snapshot) => {
+          try{
+              const data = snapshot.val();
+              console.log(data);
+              setGroceryItems(data);
+          }
+          catch{}
       });
     };
 
     fetchData();
-  });
+  },[]);
 
   const toggleModal = () => {
     setModalVisible(!modalVisible);
@@ -52,7 +66,8 @@ export default function List() {
   const handleAddItem = (e) => {
     const key = e.nativeEvent.key;
     if (key === "Enter") {
-      writeGroceryItem(item);
+      // writeGroceryItem(item);
+      writeGroceryItemGrocerylist(grocerylist, item);
     }
   };
 

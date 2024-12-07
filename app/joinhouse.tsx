@@ -30,22 +30,32 @@ export default function Page() {
     useEffect(() => {
         const fetchData = () => {
             const db = getDatabase();
-            onHouseCodeChange(urlParams.get('key'));
-            const itemRef = ref(db, 'houses/'+housecode);
-            onValue(itemRef, (snapshot) => {
-                try{
-                    const data = snapshot.val();
-                    onHouseCodeChange(urlParams.get('key'));
-                    setNameHouse(data.name);
-                    setMembersHouse(data.members);
-                    setgrocerylistid(data.grocerylist);
-                }
-                catch{}
-            });
+            const code = urlParams.get('key');
+            if (code){
+                // onHouseCodeChange(urlParams.get('key'));
+                const itemRef = ref(db, 'houses/'+code);
+                onValue(itemRef, (snapshot) => {
+                    try{
+                        const data = snapshot.val();
+                        // onHouseCodeChange(urlParams.get('key'));
+                        console.log()
+                        console.log("Data", data)
+                        console.log("code", code)
+                        if(data){
+                            setNameHouse(data.name);
+                            console.log(data.name);
+                            setMembersHouse(data.members);
+                            setgrocerylistid(data.grocerylist);
+                        }
+                    }
+                    catch{}
+                });
+            } 
         }
 
         fetchData();
         console.log("Loaded");
+        console.log(housecode)
         user = getCurrentUser();
         console.log(user);
         try{
@@ -58,7 +68,11 @@ export default function Page() {
         catch{
 
         }
-    }, [name]); 
+    }, [housecode]); 
+
+    useEffect(() => {
+        onHouseCodeChange(urlParams.get('key'));
+    }, []); 
 
     useEffect(() => {
         console.log("Here")

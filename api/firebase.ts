@@ -65,6 +65,18 @@ export function writeGroceryItem(name: string, quantity = 1, splits = []) {
   });
 }
 
+export function writeGroceryItemGrocerylist(grocerylist: string, name: string, quantity = 1, splits = []) {
+  const db = getDatabase();
+  const item = new schema.GroceryItem(name, quantity, splits);
+  const postListRef = ref(db, "grocerylists/" +grocerylist+"/groceryitems");
+  const newPostRef = push(postListRef);
+  set(newPostRef, {
+    name: item.name,
+    quantity: item.quantity,
+    splits: item.splits,
+  });
+}
+
 export function readGroceryItems() {
   const db = getDatabase();
   const itemRef = ref(db, "groceryitems/");
@@ -91,7 +103,7 @@ export function writeGroceryList(grocerylist, name) {
   const postListRef = ref(db, 'grocerylists/'+ grocerylist);
   set(postListRef, {
     name: name,
-    groceryitems: {}
+    groceryitems: 1
   })
   return postListRef;
 }
