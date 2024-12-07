@@ -10,10 +10,10 @@ export default function Home() {
   // Should this exist for users who
 
   return (
-    <View className="flex-1 items-center padding-24">
-      <View className="flex-1 justify-center max-w-4xl mx-auto gap-14">
-        <Text className="text-4xl font-bold self-center">Welcome to Green</Text>
-        <View className="flex flex-column gap-2">
+    <View className="flex-1 items-center p-6">
+      <View className="flex justify-center items-center max-w-lg w-full gap-6">
+        <Text className="text-4xl font-bold text-center">Welcome to Green</Text>
+        <View className="w-full flex flex-col items-center">
           <LinkButton buttonLabel="Sign Up" page="/signup" />
           <LinkButton buttonLabel="Login" page="/login" />
         </View>

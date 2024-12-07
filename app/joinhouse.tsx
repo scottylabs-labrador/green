@@ -1,5 +1,5 @@
 
-import { Text, View, Button, TextInput, TouchableOpacity} from "react-native";
+import { Text, View, TextInput, TouchableOpacity} from "react-native";
 import { Link } from "expo-router";
 import React, { useState, useCallback , useEffect } from 'react';
 import { getDatabase, ref, set, push, onValue, get } from "firebase/database";
@@ -8,6 +8,7 @@ import { router } from "expo-router"
 
 import "../main.css";
 import { writeGroceryItem } from "../api/firebase";
+import Button from "../components/Button";
 
 export default function Page() {
     // TODO: Implement the list page
@@ -132,12 +133,13 @@ export default function Page() {
                 </TouchableOpacity>
                 </Link>
                 <Link href="/list" asChild>
-                <TouchableOpacity 
+                {/* <TouchableOpacity 
                     className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
                     onPress = {()=>addMember()}
                     >
                     <Text className="text-white text-center self-center">Join House</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
+                        <Button buttonLabel="Join House" onPress={() => addMember()}></Button>
                 </Link>
             </View>
         </View>

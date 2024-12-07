@@ -2,14 +2,20 @@ import { Text, Pressable } from 'react-native';
 
 type ButtonProps = {
   buttonLabel: string;
+  onPress?: () => void; // Optional onPress prop
 };
 
-const Button = ({ buttonLabel }: ButtonProps) => {
+
+const Button = ({ buttonLabel, onPress }: ButtonProps) => {
+  const handlePress = () => {
+    if (onPress) {
+      onPress(); // Execute custom logic if provided
+    }
+  };
+
   return (
-    <Pressable 
-        className="bg-gray-500 hover:bg-gray-600 mt-4 mb-2 py-2.5 px-4 w-1/3 self-center rounded-lg"
-        >
-        <Text className="text-white text-center self-center">{buttonLabel}</Text>
+    <Pressable className="bg-emerald-900 rounded-lg py-3 px-6 self-center hover:bg-emerald-950 mb-4" onPress={handlePress}>
+        <Text className="text-white text-lg font-semibold">{buttonLabel}</Text>
     </Pressable>
   )
 }
