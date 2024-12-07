@@ -167,3 +167,4 @@ dist
 .pnp.*
 package-lock.json
 package.json
+firebaseConfig.ts
