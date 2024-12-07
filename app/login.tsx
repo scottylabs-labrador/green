@@ -23,8 +23,8 @@ export default function Login() {
 
   return (
     <KeyboardAvoidingView className="flex-1 w-full padding-24" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <ScrollView>
-        <View className="flex-1 justify-center w-9/12 max-w-6xl mx-auto mb-20">
+      <ScrollView className="h-full">
+        <View className="flex-1 justify-center w-9/12 max-w-6xl mx-auto mt-32">
           <Text className="mb-9 text-4xl justify-left font-semibold">Login</Text>
           <Text className="mb-2">Email</Text>
           <TextInput
