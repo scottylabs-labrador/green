@@ -6,7 +6,7 @@ and the split the bill automatically by scanning receipts.
 
 ## Project Structure
 
-Green uses React Native/Expo for frontend, MongoDB for storage,
+Green uses React Native/Expo for frontend, Firebase for storage,
 and a Python FastAPI server for running OCR on receipts.
 
 Pages are in `app`. Adding a new file there will automatically create a new route.
