@@ -1,4 +1,5 @@
 import { View, Text, TextInput, Pressable } from "react-native";
+import BackButton from '../components/BackButton';
 import { userSignIn } from "../api/firebase";
 import React, { useState, useCallback } from "react";
 import { useRouter } from "expo-router";
@@ -53,6 +54,7 @@ export default function Login() {
           <Text className="text-white text-center self-center">Log In</Text>
         </Pressable>
       </View>
+      <BackButton />
     </View>
   );
 }

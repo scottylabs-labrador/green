@@ -1,5 +1,6 @@
 import { View, Text, TextInput, Pressable } from "react-native";
 import React, { useState } from "react";
+import BackButton from '../components/BackButton';
 import { writeUserData } from "../api/firebase";
 import { createUser } from "../api/firebase";
 import { useRouter } from "expo-router";
@@ -52,8 +53,8 @@ export default function SignUp({ route, navigation, ...props }) {
   const router = useRouter();
 
   return (
-    <View className="flex-1 items-center padding-24">
-      <View className="flex-1 justify-center w-9/12 max-w-6xl mx-auto mb-20">
+    <View className="flex-1 items-center justify-center padding-24">
+      <View className="flex-1 justify-center w-9/12 max-w-6xl mx-auto mt-14">
         <Text className="mb-9 text-4xl justify-left font-semibold">
           Registration
         </Text>
@@ -91,7 +92,7 @@ export default function SignUp({ route, navigation, ...props }) {
         />
         <Text className="text-red-500">{errorText}</Text>
         <Pressable
-          className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
+          className="bg-gray-500 hover:bg-gray-600 mt-4 py-2.5 px-4 w-fit self-center rounded-lg"
           onPress={async () => {
             // writeUserData(name, email, phoneNumber);
             const result = await handleSubmit(
@@ -112,6 +113,7 @@ export default function SignUp({ route, navigation, ...props }) {
           <Text className="text-white text-center self-center">Sign Up</Text>
         </Pressable>
       </View>
+      <BackButton />
     </View>
   );
 }
