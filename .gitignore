@@ -169,7 +169,13 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+<<<<<<< HEAD
+package-lock.json
+package.json
+firebaseConfig.ts
+=======
 
 ocr/env/*
 
 ocr/.venv
+>>>>>>> main

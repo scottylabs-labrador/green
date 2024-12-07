@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, push, onValue } from "firebase/database";
+import { getDatabase, ref, set, push, onValue, remove, orderByChild, query, equalTo, get } from "firebase/database";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -72,6 +72,37 @@ export function readGroceryItems() {
     return data;
   });
 }
+
+interface GroceryItem {
+  name: string;
+  quantity: number;
+  splits?: string[];
+}
+
+export function removeGroceryItem(name, quantity, splits=[]) {
+  const db = getDatabase();
+  const itemRef = ref(db, 'groceryitems/'); 
+
+  get(itemRef).then((snapshot) => {
+    if (snapshot.exists()) {
+      const items = snapshot.val() as Record<string, GroceryItem>; // Assert the type
+      console.log('val: ', items);
+
+      Object.entries(items).forEach(([key, item]) => {
+        // Check if the name matches and quantity matches one removed
+        if (item.name === name && item.quantity === quantity + 1) {
+          const itemRef = ref(db, `groceryitems/${key}`);
+          remove(itemRef) // Remove the item
+            .then(() => console.log(`Removed item: ${name}`))
+            .catch((error) => console.error('Error removing item:', error));
+        }
+      });
+    } else {
+      console.log('No matching items found');
+    }
+  })
+}
+
 
 export function writeHouseData(name, housecode, gl) {
   const db = getDatabase();
