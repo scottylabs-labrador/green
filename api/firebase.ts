@@ -41,10 +41,11 @@ export function writeUserData(
   phone_number: string,
 ) {
   const db = getDatabase();
-  const postListRef = ref(db, "housemates/");
-  const newPostRef = push(postListRef);
-  const user = new schema.Housemate(newPostRef.key, name, email, phone_number);
-  set(newPostRef, {
+  const emailparts = email.split(".");
+  const filteredemail = emailparts[0]+":"+emailparts[1];
+  const postListRef = ref(db, "housemates/"+filteredemail);
+  const user = new schema.Housemate(email, name, email, phone_number);
+  set(postListRef, {
     name: user.name,
     email: user.email,
     phone_number: user.phone_number,
@@ -64,11 +65,33 @@ export function writeGroceryItem(name: string, quantity = 1, splits = []) {
   });
 }
 
+export function writeGroceryItemGrocerylist(grocerylist: string, name: string, quantity = 1, splits = []) {
+  const db = getDatabase();
+  const item = new schema.GroceryItem(name, quantity, splits);
+  const postListRef = ref(db, "grocerylists/" +grocerylist+"/groceryitems");
+  const newPostRef = push(postListRef);
+  set(newPostRef, {
+    name: item.name,
+    quantity: item.quantity,
+    splits: item.splits,
+  });
+}
+
 export function updateGroceryItem(id, name: string, quantity = 1) {
   const db = getDatabase();
   update(ref(db, 'groceryitems/' + id), {
     name: name,
     quantity: quantity,
+
+  });
+}
+
+export function updateGroceryItemGroceryList(grocerylist: string, id, name: string, quantity = 1) {
+  const db = getDatabase();
+  update(ref(db, "grocerylists/" +grocerylist+"/groceryitems/" + id), {
+    name: name,
+    quantity: quantity,
+
   });
 }
 
@@ -111,6 +134,30 @@ export function removeGroceryItem(name, quantity, splits=[]) {
   })
 }
 
+export function removeGroceryItemGroceryList(grocerylist, name, quantity, splits=[]) {
+  const db = getDatabase();
+  const itemRef = ref(db, "grocerylists/" +grocerylist+"/groceryitems/"); 
+
+  get(itemRef).then((snapshot) => {
+    if (snapshot.exists()) {
+      const items = snapshot.val() as Record<string, GroceryItem>; // Assert the type
+      console.log('val: ', items);
+
+      Object.entries(items).forEach(([key, item]) => {
+        // Check if the name matches and quantity matches one removed
+        if (item.name === name && item.quantity === quantity + 1) {
+          const itemRef = ref(db, `grocerylists/${grocerylist}/groceryitems/${key}`);
+          remove(itemRef) // Remove the item
+            .then(() => console.log(`Removed item: ${name}`))
+            .catch((error) => console.error('Error removing item:', error));
+        }
+      });
+    } else {
+      console.log('No matching items found');
+    }
+  })
+}
+
 
 export function writeHouseData(name, housecode, gl) {
   const db = getDatabase();
@@ -129,7 +176,7 @@ export function writeGroceryList(grocerylist, name) {
   const postListRef = ref(db, 'grocerylists/'+ grocerylist);
   set(postListRef, {
     name: name,
-    groceryitems: {}
+    groceryitems: 1
   })
   return postListRef;
 }
@@ -140,7 +187,9 @@ export async function createUser(
   email: string,
   password: string,
 ) {
+  console.log("Here1");
   return createUserWithEmailAndPassword(auth, email, password).then(() => {
+    console.log("Here2");
     writeUserData(name, email, phone_number);
   });
 }

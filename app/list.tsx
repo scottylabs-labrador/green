@@ -1,13 +1,12 @@
 import { View, Text, Pressable, ScrollView, Modal, FlatList, TextInput} from 'react-native';
 import React, { useState, useEffect} from 'react';
 import { getDatabase, ref, set, push, onValue, get, remove} from "firebase/database";
-import { removeGroceryItem, writeGroceryItem, updateGroceryItem } from "../api/firebase";
+import { removeGroceryItem, writeGroceryItem, updateGroceryItem, writeGroceryItemGrocerylist } from "../api/firebase";
 import { Link } from "expo-router"; 
 import NavBar from '../components/NavBar';
 import GroceryItem from '../components/GroceryItem';
 import Button from '../components/CustomButton';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
-
 
 export default function List() {
     // TODO: Implement the list page
@@ -17,10 +16,15 @@ export default function List() {
     const [groceryItems, setGroceryItems] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [item, setItem] = useState('');
+    const [grocerylist, onChangeList] = useState("");
     const db = getDatabase();
 
     useEffect(() => {
-        const itemRef = ref(db, 'groceryitems/');
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const grocerylistid = urlParams.get('grocerylist');
+        onChangeList(grocerylistid);
+        const itemRef = ref(db, "grocerylists/"+grocerylistid+"/groceryitems");
         const fetchData = onValue(itemRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -39,6 +43,7 @@ export default function List() {
         return (
             <GroceryItem
                 key={item}
+                grocerylist={grocerylist}
                 id={item}
                 name={groceryItems[item].name}
                 quantity={groceryItems[item].quantity}
@@ -47,7 +52,7 @@ export default function List() {
     }
 
     const writeItem = () => {
-        writeGroceryItem(item);
+        writeGroceryItemGrocerylist(grocerylist, item);
         setItem('');
         toggleModal();
     }
