@@ -9,6 +9,7 @@ import { router } from "expo-router"
 import "../main.css";
 import { writeGroceryItem } from "../api/firebase";
 import CustomButton from "../components/CustomButton";
+import LinkButton from "../components/LinkButton";
 
 export default function Page() {
     // TODO: Implement the list page
@@ -110,7 +111,7 @@ export default function Page() {
         <View className="flex-1 items-center padding-24">
         <View className="flex-1 justify-center w-9/12 max-w-6xl mx-auto mb-20">
             <Text className="mb-9 text-4xl justify-left text-center font-semibold">{name}</Text>
-            <View className="flex-row justify-evenly items-center padding-24">
+            <View className="flex-row justify-evenly items-center padding-24 mb-6">
                 <TouchableOpacity 
                     className="w-8 h-8 bg-red-600"
                     onPress = {()=>setcolor("CA3A31")}
@@ -156,13 +157,14 @@ export default function Page() {
                 
             </View>
             <View className="flex-row justify-evenly items-center padding-24">
-                <Link href="/joinhousecode" asChild>
+                {/* <Link href="/joinhousecode" asChild>
                 <TouchableOpacity 
                     className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
                     >
                     <Text className="text-white text-center self-center">Back</Text>
                 </TouchableOpacity>
-                </Link>
+                </Link> */}
+                <LinkButton buttonLabel="Back" page="/joinhousecode" />
                 <Link href="/list" asChild>
                 {/* <TouchableOpacity 
                     className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"

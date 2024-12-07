@@ -1,7 +1,7 @@
 import { View, Text, Pressable, ScrollView, Modal, FlatList, TextInput} from 'react-native';
 import React, { useState, useEffect} from 'react';
 import { getDatabase, ref, set, push, onValue, get, remove} from "firebase/database";
-import { removeGroceryItem, writeGroceryItem, updateGroceryItem, writeGroceryItemGroceryList } from "../api/firebase";
+import { removeGroceryItem, writeGroceryItem, updateGroceryItem, writeGroceryItemGrocerylist } from "../api/firebase";
 import { Link } from "expo-router"; 
 import NavBar from '../components/NavBar';
 import GroceryItem from '../components/GroceryItem';
@@ -43,6 +43,7 @@ export default function List() {
         return (
             <GroceryItem
                 key={item}
+                grocerylist={grocerylist}
                 id={item}
                 name={groceryItems[item].name}
                 quantity={groceryItems[item].quantity}
