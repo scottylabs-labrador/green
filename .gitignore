@@ -1,5 +1,9 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
+ocr/__pycache__/
+ocr/imgs/*
+ocr/output/*
+
 # dependencies
 node_modules/
 
@@ -165,3 +169,13 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+<<<<<<< HEAD
+package-lock.json
+package.json
+firebaseConfig.ts
+=======
+
+ocr/env/*
+
+ocr/.venv
+>>>>>>> main
