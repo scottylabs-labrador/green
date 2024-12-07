@@ -114,7 +114,7 @@ export default function List() {
                             size={24} 
                             color="gray"/>
                     </Link>
-                    <Link href="/" asChild>
+                    <Link href="/scan" asChild>
                         <Ionicons
                             name='camera'
                             size={24}
