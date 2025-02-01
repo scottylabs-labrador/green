@@ -6,6 +6,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
+import { setPersistence, browserLocalPersistence } from "firebase/auth";
 import * as schema from "./classes";
 
 // TODO: Replace the following with your app's Firebase project configuration
@@ -34,6 +35,17 @@ const database = getDatabase(app);
 
 // Initialize Firebase Auth
 const auth = getAuth(app);
+
+// Set Auth Persistence
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    console.log("Auth persistence set to LOCAL");
+  })
+  .catch((error) => {
+    console.error("Error setting persistence:", error);
+  });
+
+export { auth };
 
 export function writeUserData(
   name: string,
@@ -65,10 +77,10 @@ export function writeGroceryItem(name: string, quantity = 1, splits = []) {
   });
 }
 
-export function writeGroceryItemGrocerylist(grocerylist: string, name: string, quantity = 1, splits = []) {
+export function writeGroceryItemGrocerylist(grocerylist: string, name: string, member: string, quantity = 1) {
   const db = getDatabase();
-  const item = new schema.GroceryItem(name, quantity, splits);
   const postListRef = ref(db, "grocerylists/" +grocerylist+"/groceryitems");
+  const item = new schema.GroceryItem(name, quantity, [member]);
   const newPostRef = push(postListRef);
   set(newPostRef, {
     name: item.name,
@@ -81,17 +93,17 @@ export function updateGroceryItem(id, name: string, quantity = 1) {
   const db = getDatabase();
   update(ref(db, 'groceryitems/' + id), {
     name: name,
-    quantity: quantity,
-
+    quantity: quantity
   });
 }
 
-export function updateGroceryItemGroceryList(grocerylist: string, id, name: string, quantity = 1) {
+export function updateGroceryItemGroceryList(grocerylist: string, id, name: string, quantity = 1, splits = [], member: string) {
   const db = getDatabase();
+  let num = splits.push(member);
   update(ref(db, "grocerylists/" +grocerylist+"/groceryitems/" + id), {
     name: name,
     quantity: quantity,
-
+    splits: splits
   });
 }
 

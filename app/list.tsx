@@ -7,6 +7,8 @@ import NavBar from '../components/NavBar';
 import GroceryItem from '../components/GroceryItem';
 import Button from '../components/CustomButton';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { getCurrentUser } from "../api/firebase";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function List() {
     // TODO: Implement the list page
@@ -17,7 +19,22 @@ export default function List() {
     const [modalVisible, setModalVisible] = useState(false);
     const [item, setItem] = useState('');
     const [grocerylist, onChangeList] = useState("");
+    const [email, setemail] = useState("email");
     const db = getDatabase();
+
+    useFocusEffect(()=>{
+        var user = getCurrentUser();
+        try{
+            var emailparts = user.email.split(".")
+            var filteredemail = emailparts[0]+":"+emailparts[1]
+            setemail(filteredemail);
+            console.log(filteredemail);
+        }
+        catch{
+            console.log(user);
+
+        }
+    });
 
     useEffect(() => {
         const queryString = window.location.search;
@@ -47,12 +64,15 @@ export default function List() {
                 id={item}
                 name={groceryItems[item].name}
                 quantity={groceryItems[item].quantity}
+                splits = {groceryItems[item].splits}
+                member = {email}
             />
         );
     }
 
     const writeItem = () => {
-        writeGroceryItemGrocerylist(grocerylist, item);
+        console.log("Write " +email);
+        writeGroceryItemGrocerylist(grocerylist, item, email);
         setItem('');
         toggleModal();
     }
