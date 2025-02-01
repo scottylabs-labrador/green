@@ -1,0 +1,8 @@
+1. clean up OCR output (done in backend)
+    - for each line, figure out what is price; what is name
+    - figure out total that receipt lists (compare with own calculated total from indiv prices ?)
+    - tax stuff?
+2. match things
+3. display cleaned up OCR 
+4. display matched items (name from receipt + name from user-inputted) and unmatched items (those from the receipt + those from the user-inputted)
+5. 
