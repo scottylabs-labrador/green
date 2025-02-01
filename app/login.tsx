@@ -1,6 +1,7 @@
 import { View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, ScrollView  } from "react-native";
 import BackButton from '../components/BackButton';
 import { userSignIn } from "../api/firebase";
+import { getDatabase, ref, set, push, onValue, get, update } from "firebase/database";
 import React, { useState, useCallback } from "react";
 import { useRouter } from "expo-router";
 import Button from "../components/CustomButton";
@@ -15,11 +16,16 @@ async function handleSubmit(email: string, password: string) {
   }
 }
 
+async function getgrocerylist(filteredemail) {
+  
+}
+
 export default function Login() {
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
   const [errorText, onChangeErrorText] = useState("");
   const router = useRouter();
+  const db = getDatabase();
 
   return (
     <KeyboardAvoidingView className="flex-1 w-full padding-24" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -46,7 +52,74 @@ export default function Login() {
 
             if (result === "") {
               // router.push("/choosehouse");
-              router.push("/list");
+              var emailparts = email.split(".");
+              var filteredemail = emailparts[0]+":"+emailparts[1];
+              // const grocerylist = await getgrocerylist(filteredemail);
+              try {
+                const itemRef = ref(db, 'housemates/'+filteredemail);
+                var houses;
+                onValue(itemRef, (snapshot) => {
+                    try{
+                        const data = snapshot.val();
+                        houses = data.houses[0];
+                    }
+                    catch{
+                      console.log("Here 1");
+                      router.push("/choosehouse");
+                      // return new Promise("");
+                    }
+                });
+                const houseRef = ref(db, 'houses/'+houses)
+                onValue(houseRef, (snapshot) => {
+                  try{
+                    const data = snapshot.val();
+                    var grocerylist = data.grocerylist;
+                    console.log("yayayaya");
+                    console.log(houses);
+                    console.log(data);
+                    console.log(grocerylist);
+                    // router.push("/list?grocerylist="+grocerylist);
+                    window.location.href ='/list?grocerylist='+grocerylist;
+                    // return grocerylist;
+                  }
+                  catch{
+                    console.log("Here 2");
+                    console.log(houseRef);
+                    console.log(houses);
+                    const dbnew = getDatabase();
+                    const houseRefNew = ref(dbnew, 'houses/'+houses)
+                    onValue(houseRefNew, (snapshot) => {
+                      try{
+                        const data = snapshot.val();
+                        var grocerylist = data.grocerylist;
+                        console.log(grocerylist);
+                        window.location.href ='/list?grocerylist='+grocerylist;
+                      }
+                      catch{
+                        router.push("/choosehouse");
+                      }
+                    });
+                    // return "";
+                  }
+              });
+              return "";
+              } catch (error) {
+                console.log("Error");
+                router.push("/choosehouse");
+                // return "";
+              }
+              // console.log("grocerylist found");
+              // console.log(grocerylist);
+              // if (grocerylist===""){
+              //   console.log("grocerylist found");
+              //   console.log(grocerylist);
+              //   router.push("/choosehouse");
+              // }
+              // else{
+              //   console.log("grocerylist found");
+              //   console.log(grocerylist);
+              //   router.push("/list"+grocerylist);
+              // }
             } else {
               onChangeErrorText(result);
             }
