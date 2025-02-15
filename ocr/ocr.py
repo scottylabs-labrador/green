@@ -1,6 +1,8 @@
 from paddleocr import PaddleOCR,draw_ocr
 from pprint import pprint
 from pathlib import Path
+import re
+import difflib
 
 def get_receipt_lines(ocr_output, epsilon=5):
     """
@@ -77,6 +79,104 @@ def get_receipt_lines(ocr_output, epsilon=5):
 
     return receipt_lines
 
+''' 
+    Parsing item name and price (including total and subtotal)
+    Assumptions: 
+     - prices are on the right of a receipt and are first in a receipt line
+     - no non-alphabetic character in item names
+'''
+def trim_non_numeric(s):
+    return re.sub(r"^\D+|\D+$", "", s)
+
+def count_alpha(s):
+    return len(re.findall(r"[a-zA-Z]", s))
+
+def extract_price(element):
+    price_pattern = r"\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{2})"
+    missing_decimal_pattern = r"\d{1,3}(?:\d{3})*(?:\d{2})"
+    match_price = re.search(price_pattern, element)
+    match_missing_decimal = re.search(missing_decimal_pattern, element)
+
+    if match_price:
+        return float(match_price.group())
+    elif match_missing_decimal and count_alpha(element) > 2:
+        return float(match_missing_decimal.group()) / 100
+    else:
+        return -1
+
+def is_item(element):
+    return len(element) > 2 and extract_price(element) < 0 and count_alpha(element) > 3
+
+def single_price_line(line):
+    return len(line) == 1 and extract_price(line[0]) > -1
+
+def item_line(line):
+    return len(line) > 0 and is_item(line[0])
+
+def valid_receipt_line(line):
+    return len(line) == 2 and extract_price(line[0]) > -1 and is_item(line[1])
+
+def is_tax(s, threshold=0.66):
+    return bool(difflib.get_close_matches(s.lower(), ["tax"], cutoff=threshold))
+
+def is_extra_info(s, threshold=0.7):
+    return bool(difflib.get_close_matches(s.lower(), ["total", "balance", "count", "subtotal", "discount"], cutoff=threshold))
+
+def clean_receipt_lines(receipt_lines):
+    print("receipt_lines:", receipt_lines)
+    # # Undo reversing
+    # receipt_lines = list(reversed(receipt_lines))
+    cleaned_receipt = {
+        "tax": 0,
+        "items": []
+    }
+
+    i = 0
+    while i < len(receipt_lines):
+        line = receipt_lines[i]
+
+        if len(receipt_lines[i]) == 0:
+            i += 1
+            continue
+        
+        # If line just contains a price and the next does not have a price, combine
+        if i < len(receipt_lines) - 1 and single_price_line(line) and item_line(receipt_lines[i+1]):
+            print("combine: ", receipt_lines[i] + receipt_lines[i+1])
+            cleaned_receipt['items'].append(receipt_lines[i] + receipt_lines[i+1])
+            cleaned_receipt['items'][-1][0] = extract_price(line[0])
+            i += 1
+        elif extract_price(line[0]) > -1 and len(line) > 1:
+            cleaned_receipt['items'].append(line)
+            cleaned_receipt['items'][-1][0] = extract_price(line[0])
+        
+        i += 1
+    
+    print("cleaned lines: ", cleaned_receipt['items'])
+    
+    for i in range(len(cleaned_receipt['items'])):
+        line = cleaned_receipt['items'][i]
+        if is_tax(line[1]):
+            cleaned_receipt['tax'] = line[0]
+            cleaned_receipt['items'].pop(i)
+            break
+    
+    cleaned_receipt['items'] = list(filter(lambda line: not is_extra_info(line[1]), cleaned_receipt['items']))
+    
+    return cleaned_receipt
+    
+    # ignore lines that:
+    #       have no words
+    #       have no numbers
+    #       have nothing with ".##" where # is a number
+    # first use regex to see if element contains a price
+    # see if non-price part of element could potentially be item name (longer than X characters, contains alphabetic characters)
+    # {
+    #     balance/total:
+    #     items: {
+    #           [[item name, price], [price, item name], [price, item name]]
+    #     }
+    # }    
+
 def scan_receipt(receipt_path, debug=False):
     """
     Given a path to a receipt image, return the lines of the receipt.
@@ -111,8 +211,9 @@ def scan_receipt(receipt_path, debug=False):
         )
 
     receipt_lines = get_receipt_lines(result, image.size[1] * 0.01)
+    cleaned_lines = clean_receipt_lines(receipt_lines)
 
-    return receipt_lines
+    return cleaned_lines
 
 if __name__ == "__main__":
     import argparse

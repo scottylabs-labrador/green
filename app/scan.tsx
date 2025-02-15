@@ -10,7 +10,7 @@ export default function Page() {
   const [permission, requestPermission] = useCameraPermissions();
   const [imageUri, setImageUri] = useState(null);
   const cameraRef = useRef(null);
-  const [receiptLines, setReceiptLines] = useState([]);
+  const [receiptLines, setReceiptLines] = useState({});
 
   let RECEIPT_API_URL = 'http://127.0.0.1:8000/receiptLines';
 
@@ -53,7 +53,8 @@ export default function Page() {
         return response.json()
       }).then((data) => {
         console.log("data:", data);
-        setReceiptLines(data);
+        setReceiptLines(JSON.parse(data).items);
+        console.log(JSON.parse(data).items);
       });
     }
   }
