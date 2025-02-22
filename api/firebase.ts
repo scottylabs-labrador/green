@@ -5,6 +5,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
+  onAuthStateChanged,
 } from "firebase/auth";
 import { setPersistence, browserLocalPersistence } from "firebase/auth";
 import * as schema from "./classes";
@@ -37,13 +38,14 @@ const database = getDatabase(app);
 const auth = getAuth(app);
 
 // Set Auth Persistence
-setPersistence(auth, browserLocalPersistence)
-  .then(() => {
-    console.log("Auth persistence set to LOCAL");
-  })
-  .catch((error) => {
-    console.error("Error setting persistence:", error);
-  });
+
+// setPersistence(auth, browserLocalPersistence)
+//   .then(() => {
+//     console.log("Auth persistence set to LOCAL");
+//   })
+//   .catch((error) => {
+//     console.error("Error setting persistence:", error);
+//   });
 
 export { auth };
 
@@ -99,7 +101,9 @@ export function updateGroceryItem(id, name: string, quantity = 1) {
 
 export function updateGroceryItemGroceryList(grocerylist: string, id, name: string, quantity = 1, splits = [], member: string) {
   const db = getDatabase();
-  let num = splits.push(member);
+  if (!splits.includes(member)){
+    let num = splits.push(member);
+  }
   update(ref(db, "grocerylists/" +grocerylist+"/groceryitems/" + id), {
     name: name,
     quantity: quantity,
@@ -218,3 +222,4 @@ export function getCurrentUser() {
   const user = auth.currentUser;
   return user;
 }
+
