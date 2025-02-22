@@ -128,7 +128,8 @@ def clean_receipt_lines(receipt_lines):
     # receipt_lines = list(reversed(receipt_lines))
     cleaned_receipt = {
         "tax": 0,
-        "items": []
+        "items": {} # item: price
+                    # item: price
     }
 
     i = 0
@@ -142,25 +143,35 @@ def clean_receipt_lines(receipt_lines):
         # If line just contains a price and the next does not have a price, combine
         if i < len(receipt_lines) - 1 and single_price_line(line) and item_line(receipt_lines[i+1]):
             print("combine: ", receipt_lines[i] + receipt_lines[i+1])
-            cleaned_receipt['items'].append(receipt_lines[i] + receipt_lines[i+1])
-            cleaned_receipt['items'][-1][0] = extract_price(line[0])
+            # cleaned_receipt['items'].append(receipt_lines[i] + receipt_lines[i+1])
+            # cleaned_receipt['items'][-1][0] = extract_price(line[0])
+            cleaned_receipt['items'][receipt_lines[i+1]] = extract_price(line[0])
             i += 1
         elif extract_price(line[0]) > -1 and len(line) > 1:
-            cleaned_receipt['items'].append(line)
-            cleaned_receipt['items'][-1][0] = extract_price(line[0])
+            # cleaned_receipt['items'].append(line)
+            # cleaned_receipt['items'][-1][0] = extract_price(line[0])
+            cleaned_receipt['items'][receipt_lines[i+1][1]] = extract_price(line[0])
         
         i += 1
     
     print("cleaned lines: ", cleaned_receipt['items'])
     
-    for i in range(len(cleaned_receipt['items'])):
-        line = cleaned_receipt['items'][i]
-        if is_tax(line[1]):
-            cleaned_receipt['tax'] = line[0]
-            cleaned_receipt['items'].pop(i)
-            break
+    # for i in range(len(cleaned_receipt['items'])):
+    #     line = cleaned_receipt['items'][i]
+    #     if is_tax(line[1]):
+    #         cleaned_receipt['tax'] = line[0]
+    #         cleaned_receipt['items'].pop(i)
+    #         break
+
+    for key, value in list(cleaned_receipt['items'].items()):  # Iterate over a copy to avoid modification issues
+        if is_tax(value[1]):  # Assuming `value` is a tuple or list and tax info is in index 1
+            cleaned_receipt['tax'] = value[0]  # Store tax value
+            del cleaned_receipt['items'][key]  # Remove the item
+            break  # Stop after the first match
     
-    cleaned_receipt['items'] = list(filter(lambda line: not is_extra_info(line[1]), cleaned_receipt['items']))
+    cleaned_receipt['items'] = {
+        key: value for key, value in cleaned_receipt['items'].items() if not is_extra_info(value[1])
+    }    
     
     return cleaned_receipt
     
