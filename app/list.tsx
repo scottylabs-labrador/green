@@ -7,6 +7,9 @@ import NavBar from '../components/NavBar';
 import GroceryItem from '../components/GroceryItem';
 import Button from '../components/CustomButton';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { getCurrentUser } from "../api/firebase";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { onAuthChange } from '../api/auth';
 
 export default function List() {
     // TODO: Implement the list page
@@ -17,7 +20,80 @@ export default function List() {
     const [modalVisible, setModalVisible] = useState(false);
     const [item, setItem] = useState('');
     const [grocerylist, onChangeList] = useState("");
+    const [email, setemail] = useState("email");
+    const [membercolors, setmembercolor] = useState({});
     const db = getDatabase();
+    const [colors, setcolors] = useState({});
+    const [gottenuser, setusergotten] = useState(0);
+
+    const navigation = useNavigation();
+
+    // onAuthChange((user) => {
+    //     // setusergotten(gottenuser + 1);
+    // });
+
+    useEffect(() => {
+        const colorsget = onAuthChange((user) => {
+            if (user) {
+                console.log("Here try get user email");
+                let email = getCurrentUser().email;
+                console.log("user email: " + email);
+                var emailParts = email.split(".");
+                var filteredEmail = emailParts[0]+":"+emailParts[1];
+                console.log("filteredEmail: " + filteredEmail);
+                setemail(filteredEmail);
+                try {
+                  const itemRef = ref(db, 'housemates/' + filteredEmail);
+                  var houses;
+                  onValue(itemRef, (snapshot) => {
+                    try {
+                        const data = snapshot.val();
+                        houses = (data.houses[0]).toString();
+                        console.log("houses: " + houses);
+                    }
+                    catch {
+                        console.log("failed to get houses");
+                        // setusergotten(gottenuser + 1);
+                    }
+                  });
+                  const houseRef = ref(db, 'houses/' + houses);
+                  onValue(houseRef, (snapshot) => {
+                    try {
+                        const data = snapshot.val();
+                        console.log("data: " + data);
+                        var members = data.members;
+                        console.log("members: ");
+                        console.log(members);
+                        // var keys = Object.keys(members);
+                        // var memcolors = {};
+                        // for (let i = 0; i < keys.length; i++) {
+                        //     memcolors[keys[i]] = members[keys[i]].color;
+                        // }
+                        // console.log(memcolors);
+                        setcolors(members);
+                    }
+                    catch {
+                        console.log("failed to get members from house");
+                        setusergotten(gottenuser + 1);
+                    }
+                  });
+                }
+                catch {
+                    console.log("failed to get user");
+                    setusergotten(gottenuser + 1);
+                }
+            } else {
+                console.log("no user");
+                window.location.href = "/login"; // Redirect if not logged in
+            }
+          }
+        );
+      
+        return () => colorsget();
+      }, [gottenuser]);
+
+    
+
 
     useEffect(() => {
         const queryString = window.location.search;
@@ -31,6 +107,7 @@ export default function List() {
                 setGroceryItems(data);
             }
         });
+
         return () => fetchData();
 
     }, [db]);
@@ -45,14 +122,19 @@ export default function List() {
                 key={item}
                 grocerylist={grocerylist}
                 id={item}
+                // membercolors = {colors}
                 name={groceryItems[item].name}
                 quantity={groceryItems[item].quantity}
+                splits = {groceryItems[item].splits}
+                member = {email}
+                colors = {colors}
             />
         );
     }
 
     const writeItem = () => {
-        writeGroceryItemGrocerylist(grocerylist, item);
+        console.log("Write " +email);
+        writeGroceryItemGrocerylist(grocerylist, item, email);
         setItem('');
         toggleModal();
     }
