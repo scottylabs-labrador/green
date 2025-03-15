@@ -1,18 +1,40 @@
 
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useState } from 'react';
+import { getCurrentUser, auth, database } from "../api/firebase";
+import { onAuthChange } from "../api/auth";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { getDatabase, ref, set, push, onValue, get, child, update } from "firebase/database";
 import { Button, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 export default function Page() {
+  const [email, setEmail] = useState("");
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
   const [imageUri, setImageUri] = useState(null);
   const cameraRef = useRef(null);
   const [receiptLines, setReceiptLines] = useState({});
+  // const [groceryItems, setGroceryItems] = useState([]);
 
   let RECEIPT_API_URL = 'http://127.0.0.1:8000/receiptLines';
+
+  type groceryListType = {
+    name: String, 
+    quantity: number, 
+    splits: String[]
+  }
+
+  onAuthChange((user) => {
+    if (user) {
+      setEmail(user.email);
+    }
+    else {
+      console.log("no user");
+      window.location.href = "/login"; // Redirect if not logged in
+    }
+  });
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -28,6 +50,58 @@ export default function Page() {
       </View>
     );
   }
+
+  // async function getGroceryItems() {
+  //   if (email) {
+  //     const db = getDatabase();
+  //     var emailParts = email.split(".");
+  //     var filteredEmail = emailParts[0] + ":" + emailParts[1];
+  //     const dbRef = ref(db);
+  //     get(child(dbRef, `housemates/${filteredEmail}`))
+  //       .then((snapshot) => {
+  //         if (snapshot.exists()) {
+  //           const data = snapshot.val();
+  //           // console.log("data for house:" + data.houses[0].toString());
+  //           let houses = data.houses[0].toString();
+  //           const houseRef = child(dbRef, `houses/${houses}`);
+  //           return get(houseRef);
+  //         }
+  //         else {
+  //           console.log("failed to get houses");
+  //           return Promise.reject("no house found");
+  //         }
+  //       })
+  //       .then((snapshot) => {
+  //         if (snapshot.exists()) {
+  //           const data = snapshot.val();
+  //           // console.log("data for grocery lists:" + data.grocerylist);
+  //           let groceryList = data.grocerylist;
+  //           const itemRef = child(dbRef, `grocerylists/${groceryList}`);
+  //           return get(itemRef);
+  //         }
+  //         else {
+  //           console.log("failed to get grocery list");
+  //           return Promise.reject("no grocery list")
+  //         }
+  //       })
+  //       .then((snapshot) => {
+  //         if (snapshot.exists()) {
+  //           const data = snapshot.val();
+  //           // console.log("data for list items:" + JSON.stringify(data.groceryitems));
+  //           let items = [];
+  //           for (const [_, value] of Object.entries(data.groceryitems)) {
+  //             items.push((value as groceryListType).name);
+  //           }
+  //           console.log("grocery items:", items);
+  //           return items;
+  //         }
+  //         else {
+  //           console.log("failed to get grocery items");
+  //           return Promise.reject("no grocery items")
+  //         }
+  //       });
+  //   }
+  // }
 
   function toggleCameraFacing() {
     setFacing(current => (current === 'back' ? 'front' : 'back'));
@@ -55,7 +129,12 @@ export default function Page() {
         console.log("data:", data);
         setReceiptLines(JSON.parse(data).items);
         console.log(JSON.parse(data).items);
+        // return JSON.parse(data).items;
       });
+      // .then(async (items) => {
+      //   let groceryItems = await getGroceryItems();
+      //   console.log("got these items:", groceryItems);
+      // });
     }
   }
 

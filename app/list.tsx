@@ -4,6 +4,7 @@ import { getDatabase, ref, set, push, onValue, get, remove} from "firebase/datab
 import { removeGroceryItem, writeGroceryItem, updateGroceryItem, writeGroceryItemGrocerylist } from "../api/firebase";
 import { Link } from "expo-router"; 
 import NavBar from '../components/NavBar';
+import { getCurrentUser } from "../api/firebase";
 import GroceryItem from '../components/GroceryItem';
 import Button from '../components/CustomButton';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
