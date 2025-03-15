@@ -35,6 +35,8 @@ const database = getDatabase(app);
 // Initialize Firebase Auth
 const auth = getAuth(app);
 
+export { database, auth };
+
 export function writeUserData(
   name: string,
   email: string,
