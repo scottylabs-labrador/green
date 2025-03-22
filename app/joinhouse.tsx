@@ -10,11 +10,13 @@ import "../main.css";
 import { writeGroceryItem } from "../api/firebase";
 import CustomButton from "../components/CustomButton";
 import LinkButton from "../components/LinkButton";
+import { onAuthChange } from "../api/auth";
 
 export default function Page() {
     // TODO: Implement the list page
     // Display a list of grocery items
     // Allow users to add, remove, and update items
+    const db = getDatabase();
     const [code, onChangeCode] = useState('');
     const [housecode, onHouseCodeChange] = useState('');
     const [members, setMembersHouse] = useState([]);
@@ -28,8 +30,28 @@ export default function Page() {
 
     let user;
     useEffect(() => {
+        const getuser = onAuthChange((user) => {
+            if (user) {
+                console.log("Here try get user email");
+                let email = getCurrentUser().email;
+                console.log("user email: " + email);
+                var emailParts = email.split(".");
+                var filteredEmail = emailParts[0]+":"+emailParts[1];
+                console.log("filteredEmail: " + filteredEmail);
+                setemail(filteredEmail);
+                setuserid(filteredEmail);
+            } else {
+                console.log("no user");
+                window.location.href = "/login"; // Redirect if not logged in
+            }
+        }
+        );
+
+        return () => getuser();
+    }, []);
+
+    useEffect(() => {
         const fetchData = () => {
-            const db = getDatabase();
             const queryString = window.location.search;
             const urlParams = new URLSearchParams(queryString);
             const code = urlParams.get('key');
@@ -50,15 +72,6 @@ export default function Page() {
         }
 
         fetchData();
-        user = getCurrentUser();
-        try{
-            var emailparts = user.email.split(".")
-            var filteredemail = emailparts[0]+":"+emailparts[1]
-            setemail(filteredemail);
-        }
-        catch{
-
-        }
     }, [housecode]); 
 
     // Scuffed
@@ -78,6 +91,8 @@ export default function Page() {
                     const data = snapshot.val();
                     setusername(data.name);
                     setuserid(email);
+                    console.log(data.name);
+                    console.log(email);
                 }
                 catch{}
             });
@@ -103,6 +118,8 @@ export default function Page() {
         update(anotherplr, {
             houses:[code]
         });
+        console.log(code);
+        console.log(userid);
 
         window.location.href ='/list?grocerylist='+grocerylistid;
     }

@@ -1,0 +1,112 @@
+import { View, Text, Pressable, ScrollView, Modal, FlatList, TextInput} from 'react-native';
+import React, { useState, useEffect} from 'react';
+import { getDatabase, ref, set, push, onValue, get, remove} from "firebase/database";
+import { removeGroceryItem, writeGroceryItem, updateGroceryItem, writeGroceryItemGrocerylist } from "../api/firebase";
+import { Link } from "expo-router"; 
+import NavBar from '../components/NavBar';
+import GroceryItem from '../components/GroceryItem';
+import Button from '../components/CustomButton';
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { getCurrentUser } from "../api/firebase";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { onAuthChange } from '../api/auth';
+import HouseInfo from '../components/HouseInfo';
+
+export default function Home() {
+  // TODO: Home page
+  // Should this exist for users who
+
+    const [name, setName] = useState("Name");
+    const [color, setColor] = useState("000000");
+    const [grocerylist, onChangeList] = useState("");
+    const [actualemail, setactualemail] = useState("email");
+    const [email, setemail] = useState("email");
+    const [housename, sethousename] = useState("House Name");
+    const [houseid, sethouseid] = useState("House id");
+    const [members, setmembers] = useState({});
+    const db = getDatabase();
+    const [gottenuser, setusergotten] = useState(0);
+  
+      // onAuthChange((user) => {
+      //     // setusergotten(gottenuser + 1);
+      // });
+  
+    useEffect(() => {
+        const colorsget = onAuthChange((user) => {
+            if (user) {
+                console.log("Here try get user email");
+                let email = getCurrentUser().email;
+                setactualemail(email);
+                console.log("user email: " + email);
+                var emailParts = email.split(".");
+                var filteredEmail = emailParts[0]+":"+emailParts[1];
+                console.log("filteredEmail: " + filteredEmail);
+                setemail(filteredEmail);
+                try {
+                const itemRef = ref(db, 'housemates/' + filteredEmail);
+                var houses;
+                onValue(itemRef, (snapshot) => {
+                    try {
+                        const data = snapshot.val();
+                        houses = (data.houses[0]).toString();
+                        console.log("houses: " + houses);
+                        sethouseid(houses);
+                    }
+                    catch {
+                        console.log("failed to get houses");
+                    }
+                });
+                const houseRef = ref(db, 'houses/' + houses);
+                onValue(houseRef, (snapshot) => {
+                    try {
+                        const data = snapshot.val();
+                        console.log("data: " + data);
+                        var members = data.members;
+                        var housename = data.name;
+                        console.log("members: ");
+                        console.log(members);
+                        console.log(housename);
+                        setName(members[filteredEmail]["name"]);
+                        setColor(members[filteredEmail]["color"]);
+                        sethousename(housename);
+                        setmembers(members);
+                    }
+                    catch {
+                        console.log("failed to get info from houses");
+                        setusergotten(gottenuser + 1);
+                    }
+                });
+                }
+                catch {
+                    console.log("failed to get user");
+                    setusergotten(gottenuser + 1);
+                }
+            } else {
+                console.log("no user");
+                window.location.href = "/login"; // Redirect if not logged in
+            }
+        }
+        );
+
+        return () => colorsget();
+    }, [gottenuser]);
+
+  return (
+    <View className="flex-1 items-center justify-start p-6">
+      <View className="pt-20 flex justify-center items-center max-w-lg w-full gap-1">
+        <div className="ml-1 w-32 h-32 rounded-full self-center flex items-center justify-center" style={{ backgroundColor: "#"+ color}}>
+            <Text className="flex-1 text-5xl text-left w-1/2 self-center text-center text-white">{name[0].toUpperCase()}</Text>
+        </div>
+        <Text className="pt-2 text-4xl font-bold text-center">{name}</Text>
+        <Text className="text-2xl text-center text-gray pb-4">{actualemail}</Text>
+        <HouseInfo
+          name={housename}
+          houseid={houseid}
+          members={members}
+        />
+        <NavBar grocerylist_id = {""}/>
+      </View>
+    </View>
+    
+  );
+}

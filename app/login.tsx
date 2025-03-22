@@ -5,6 +5,7 @@ import { getDatabase, ref, set, push, onValue, get, update } from "firebase/data
 import React, { useState, useCallback } from "react";
 import { useRouter } from "expo-router";
 import Button from "../components/CustomButton";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 async function handleSubmit(email: string, password: string) {
   try {
@@ -26,6 +27,14 @@ export default function Login() {
   const [errorText, onChangeErrorText] = useState("");
   const router = useRouter();
   const db = getDatabase();
+  
+  const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("user signed in: ", user);
+        window.location.href = "/list";
+      }
+    });
 
   return (
     <KeyboardAvoidingView className="flex-1 w-full padding-24" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
