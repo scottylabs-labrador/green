@@ -25,6 +25,7 @@ export default function List() {
     const db = getDatabase();
     const [colors, setcolors] = useState({});
     const [gottenuser, setusergotten] = useState(0);
+    const [house, setHouseId] = useState("");
 
     const navigation = useNavigation();
 
@@ -174,7 +175,7 @@ export default function List() {
                     </View>
                 )}
             </View>
-            <NavBar />
+            <NavBar grocerylist_id = {grocerylist}/>
 
             <Link href="/" asChild>
                 <Pressable 

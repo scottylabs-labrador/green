@@ -1,12 +1,18 @@
 import { Text, View, TouchableOpacity, TextInput } from "react-native";
 import React, { useState, useCallback } from "react";
 import LinkButton from "../components/LinkButton";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "../main.css";
-
 export default function Home() {
   // TODO: Home page
   // Should this exist for users who
-
+  const auth = getAuth();
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      console.log("user signed in: ", user);
+      window.location.href = "/list";
+    }
+  });
   return (
     <View className="flex-1 items-center justify-center p-6">
       <View className="flex justify-center items-center max-w-lg w-full gap-6">
