@@ -4,15 +4,15 @@ import { getDatabase, ref, set, push, onValue, get } from "firebase/database";
 import { Link } from "expo-router"; 
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import NavBar from '../components/NavBar';
-import ReceiptItem from '../components/ReceiptItem';
+import MatchedItem from '../components/MatchedItem';
+import CustomButton from "../components/CustomButton";
 
-export default function Bill() {
+export default function MatchedBill() {
     // TODO: Implement the bill page
     // Returns an assignment of receipt items to grocery items,
     // also might have popups to resolve any unknown items.
 
     const [matchedItems, setMatchedItems] = useState([]);
-    const [unmatchedItems, setUnmatchedItems] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [receiptId, setReceiptId] = useState('');
     const [item, onChangeItem] = useState('');
@@ -30,10 +30,6 @@ export default function Bill() {
                 const data = snapshot.val();
                 setMatchedItems(data);
             });
-            get(unmatchedItemRef).then((snapshot) => {
-                const data = snapshot.val();
-                setUnmatchedItems(data);
-            });
         }
         fetchData();
     }, [db]);
@@ -44,26 +40,12 @@ export default function Bill() {
 
     const renderMatchedItem = ({ item }) => {
         return (
-            <ReceiptItem
+            <MatchedItem
                 key={item}
                 id={item}
                 name={matchedItems[item].name}
                 // quantity={matchedItems[item].quantity}
                 price={matchedItems[item].quantity}
-                matched={true}
-                receiptId={receiptId}
-            />
-        );
-    }
-    const renderUnmatchedItem = ({ item }) => {
-        return (
-            <ReceiptItem
-                key={item}
-                id={item}
-                name={unmatchedItems[item].name}
-                // quantity={matchedItems[item].quantity}
-                price={unmatchedItems[item].quantity}
-                matched={false}
                 receiptId={receiptId}
             />
         );
@@ -75,28 +57,14 @@ export default function Bill() {
         <View className="flex-1 w-full h-full bg-[#6d0846]">
             <View className="mt-14 mb-6 w-fit gap-2 self-center">
                 <Text className="text-1xl text-center text-white font-medium">Scanned Receipt</Text>
-                <Text className="text-4xl text-center text-white font-medium">Here's what we got.</Text>
-                <View className="flex-row mt-1 w-[85%] self-center">
+                <Text className="text-4xl text-center text-white font-medium">List 423 Matched</Text>
+                <View className="flex-row mt-1 w-[90%] self-center">
                     <Text className="text-1xl text-left grow text-white font-light">Cross-referenced with list 4.23.24</Text>
                     <Text className="text-1xl text-right text-white font-light">Change</Text>
                 </View>
             </View>
-            <View className="flex gap-4 w-full h-[200px] flex-grow bg-white self-end rounded-t-[40px] px-4 pt-6 pb-24 overflow-hidden ">
-                {Object.keys(unmatchedItems).length > 0 ? (
-                    <View className="h-1/2">
-                        <Text className="text-1xl text-left font-medium text-black w-1/2 mx-4 mb-4">Unmatched Items:</Text>
-                        <FlatList 
-                            className="h-full"
-                            data={Object.keys(unmatchedItems)}
-                            renderItem={renderUnmatchedItem}
-                            keyExtractor={item => item}
-                    />
-                    </View>
-                ) : (
-                    <View></View>
-                )}
-                <View className="h-1/2">
-                    <Text className="text-1xl text-left font-medium text-black w-1/2 mx-4 mb-4">Matched Items:</Text>
+            <View className="flex gap-4 w-full h-[200px] flex-grow bg-white self-end rounded-t-[40px] rounded-b-3xl px-4 pt-6 pb-24 overflow-hidden mb-24">
+                <View className="flex-grow">
                     {Object.keys(matchedItems).length > 0 ? (
                         <FlatList 
                             className="h-full"
@@ -109,6 +77,16 @@ export default function Bill() {
                             <Text className="text-3xl font-semibold text-center">Your list is empty!</Text>
                         </View>
                     )}
+                </View>
+                <View className="h-20 absolute bottom-0 left-0 w-full px-4 py-2">
+                  <View className="flex-col ab">
+                    <Text className="font-semibold">Sort by:</Text>
+                  </View>
+                  <Pressable 
+                      className="w-fit h-8 items-center justify-center self-end bg-emerald-900 hover:bg-gray-600 py-2.5 px-4 rounded-lg"
+                  >
+                      <Text className="text-white text-center self-center">Generate Totals</Text>
+                  </Pressable>
                 </View>
             </View>
             <NavBar />

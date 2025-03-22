@@ -8,9 +8,10 @@ type ReceiptItemProps = {
   name: string;
   price: number;
   matched: boolean;
+  receiptId: string;
 };
 
-const ReceiptItem = ({ id, name, price, matched }: ReceiptItemProps) => {
+const ReceiptItem = ({ id, name, price, matched, receiptId }: ReceiptItemProps) => {
   return (
     <View className={
       `flex-row items-center justify-center w-[90%] h-12 self-center my-2 px-2 gap-3 border border-gray-300 rounded-lg +
