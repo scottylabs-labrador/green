@@ -10,9 +10,9 @@ export const matchWords = (receiptItems, groceryListItems, threshold = 0.3) => {
 
         if (bestMatch) {
             usedWords.add(bestMatch.item);
-            return { word, bestMatch: bestMatch.item }; // word is from the receiptItems, bestMatch is from groceryListItems
+            return { receiptItem: word, groceryItem: bestMatch.item }; // word is from the receiptItems, bestMatch is from groceryListItems
         }
-        return { word, bestMatch: null };
+        return { receiptItem: word, groceryItem: null };
     });
 };
 
