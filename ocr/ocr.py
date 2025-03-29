@@ -154,7 +154,8 @@ def clean_receipt_lines(receipt_lines):
         
         i += 1
     
-    print("cleaned lines: ", cleaned_receipt['items'])
+    print("cleaned lines:", cleaned_receipt['items'])
+    print("cleaned receipt:", cleaned_receipt)
     
     # for i in range(len(cleaned_receipt['items'])):
     #     line = cleaned_receipt['items'][i]

@@ -6,7 +6,7 @@ import { Octicons } from '@expo/vector-icons';
 import NavBar from '../../components/NavBar';
 import ReceiptItem from '../../components/ReceiptItem';
 
-export default function UnmatchedItem() {
+export default function UnmatchedItem( receiptId ) {
     const { item_id } = useLocalSearchParams();
     const [itemName, setItemName] = useState('');
     const [matchedItems, setMatchedItems] = useState([]);
