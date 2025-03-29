@@ -2,11 +2,13 @@
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import React, { useRef, useState, useEffect } from 'react';
 import { onAuthChange } from "../api/auth";
-import { getCurrentUser } from "../api/firebase";
+import { getCurrentUser, writeMatches } from "../api/firebase";
 import { getDatabase, ref, set, push, onValue, get, remove, child } from "firebase/database";
 import { Button, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { matchWords } from '../api/receipt';
+import { useRouter } from 'expo-router';
+import * as crypto from "crypto";
 
 export default function Page() {
   const [email, setEmail] = useState("");
@@ -17,6 +19,7 @@ export default function Page() {
   const [receiptLines, setReceiptLines] = useState([]);
   const [groceryItems, setGroceryItems] = useState([]);
   const db = getDatabase();
+  const router = useRouter();
 
   let RECEIPT_API_URL = 'http://127.0.0.1:8000/receiptLines';
 
@@ -123,8 +126,15 @@ export default function Page() {
       }).then((data) => {
         console.log("data:", data);
         let receiptLines = JSON.parse(data).items;
-        console.log(matchWords(Object.keys(receiptLines), groceryItems));
-      })
+        let receiptItems= matchWords(receiptLines, groceryItems);
+        console.log(receiptItems);
+        const receiptId = window.crypto.randomUUID();
+        writeMatches(receiptId, receiptItems);
+        router.push(
+          {pathname: '/bill', 
+           params: { receiptId: receiptId }
+          });
+      });
       // .then((receipt) => {
 
       // })

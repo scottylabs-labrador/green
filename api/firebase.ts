@@ -183,6 +183,15 @@ export function writeGroceryList(grocerylist, name) {
   return postListRef;
 }
 
+export function writeMatches(receiptId, receiptItems) {
+  const db = getDatabase();
+  const postReceiptRef = ref(db, 'receipts/' + receiptId);
+  set(postReceiptRef, {
+    receiptitems: receiptItems
+  });
+  return postReceiptRef;
+}
+
 export async function createUser(
   name: string,
   phone_number: string,

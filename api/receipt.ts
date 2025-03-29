@@ -4,7 +4,7 @@ export const matchWords = (receiptItems, groceryListItems, threshold = 0.3) => {
     const fuse = new Fuse(groceryListItems, { threshold });
     const usedWords = new Set();
 
-    return receiptItems.map(word => {
+    return Object.keys(receiptItems).map(word => {
         const results = fuse.search(word);
         const bestMatch = results.find(r => !usedWords.has(r.item));
 
@@ -12,7 +12,7 @@ export const matchWords = (receiptItems, groceryListItems, threshold = 0.3) => {
             usedWords.add(bestMatch.item);
             return { receiptItem: word, groceryItem: bestMatch.item }; // word is from the receiptItems, bestMatch is from groceryListItems
         }
-        return { receiptItem: word, groceryItem: null };
+        return { receiptItem: word, groceryItem: "", price: receiptItems[word] };
     });
 };
 

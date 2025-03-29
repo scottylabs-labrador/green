@@ -3,6 +3,8 @@ import React, { useState, useCallback } from "react";
 import LinkButton from "../components/LinkButton";
 import "../main.css";
 
+// const Stack = createStackNavigator();
+
 export default function Home() {
   // TODO: Home page
   // Should this exist for users who

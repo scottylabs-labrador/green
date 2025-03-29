@@ -5,34 +5,47 @@ import { Link } from "expo-router";
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import NavBar from '../components/NavBar';
 import ReceiptItem from '../components/ReceiptItem';
+import { useLocalSearchParams } from "expo-router"; 
 
 export default function Bill() {
     // TODO: Implement the bill page
     // Returns an assignment of receipt items to grocery items,
     // also might have popups to resolve any unknown items.
+    const { receiptId } = useLocalSearchParams();
+    console.log("receiptid: ", receiptId);
 
     const [matchedItems, setMatchedItems] = useState([]);
     const [unmatchedItems, setUnmatchedItems] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
-    const [receiptId, setReceiptId] = useState('');
+    // const [receiptId, setReceiptId] = useState('');
     const [item, onChangeItem] = useState('');
     const db = getDatabase();
+    
 
     useEffect(() => {
         const fetchData = () => {
-            const queryString = window.location.search;
-            const urlParams = new URLSearchParams(queryString);
-            const receiptId = urlParams.get('grocerylist');
-            setReceiptId(receiptId);
-            const matchedItemRef = ref(db, "grocerylists/"+receiptId+"/groceryitems");
-            const unmatchedItemRef = ref(db, "grocerylists/"+receiptId+"/groceryitems");
-            get(matchedItemRef).then((snapshot) => {
+            const receiptItemRef = ref(db, "receipts/"+receiptId+"/receiptitems");
+            get(receiptItemRef).then((snapshot) => {
                 const data = snapshot.val();
-                setMatchedItems(data);
-            });
-            get(unmatchedItemRef).then((snapshot) => {
-                const data = snapshot.val();
-                setUnmatchedItems(data);
+                let unmatched = [];
+                let matched = [];
+                for (let i = 0; i < data.length; i++) {
+                    console.log("item: ", data[i].groceryItem, typeof data[i].groceryItem);
+                    if (data[i].groceryItem.length == 0) {
+                        unmatched.push(data[i]);
+                        // setUnmatchedItems([...unmatchedItems, data[i]]);
+                        console.log("unmatched: ", data[i], unmatched);
+                    }
+                    else {
+                        matched.push(data[i]);
+                        // setMatchedItems([...matchedItems, data[i]]);
+                        console.log("matched: ", data[i]);
+                    }
+                }
+                setUnmatchedItems(unmatched);
+                setMatchedItems(matched);
+                console.log("receipt items: ", data);
+                // setMatchedItems(data);
             });
         }
         fetchData();
@@ -47,9 +60,9 @@ export default function Bill() {
             <ReceiptItem
                 key={item}
                 id={item}
-                name={matchedItems[item].name}
+                name={item.groceryItem}
                 // quantity={matchedItems[item].quantity}
-                price={matchedItems[item].quantity}
+                price={item.price}
                 matched={true}
                 receiptId={receiptId}
             />
@@ -60,9 +73,9 @@ export default function Bill() {
             <ReceiptItem
                 key={item}
                 id={item}
-                name={unmatchedItems[item].name}
+                name={item.receiptItem}
                 // quantity={matchedItems[item].quantity}
-                price={unmatchedItems[item].quantity}
+                price={item.price}
                 matched={false}
                 receiptId={receiptId}
             />
@@ -82,12 +95,12 @@ export default function Bill() {
                 </View>
             </View>
             <View className="flex gap-4 w-full h-[200px] flex-grow bg-white self-end rounded-t-[40px] px-4 pt-6 pb-24 overflow-hidden ">
-                {Object.keys(unmatchedItems).length > 0 ? (
+                {unmatchedItems.length > 0 ? (
                     <View className="h-1/2">
                         <Text className="text-1xl text-left font-medium text-black w-1/2 mx-4 mb-4">Unmatched Items:</Text>
                         <FlatList 
                             className="h-full"
-                            data={Object.keys(unmatchedItems)}
+                            data={unmatchedItems}
                             renderItem={renderUnmatchedItem}
                             keyExtractor={item => item}
                     />
@@ -97,10 +110,10 @@ export default function Bill() {
                 )}
                 <View className="h-1/2">
                     <Text className="text-1xl text-left font-medium text-black w-1/2 mx-4 mb-4">Matched Items:</Text>
-                    {Object.keys(matchedItems).length > 0 ? (
+                    {matchedItems.length > 0 ? (
                         <FlatList 
                             className="h-full"
-                            data={Object.keys(matchedItems)}
+                            data={matchedItems}
                             renderItem={renderMatchedItem}
                             keyExtractor={item => item}
                         />
