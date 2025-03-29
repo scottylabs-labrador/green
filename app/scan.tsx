@@ -122,12 +122,7 @@ export default function Page() {
         return response.json()
       }).then((data) => {
         console.log("data:", data);
-        setReceiptLines(JSON.parse(data).items);
-
-        for (const [key, value] of Object.entries(groceryItems)) {
-          groceryItems.push(value.name) // fix the type later 
-        }
-
+        let receiptLines = JSON.parse(data).items;
         console.log(matchWords(Object.keys(receiptLines), groceryItems));
       })
       // .then((receipt) => {
