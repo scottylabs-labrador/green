@@ -130,7 +130,7 @@ export default function Page() {
         console.log(receiptItems);
         const receiptId = window.crypto.randomUUID();
         writeMatches(receiptId, receiptItems);
-        router.push(
+        router.replace(
           {pathname: '/bill', 
            params: { receiptId: receiptId }
           });

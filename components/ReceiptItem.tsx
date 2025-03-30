@@ -18,7 +18,7 @@ const ReceiptItem = ({ id, name, price, matched, receiptId }: ReceiptItemProps) 
       ${matched ? 'bg-white' : 'bg-[#e9b79f]'}`
       }>
         <Text className="text-1xl grow text-left w-1/2 self-center">{name}</Text>
-        <Text className="text-1xl w-1/8 self-center">{price}</Text>
+        <Text className="text-1xl w-1/8 self-center">${price}</Text>
         {matched ? (
           <Ionicons
             name="pencil" 
@@ -26,7 +26,10 @@ const ReceiptItem = ({ id, name, price, matched, receiptId }: ReceiptItemProps) 
             color="black"
             className="w-1/8 p-2"/>
         ) : (
-          <Link href={'/unmatched/' + id}>
+          <Link href={{
+            pathname: '/unmatched/', 
+            params: { itemId: id, receiptId: receiptId },
+            }}>
             <Ionicons
               name="pencil" 
               size={16} 

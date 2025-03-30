@@ -4,7 +4,7 @@ export const matchWords = (receiptItems, groceryListItems, threshold = 0.3) => {
     const fuse = new Fuse(groceryListItems, { threshold });
     const usedWords = new Set();
 
-    return Object.keys(receiptItems).map(word => {
+    let listOfItems = Object.keys(receiptItems).map(word => {
         const results = fuse.search(word);
         const bestMatch = results.find(r => !usedWords.has(r.item));
 
@@ -14,6 +14,12 @@ export const matchWords = (receiptItems, groceryListItems, threshold = 0.3) => {
         }
         return { receiptItem: word, groceryItem: "", price: receiptItems[word] };
     });
+
+    return listOfItems.reduce((obj, item) => {
+        let itemId = window.crypto.randomUUID();
+        obj[itemId] = item;
+        return obj;
+    }, {});
 };
 
 // https://chatgpt.com/c/67b11891-1e2c-8009-86bf-ee0c7c6b02a8
