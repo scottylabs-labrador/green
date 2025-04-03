@@ -3,6 +3,7 @@ import React, { useState, useCallback } from "react";
 import LinkButton from "../components/LinkButton";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "../main.css";
+
 export default function Home() {
   // TODO: Home page
   // Should this exist for users who

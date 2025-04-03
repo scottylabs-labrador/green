@@ -5,34 +5,51 @@ import { Link } from "expo-router";
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import NavBar from '../components/NavBar';
 import ReceiptItem from '../components/ReceiptItem';
+import { useLocalSearchParams } from "expo-router"; 
 
 export default function Bill() {
     // TODO: Implement the bill page
     // Returns an assignment of receipt items to grocery items,
     // also might have popups to resolve any unknown items.
+    const { receiptId } = useLocalSearchParams();
+    console.log("receiptid: ", receiptId);
 
-    const [matchedItems, setMatchedItems] = useState([]);
-    const [unmatchedItems, setUnmatchedItems] = useState([]);
+    const [matchedItems, setMatchedItems] = useState({});
+    const [unmatchedItems, setUnmatchedItems] = useState({});
     const [modalVisible, setModalVisible] = useState(false);
+    // const [receiptId, setReceiptId] = useState('');
     const [item, onChangeItem] = useState('');
+    const db = getDatabase();
+    
 
     useEffect(() => {
         const fetchData = () => {
-            const db = getDatabase();
-            const matchedItemRef = ref(db, 'groceryitems/');
-            const unmatchedItemRef = ref(db, 'groceryitems/');
-            get(matchedItemRef).then((snapshot) => {
+            const receiptItemRef = ref(db, "receipts/"+receiptId+"/receiptitems");
+            get(receiptItemRef).then((snapshot) => {
                 const data = snapshot.val();
-                setMatchedItems(data);
-            });
-            get(unmatchedItemRef).then((snapshot) => {
-                const data = snapshot.val();
-                setUnmatchedItems(data);
+                let unmatched = {};
+                let matched = {};
+                for (const key of Object.keys(data)) {
+                    console.log("item: ", data[key].groceryItem, typeof data[key].groceryItem);
+                    if (data[key].groceryItem.length == 0) {
+                        unmatched[key] = data[key];
+                        // setUnmatchedItems([...unmatchedItems, data[i]]);
+                        console.log("unmatched: ", data[key], unmatched);
+                    }
+                    else {
+                        matched[key] = data[key];
+                        // setMatchedItems([...matchedItems, data[i]]);
+                        console.log("matched: ", data[key]);
+                    }
+                }
+                setUnmatchedItems(unmatched);
+                setMatchedItems(matched);
+                console.log("receipt items: ", data);
+                // setMatchedItems(data);
             });
         }
-
         fetchData();
-    }, [matchedItems, unmatchedItems]);
+    }, [db]);
 
     const toggleModal = () => {
         setModalVisible(!modalVisible);
@@ -43,10 +60,11 @@ export default function Bill() {
             <ReceiptItem
                 key={item}
                 id={item}
-                name={matchedItems[item].name}
+                name={matchedItems[item].groceryItem}
                 // quantity={matchedItems[item].quantity}
-                price={matchedItems[item].quantity}
+                price={matchedItems[item].price}
                 matched={true}
+                receiptId={receiptId}
             />
         );
     }
@@ -55,10 +73,11 @@ export default function Bill() {
             <ReceiptItem
                 key={item}
                 id={item}
-                name={matchedItems[item].name}
+                name={unmatchedItems[item].receiptItem}
                 // quantity={matchedItems[item].quantity}
-                price={matchedItems[item].quantity}
+                price={unmatchedItems[item].price}
                 matched={false}
+                receiptId={receiptId}
             />
         );
     }

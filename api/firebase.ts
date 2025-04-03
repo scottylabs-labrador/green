@@ -47,7 +47,7 @@ const auth = getAuth(app);
 //     console.error("Error setting persistence:", error);
 //   });
 
-export { auth };
+export { database, auth };
 
 export function writeUserData(
   name: string,
@@ -195,6 +195,22 @@ export function writeGroceryList(grocerylist, name) {
     groceryitems: 1
   })
   return postListRef;
+}
+
+export function writeMatches(receiptId, receiptItems) {
+  const db = getDatabase();
+  const postReceiptRef = ref(db, 'receipts/' + receiptId);
+  set(postReceiptRef, {
+    receiptitems: receiptItems
+  });
+  return postReceiptRef;
+}
+
+export function matchReceiptItem(receiptId, receiptItemId, groceryItemName) {
+  const db = getDatabase();
+  const updates = {};
+  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/groceryItem'] = groceryItemName;
+  return update(ref(db), updates);
 }
 
 export async function createUser(
