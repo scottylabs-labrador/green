@@ -5,6 +5,7 @@ import { writeUserData } from "../api/firebase";
 import { createUser } from "../api/firebase";
 import { useRouter } from "expo-router";
 import Button from "../components/CustomButton";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 async function handleSubmit(
   email: string,
@@ -53,6 +54,14 @@ export default function SignUp({ route, navigation, ...props }) {
   const [errorText, onChangeErrorText] = useState("");
   const router = useRouter();
 
+  const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("user signed in: ", user);
+        window.location.href = "/list";
+      }
+    });
+    
   return (
     <KeyboardAvoidingView className="flex-1 w-full padding-24" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView>

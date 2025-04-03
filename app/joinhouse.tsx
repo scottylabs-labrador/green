@@ -2,7 +2,7 @@
 import { Text, View, TextInput, TouchableOpacity} from "react-native";
 import { Link } from "expo-router";
 import React, { useState, useCallback , useEffect } from 'react';
-import { getDatabase, ref, set, push, onValue, get } from "firebase/database";
+import { getDatabase, ref, set, push, onValue, get, update } from "firebase/database";
 import { getCurrentUser } from "../api/firebase";
 import { router } from "expo-router"
 
@@ -10,14 +10,14 @@ import "../main.css";
 import { writeGroceryItem } from "../api/firebase";
 import CustomButton from "../components/CustomButton";
 import LinkButton from "../components/LinkButton";
+import { onAuthChange } from "../api/auth";
 
 export default function Page() {
     // TODO: Implement the list page
     // Display a list of grocery items
     // Allow users to add, remove, and update items
+    const db = getDatabase();
     const [code, onChangeCode] = useState('');
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
     const [housecode, onHouseCodeChange] = useState('');
     const [members, setMembersHouse] = useState([]);
     const [choosencolor, setColor] = useState([]);
@@ -30,22 +30,38 @@ export default function Page() {
 
     let user;
     useEffect(() => {
+        const getuser = onAuthChange((user) => {
+            if (user) {
+                console.log("Here try get user email");
+                let email = getCurrentUser().email;
+                console.log("user email: " + email);
+                var emailParts = email.split(".");
+                var filteredEmail = emailParts[0]+":"+emailParts[1];
+                console.log("filteredEmail: " + filteredEmail);
+                setemail(filteredEmail);
+                setuserid(filteredEmail);
+            } else {
+                console.log("no user");
+                window.location.href = "/login"; // Redirect if not logged in
+            }
+        }
+        );
+
+        return () => getuser();
+    }, []);
+
+    useEffect(() => {
         const fetchData = () => {
-            const db = getDatabase();
+            const queryString = window.location.search;
+            const urlParams = new URLSearchParams(queryString);
             const code = urlParams.get('key');
             if (code){
-                // onHouseCodeChange(urlParams.get('key'));
                 const itemRef = ref(db, 'houses/'+code);
                 onValue(itemRef, (snapshot) => {
                     try{
                         const data = snapshot.val();
-                        // onHouseCodeChange(urlParams.get('key'));
-                        console.log()
-                        console.log("Data", data)
-                        console.log("code", code)
                         if(data){
                             setNameHouse(data.name);
-                            console.log(data.name);
                             setMembersHouse(data.members);
                             setgrocerylistid(data.grocerylist);
                         }
@@ -56,28 +72,17 @@ export default function Page() {
         }
 
         fetchData();
-        console.log("Loaded");
-        console.log(housecode)
-        user = getCurrentUser();
-        console.log(user);
-        try{
-            console.log(user.email);
-            var emailparts = user.email.split(".")
-            var filteredemail = emailparts[0]+":"+emailparts[1]
-            console.log(filteredemail)
-            setemail(filteredemail);
-        }
-        catch{
-
-        }
     }, [housecode]); 
 
+    // Scuffed
     useEffect(() => {
+        console.log("reached")
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
         onHouseCodeChange(urlParams.get('key'));
     }, []); 
 
     useEffect(() => {
-        console.log("Here")
         const fetchData = () => {
             const db = getDatabase();
             const itemRef = ref(db, 'housemates/'+email);
@@ -86,6 +91,8 @@ export default function Page() {
                     const data = snapshot.val();
                     setusername(data.name);
                     setuserid(email);
+                    console.log(data.name);
+                    console.log(email);
                 }
                 catch{}
             });
@@ -99,11 +106,21 @@ export default function Page() {
 
     function addMember(){
         const db = getDatabase();
-        const postListRef = ref(db, 'houses/'+housecode+'/members/'+userid);
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const code = urlParams.get('key');
+        const postListRef = ref(db, 'houses/'+code+'/members/'+userid);
         set(postListRef, {
             name: username,
             color: choosencolor
         });
+        const anotherplr = ref(db, 'housemates/'+userid);
+        update(anotherplr, {
+            houses:[code]
+        });
+        console.log(code);
+        console.log(userid);
+
         window.location.href ='/list?grocerylist='+grocerylistid;
     }
 
@@ -165,7 +182,6 @@ export default function Page() {
                 </TouchableOpacity>
                 </Link> */}
                 <LinkButton buttonLabel="Back" page="/joinhousecode" />
-                <Link href="/list" asChild>
                 {/* <TouchableOpacity 
                     className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
                     onPress = {()=>addMember()}
@@ -173,8 +189,7 @@ export default function Page() {
                     <Text className="text-white text-center self-center">Join House</Text>
 
                 </TouchableOpacity> */}
-                        <CustomButton buttonLabel="Join House" onPress={() => addMember()}></CustomButton>
-                </Link>
+                <CustomButton buttonLabel="Join House" onPress={() => addMember()}></CustomButton>
             </View>
         </View>
         </View>
