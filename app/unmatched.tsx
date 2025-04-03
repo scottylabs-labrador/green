@@ -4,22 +4,16 @@ import { getDatabase, ref, set, push, onValue, get, child } from "firebase/datab
 import { Link, router, useLocalSearchParams } from "expo-router"; 
 import { Octicons } from '@expo/vector-icons';
 import NavBar from '../components/NavBar';
-import ReceiptItem from '../components/ReceiptItem';
 import { onAuthChange } from "../api/auth";
-import { getCurrentUser, writeMatches } from "../api/firebase";
+import { getCurrentUser, matchReceiptItem } from "../api/firebase";
 
 export default function UnmatchedItem( ) {
     const { itemId, receiptId } = useLocalSearchParams();
     const [itemName, setItemName] = useState('');
     const [groceryItems, setGroceryItems] = useState({});
-    const [matchedItems, setMatchedItems] = useState([]);
-    const [unmatchedItems, setUnmatchedItems] = useState([]);
-    const [selectedItems, setSelectedItems] = useState<string[]>([]);
+    const [selectedItem, setSelectedItem] = useState("");
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const db = getDatabase();
-
-    console.log("itemId: ", itemId);
-    console.log("receiptId: ", receiptId);
 
     type groceryListType = {
       name: String,
@@ -30,10 +24,9 @@ export default function UnmatchedItem( ) {
     useEffect(() => {
       onValue(ref(db, 'receipts/'+receiptId+'/receiptitems/'+itemId), (snapshot) => {
         const data = snapshot.val();
-        console.log("data: ", data);
         setItemName(data.receiptItem);
       });
-    }, [db]);
+    }, []);
 
     useEffect(() => {
         const getGroceryList = onAuthChange((user) => {
@@ -72,7 +65,7 @@ export default function UnmatchedItem( ) {
               .then((snapshot) => {
                 if (snapshot.exists()) {
                   const data = snapshot.val();
-                  console.log("data: ", data.groceryitems)
+                  console.log("grocery items: ", data.groceryitems)
                   setGroceryItems(data.groceryitems);
                 }
                 else {
@@ -87,31 +80,13 @@ export default function UnmatchedItem( ) {
         });
       }, []);
 
-    // useEffect(() => {
-    //     const fetchData = () => {
-    //         const db = getDatabase();
-    //         const matchedItemRef = ref(db, 'groceryitems/');
-    //         const unmatchedItemRef = ref(db, 'groceryitems/');
-    //         get(matchedItemRef).then((snapshot) => {
-    //             const data = snapshot.val();
-    //             setMatchedItems(data);
-    //         });
-    //         get(unmatchedItemRef).then((snapshot) => {
-    //             const data = snapshot.val();
-    //             setUnmatchedItems(data);
-    //         });
-    //     }
-
-    //     fetchData();
-    // }, [matchedItems, unmatchedItems]);
-
     const toggleOption = (value: string) => {
-      setSelectedItems((prev) =>
-        prev.includes(value)
-          ? prev.filter((v) => v !== value)
-          : [...prev, value]
-      );
+      setSelectedItem(value);
     };
+
+    const submitMatch = () => {
+      matchReceiptItem(receiptId, itemId, groceryItems[selectedItem].name);
+    }
 
     const ProfileButton = () => {
       return (
@@ -123,14 +98,16 @@ export default function UnmatchedItem( ) {
 
     const UnmatchedItem = ({ id, name }) => {
       return (
-        <View className="flex-row items-center justify-start w-full h-12 self-center px-2 border-y border-gray-200">
+        <Pressable 
+          className="flex-row items-center justify-start w-full h-12 self-center px-2 border-y border-gray-200"
+          onPress={() => toggleOption(id)}>
             <Text className="text-1xl text-left font-medium w-1/2 grow">{name}</Text>
             <Octicons
               name="check-circle-fill" 
               size={20} 
-              color={selectedItems.includes(id) ? '#1cb022' : 'lightgray'}
-              onPress={() => toggleOption(id)}/>
-        </View>
+              color={selectedItem == id ? '#1cb022' : 'lightgray'}
+            />
+        </Pressable>
       )
     }
 
@@ -152,7 +129,7 @@ export default function UnmatchedItem( ) {
                   <Text className="text-4xl text-center text-white font-medium">Unmatched Item</Text>
               </View>
               <View className="relative gap-2 w-full h-[200px] flex-grow bg-white self-end rounded-3xl p-8 overflow-hidden mb-24">
-                  <Pressable className="absolute top-6 right-6 w-fit h-fit">
+                  <Pressable className="absolute top-6 right-6 w-fit h-fit" onPress={submitMatch}>
                     <Link 
                       href={{pathname: '/bill', 
                            params: { receiptId: receiptId }

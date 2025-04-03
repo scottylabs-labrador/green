@@ -192,6 +192,13 @@ export function writeMatches(receiptId, receiptItems) {
   return postReceiptRef;
 }
 
+export function matchReceiptItem(receiptId, receiptItemId, groceryItemName) {
+  const db = getDatabase();
+  const updates = {};
+  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/groceryItem'] = groceryItemName;
+  return update(ref(db), updates);
+}
+
 export async function createUser(
   name: string,
   phone_number: string,

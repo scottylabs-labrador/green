@@ -18,6 +18,8 @@ export default function Message() {
     const [item, onChangeItem] = useState('');
     const db = getDatabase();
 
+    const message = `Hi friends, I bought this week's groceries! Here is the breakdown:`;
+
     useEffect(() => {
         const fetchData = () => {
             const queryString = window.location.search;
@@ -50,7 +52,7 @@ export default function Message() {
                       </Pressable>
                   </Link>
                   <Text className="text-center mt-2">Grocery List</Text>
-                  <Text className="">Hi friends, I bought this week's groceries! Here is the breakdown:</Text>
+                  <Text className="">{message}</Text>
                   <Pressable 
                       className="w-fit h-8 items-center justify-center self-center bg-emerald-900 hover:bg-gray-600 py-2.5 px-4 rounded-lg"
                   >
