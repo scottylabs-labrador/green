@@ -1,7 +1,7 @@
-import { View, Text, Pressable, ScrollView, Modal, FlatList, TextInput } from 'react-native';
+import { View, Text, Pressable, TouchableOpacity, ScrollView, Modal, FlatList, TextInput } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { getDatabase, ref, set, push, onValue, get, child } from "firebase/database";
-import { Link, router, useLocalSearchParams } from "expo-router"; 
+import { Link, useRouter, useLocalSearchParams } from "expo-router"; 
 import { Octicons } from '@expo/vector-icons';
 import NavBar from '../components/NavBar';
 import { onAuthChange } from "../api/auth";
@@ -14,6 +14,7 @@ export default function UnmatchedItem( ) {
     const [selectedItem, setSelectedItem] = useState("");
     const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
     const db = getDatabase();
+    const router = useRouter();
 
     type groceryListType = {
       name: String,
@@ -24,7 +25,9 @@ export default function UnmatchedItem( ) {
     useEffect(() => {
       onValue(ref(db, 'receipts/'+receiptId+'/receiptitems/'+itemId), (snapshot) => {
         const data = snapshot.val();
+        console.log("grocery item: " + data.groceryItem);
         setItemName(data.receiptItem);
+        setSelectedItem(data.groceryItem);
       });
     }, []);
 
@@ -80,13 +83,9 @@ export default function UnmatchedItem( ) {
         });
       }, []);
 
-    const toggleOption = (value: string) => {
-      setSelectedItem(value);
+    const toggleOption = (id: string) => {
+      setSelectedItem(groceryItems[id].name);
     };
-
-    const submitMatch = () => {
-      matchReceiptItem(receiptId, itemId, groceryItems[selectedItem].name);
-    }
 
     const ProfileButton = () => {
       return (
@@ -105,7 +104,7 @@ export default function UnmatchedItem( ) {
             <Octicons
               name="check-circle-fill" 
               size={20} 
-              color={selectedItem == id ? '#1cb022' : 'lightgray'}
+              color={selectedItem == name ? '#1cb022' : 'lightgray'}
             />
         </Pressable>
       )
@@ -129,18 +128,24 @@ export default function UnmatchedItem( ) {
                   <Text className="text-4xl text-center text-white font-medium">Unmatched Item</Text>
               </View>
               <View className="relative gap-2 w-full h-[200px] flex-grow bg-white self-end rounded-3xl p-8 overflow-hidden mb-24">
-                  <Pressable className="absolute top-6 right-6 w-fit h-fit" onPress={submitMatch}>
                     <Link 
                       href={{pathname: '/bill', 
                            params: { receiptId: receiptId }
                          }} 
-                      className="w-full h-full">
-                      <Octicons
-                          name="x" 
-                          size={24} 
-                          color="black"/>
+                      onPress={() => {
+                        if (selectedItem !== "") {
+                          matchReceiptItem(receiptId, itemId, selectedItem);
+                        }
+                      }}
+                      className="absolute top-4 right-6 w-fit h-fit" 
+                      asChild>
+                        <Pressable className="absolute top-4 right-6">
+                        <Octicons
+                            name="x" 
+                            size={24} 
+                            color="black"/>
+                        </Pressable>
                     </Link>
-                  </Pressable>
                   <Text className="text-3xl text-left font-medium text-black underline">{itemName}</Text>
                   <Text className="text-2xl text-left font-medium text-black">Unmatched items in list:</Text>
                   <Text className="text-1xl text-left text-black">Match the product to a grocery list item from this week!</Text>
