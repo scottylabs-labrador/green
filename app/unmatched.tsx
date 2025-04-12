@@ -12,10 +12,11 @@ export default function UnmatchedItem() {
   const [itemName, setItemName] = useState('');
   const [groceryItems, setGroceryItems] = useState({});
   const [selectedItem, setSelectedItem] = useState("");
+  const [colors, setColors] = useState({});
   const [price, setPrice] = useState('');
+  const [splits, setSplits] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const db = getDatabase();
-  const router = useRouter();
 
   type groceryListType = {
     name: String,
@@ -26,10 +27,11 @@ export default function UnmatchedItem() {
   useEffect(() => {
     onValue(ref(db, 'receipts/' + receiptId + '/receiptitems/' + itemId), (snapshot) => {
       const data = snapshot.val();
-      console.log("price: " + data.price);
+      console.log("splits: " + data.price);
       setItemName(data.receiptItem);
       setSelectedItem(data.groceryItem);
-      setPrice(data.price.toString());
+      setPrice(data.price.toFixed(2).toString());
+      setSplits(data.splits);
     });
   }, []);
 
@@ -58,6 +60,8 @@ export default function UnmatchedItem() {
             if (snapshot.exists()) {
               const data = snapshot.val();
               // console.log("data for grocery lists:" + data.grocerylist);
+              let members = data.members;
+              setColors(members);
               let groceryList = data.grocerylist;
               const itemRef = child(dbRef, `grocerylists/${groceryList}`);
               return get(itemRef);
@@ -87,6 +91,7 @@ export default function UnmatchedItem() {
 
   const toggleOption = (id: string) => {
     setSelectedItem(groceryItems[id].name);
+    setSplits(groceryItems[id].splits);
   };
 
   const ProfileButton = () => {
@@ -95,6 +100,25 @@ export default function UnmatchedItem() {
         <Text className="text-2xl text-white">A</Text>
       </Pressable>
     )
+  }
+
+  const renderColor = ({ item }) => {
+    try{
+      return (
+        // <Text className="flex-1 text-1xl text-left w-1/2 self-center">{colors[item]}</Text>
+        <View className="w-10 h-10 rounded-full self-center flex items-center justify-center" style={{ backgroundColor: "#"+ colors[splits[item]].color}}>
+            <Text className="text-2xl w-1/2 self-center text-center text-white">{colors[splits[item]].name[0].toUpperCase()}</Text>
+        </View>
+      );
+    }
+    catch{
+        return (
+            // <Text className="flex-1 text-1xl text-left w-1/2 self-center">{colors[item]}</Text>
+            <View className="w-10 h-10 rounded-full self-center flex items-center justify-center" style={{ backgroundColor: "#FFFFFF"}}>
+                <Text className="text-2xl w-1/2 self-center text-center text-white">U</Text>
+            </View>
+          );
+    }
   }
 
   const UnmatchedItem = ({ id, name }) => {
@@ -122,15 +146,20 @@ export default function UnmatchedItem() {
     );
   }
 
-  const handlePriceChange = (text) => {
-    const formattedPrice = text.replace(/[^0-9.]/g, '');
+  const handlePriceChange = (value: string) => {
+    let sanitized = value.replace(/[^\d.]/g, '');
 
-    const parts = formattedPrice.split('.');
+    const parts = sanitized.split('.');
     if (parts.length > 2) {
-      return;
+      sanitized = parts[0] + '.' + parts.slice(1).join('');
     }
 
-    setPrice(formattedPrice);
+    const [integerPart, decimalPart] = sanitized.split('.');
+    if (decimalPart !== undefined) {
+      sanitized = `${integerPart}.${decimalPart.slice(0, 2)}`;
+    }
+
+    setPrice(sanitized);
   };
 
   return (
@@ -177,18 +206,25 @@ export default function UnmatchedItem() {
             </View>
           )}
           <View className="flex-row justify-between items-center">
-            <Text className="text-2xl text-left font-medium text-black my-2">Price:</Text>
+            <Text className="text-2xl text-left font-medium text-black">Price:</Text>
             <TextInput 
               className="text-center w-14 h-fit bg-slate-100 p-2 border-solid rounded-md" 
               placeholder={`${price}`}
-              keyboardType="numeric"
+              keyboardType="decimal-pad"
               value={price}
               onChangeText={handlePriceChange}
               />
           </View>
-          <Text className="text-2xl text-left font-medium text-black my-2">Claimed by:</Text>
+          <Text className="text-2xl text-left font-medium text-black">Claimed by:</Text>
           <View>
-            <ProfileButton />
+            {splits ? <FlatList 
+                            className="h-10 p-0 mt-1"
+                            data={Object.keys(splits)}
+                            renderItem={renderColor}
+                            keyExtractor={item => item}
+                            horizontal={true} 
+                            />
+                        : <View></View>}
           </View>
         </View>
         <NavBar location="unmatched" />
