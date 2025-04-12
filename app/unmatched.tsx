@@ -5,13 +5,14 @@ import { Link, useRouter, useLocalSearchParams } from "expo-router";
 import { Octicons } from '@expo/vector-icons';
 import NavBar from '../components/NavBar';
 import { onAuthChange } from "../api/auth";
-import { getCurrentUser, matchReceiptItem } from "../api/firebase";
+import { getCurrentUser, matchReceiptItem, updateItemPrice } from "../api/firebase";
 
 export default function UnmatchedItem() {
   const { itemId, receiptId } = useLocalSearchParams();
   const [itemName, setItemName] = useState('');
   const [groceryItems, setGroceryItems] = useState({});
   const [selectedItem, setSelectedItem] = useState("");
+  const [price, setPrice] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const db = getDatabase();
   const router = useRouter();
@@ -25,9 +26,10 @@ export default function UnmatchedItem() {
   useEffect(() => {
     onValue(ref(db, 'receipts/' + receiptId + '/receiptitems/' + itemId), (snapshot) => {
       const data = snapshot.val();
-      console.log("grocery item: " + data.groceryItem);
+      console.log("price: " + data.price);
       setItemName(data.receiptItem);
       setSelectedItem(data.groceryItem);
+      setPrice(data.price.toString());
     });
   }, []);
 
@@ -120,6 +122,17 @@ export default function UnmatchedItem() {
     );
   }
 
+  const handlePriceChange = (text) => {
+    const formattedPrice = text.replace(/[^0-9.]/g, '');
+
+    const parts = formattedPrice.split('.');
+    if (parts.length > 2) {
+      return;
+    }
+
+    setPrice(formattedPrice);
+  };
+
   return (
     <View className="flex-1 items-center">
       <View className="flex-1 w-full h-full bg-[#6d0846]">
@@ -137,6 +150,7 @@ export default function UnmatchedItem() {
               if (selectedItem !== "") {
                 matchReceiptItem(receiptId, itemId, selectedItem);
               }
+              updateItemPrice(receiptId, itemId, parseFloat(price));
             }}
             className="absolute top-4 right-6 w-fit h-fit"
             asChild>
@@ -148,7 +162,7 @@ export default function UnmatchedItem() {
             </Pressable>
           </Link>
           <Text className="text-3xl text-left font-medium text-black underline">{itemName}</Text>
-          <Text className="text-1xl text-left text-black">Match the product to a grocery list item from this week!</Text>
+          <Text className="text-left text-black">Match the product to a grocery list item from this week!</Text>
           {Object.keys(groceryItems).length > 0 ? (
             <FlatList
               className="h-full"
@@ -162,6 +176,16 @@ export default function UnmatchedItem() {
               <Text className="text-1xl text-center">Hit the "add" button to begin creating your shared list</Text>
             </View>
           )}
+          <View className="flex-row justify-between items-center">
+            <Text className="text-2xl text-left font-medium text-black my-2">Price:</Text>
+            <TextInput 
+              className="text-center w-14 h-fit bg-slate-100 p-2 border-solid rounded-md" 
+              placeholder={`${price}`}
+              keyboardType="numeric"
+              value={price}
+              onChangeText={handlePriceChange}
+              />
+          </View>
           <Text className="text-2xl text-left font-medium text-black my-2">Claimed by:</Text>
           <View>
             <ProfileButton />

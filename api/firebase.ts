@@ -213,6 +213,13 @@ export function matchReceiptItem(receiptId, receiptItemId, groceryItemName) {
   return update(ref(db), updates);
 }
 
+export function updateItemPrice(receiptId, receiptItemId, price) {
+  const db = getDatabase();
+  const updates = {};
+  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/price'] = price;
+  return update(ref(db), updates);
+}
+
 export async function createUser(
   name: string,
   phone_number: string,
