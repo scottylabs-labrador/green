@@ -4,7 +4,7 @@ import { Link } from "expo-router";
 import React, { useState, useCallback , useEffect } from 'react';
 import { getDatabase, ref, set, push, onValue, get, update } from "firebase/database";
 import { getCurrentUser } from "../api/firebase";
-import { router } from "expo-router"
+import { router, useRouter } from "expo-router"
 
 import "../main.css";
 import { writeGroceryItem } from "../api/firebase";
@@ -20,13 +20,22 @@ export default function Page() {
     const [code, onChangeCode] = useState('');
     const [housecode, onHouseCodeChange] = useState('');
     const [members, setMembersHouse] = useState([]);
-    const [choosencolor, setColor] = useState([]);
+    const [chosencolor, setColor] = useState("");
     const [name, setNameHouse] = useState([]);
     const [datahousecode, setData] = useState([]);
     const [userid, setuserid] = useState("tempuser");
     const [username, setusername] = useState("username");
     const [email, setemail] = useState("email");
     const [grocerylistid, setgrocerylistid] = useState("");
+    const router = useRouter();
+
+    const activeColor = 'outline outline-emerald-900 outline-offset-1';
+    const RED = 'CA3A31';
+    const ORANGE = 'D9622A';
+    const YELLOW = 'C18D2F';
+    const GREEN = '4CA154';
+    const BLUE = '3662E3';
+    const PURPLE = '883AE1';
 
     let user;
     useEffect(() => {
@@ -112,7 +121,7 @@ export default function Page() {
         const postListRef = ref(db, 'houses/'+code+'/members/'+userid);
         set(postListRef, {
             name: username,
-            color: choosencolor
+            color: chosencolor
         });
         const anotherplr = ref(db, 'housemates/'+userid);
         update(anotherplr, {
@@ -121,7 +130,10 @@ export default function Page() {
         console.log(code);
         console.log(userid);
 
-        window.location.href ='/list?grocerylist='+grocerylistid;
+        router.push(
+            {pathname: '/list', 
+            params: { grocerylist: grocerylistid }
+            });
     }
 
     return (
@@ -130,43 +142,43 @@ export default function Page() {
             <Text className="mb-9 text-4xl justify-left text-center font-semibold">{name}</Text>
             <View className="flex-row justify-evenly items-center padding-24 mb-6">
                 <TouchableOpacity 
-                    className="w-8 h-8 bg-red-600"
-                    onPress = {()=>setcolor("CA3A31")}
+                    className={`w-8 h-8 bg-red-600 ${chosencolor==RED ? activeColor : ''}`}
+                    onPress = {()=>setColor(RED)}
                     // red
                     >
                     <Text className="text-white text-center self-center"></Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                    className="w-8 h-8 bg-orange-600"
-                    onPress = {()=>setcolor("D9622A")}
+                    className={`w-8 h-8 bg-orange-600 ${chosencolor==ORANGE ? activeColor : ''}`}
+                    onPress = {()=>setColor(ORANGE)}
                     // orange
                     >
                     <Text className="text-white text-center self-center"></Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                    className="w-8 h-8 bg-yellow-600"
-                    onPress = {()=>setcolor("C18D2F")}
+                    className={`w-8 h-8 bg-yellow-600 ${chosencolor==YELLOW ? activeColor : ''}`}
+                    onPress = {()=>setColor(YELLOW)}
                     // yellow
                     >
                     <Text className="text-white text-center self-center"></Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                    className="w-8 h-8 bg-green-600"
-                    onPress = {()=>setcolor("4CA154")}
+                    className={`w-8 h-8 bg-green-600 ${chosencolor==GREEN ? activeColor : ''}`}
+                    onPress = {()=>setColor(GREEN)}
                     // green
                     >
                     <Text className="text-white text-center self-center"></Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                    className="w-8 h-8 bg-blue-600"
-                    onPress = {()=>setcolor("3662E3")}
+                    className={`w-8 h-8 bg-blue-600 ${chosencolor==BLUE ? activeColor : ''}`}
+                    onPress = {()=>setColor(BLUE)}
                     //blue
                     >
                     <Text className="text-white text-center self-center"></Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                    className="w-8 h-8 bg-purple-600"
-                    onPress = {()=>setcolor("883AE1")}
+                    className={`w-8 h-8 bg-purple-600 ${chosencolor==PURPLE ? activeColor : ''}`}
+                    onPress = {()=>setColor(PURPLE)}
                     //purple
                     >
                     <Text className="text-white text-center self-center"></Text>

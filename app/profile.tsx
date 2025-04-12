@@ -1,18 +1,15 @@
 import { View, Text, Pressable, ScrollView, Modal, FlatList, TextInput} from 'react-native';
 import React, { useState, useEffect} from 'react';
 import { getDatabase, ref, set, push, onValue, get, remove} from "firebase/database";
-import { removeGroceryItem, writeGroceryItem, updateGroceryItem, writeGroceryItemGrocerylist } from "../api/firebase";
-import { Link } from "expo-router"; 
 import NavBar from '../components/NavBar';
-import GroceryItem from '../components/GroceryItem';
 import Button from '../components/CustomButton';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
-import { getCurrentUser } from "../api/firebase";
+import { getCurrentUser, userSignOut } from "../api/firebase";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { onAuthChange } from '../api/auth';
 import HouseInfo from '../components/HouseInfo';
 
-export default function Home() {
+export default function Profile() {
   // TODO: Home page
   // Should this exist for users who
 
@@ -93,18 +90,22 @@ export default function Home() {
 
   return (
     <View className="flex-1 items-center justify-start p-6">
-      <View className="pt-20 flex justify-center items-center max-w-lg w-full gap-1">
+      <View className="pt-10 flex justify-center items-center max-w-lg w-full gap-1">
         <div className="ml-1 w-32 h-32 rounded-full self-center flex items-center justify-center" style={{ backgroundColor: "#"+ color}}>
             <Text className="flex-1 text-5xl text-left w-1/2 self-center text-center text-white">{name[0].toUpperCase()}</Text>
         </div>
-        <Text className="pt-2 text-4xl font-bold text-center">{name}</Text>
-        <Text className="text-2xl text-center text-gray pb-4">{actualemail}</Text>
-        <HouseInfo
-          name={housename}
-          houseid={houseid}
-          members={members}
-        />
-        <NavBar grocerylist_id = {""}/>
+        <Text className="pt-2 text-3xl font-bold text-center">{name}</Text>
+        <Text className="text-lg text-center text-gray-500 pb-4">{actualemail}</Text>
+        <View className="flex-col justify-center items-center w-full mb-32">
+          <Text className="w-full text-left px-5 text-lg text-gray-500 font-medium mb-0">Houses</Text>
+          <HouseInfo
+            name={housename}
+            houseid={houseid}
+            members={members}
+          />
+        </View>
+        <Button buttonLabel="Logout" onPress={userSignOut}></Button>
+        <NavBar location="profile" />
       </View>
     </View>
     

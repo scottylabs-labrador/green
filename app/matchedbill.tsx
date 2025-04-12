@@ -89,7 +89,7 @@ export default function MatchedBill() {
                   </Pressable>
                 </View>
             </View>
-            <NavBar />
+            <NavBar location="matchedbill"/>
         </View>
         </View>
     );

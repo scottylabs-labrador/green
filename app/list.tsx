@@ -2,25 +2,46 @@ import { View, Text, Pressable, ScrollView, Modal, FlatList, TextInput} from 're
 import React, { useState, useEffect} from 'react';
 import { getDatabase, ref, set, push, onValue, get, remove} from "firebase/database";
 import { removeGroceryItem, writeGroceryItem, updateGroceryItem, writeGroceryItemGrocerylist } from "../api/firebase";
-import { Link } from "expo-router"; 
+import { Link, useLocalSearchParams, useRouter } from "expo-router"; 
 import NavBar from '../components/NavBar';
 import { getCurrentUser } from "../api/firebase";
 import GroceryItem from '../components/GroceryItem';
 import Button from '../components/CustomButton';
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
-import { getCurrentUser } from "../api/firebase";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { onAuthChange } from '../api/auth';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getGroceryListId } from "../api/grocerylist";
 
 export default function List() {
     // TODO: Implement the list page
     // Display a list of grocery items
     // Allow users to add, remove, and update items
 
+    const router = useRouter();
+
+    const { grocerylist } = useLocalSearchParams();
+    console.log("groceryListId: ", grocerylist);
+    const isValid = typeof grocerylist === 'string' && grocerylist.trim() !== '';
+    if (!isValid) {
+        const auth = getAuth();
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+            console.log("user signed in: ", user);
+            getGroceryListId()
+                .then(groceryListId => 
+                router.replace(
+                    {pathname: '/list', 
+                    params: { grocerylist: groceryListId }
+                    }));
+            }
+        });
+    }
+
     const [groceryItems, setGroceryItems] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [item, setItem] = useState('');
-    const [grocerylist, onChangeList] = useState("");
+    // const [grocerylist, onChangeList] = useState("");
     const [email, setemail] = useState("email");
     const [membercolors, setmembercolor] = useState({});
     const db = getDatabase();
@@ -38,16 +59,16 @@ export default function List() {
         const colorsget = onAuthChange((user) => {
             if (user) {
                 console.log("Here try get user email");
-                let email = getCurrentUser().email;
+                let email = getCurrentUser()?.email;
                 console.log("user email: " + email);
                 var emailParts = email.split(".");
                 var filteredEmail = emailParts[0]+":"+emailParts[1];
                 console.log("filteredEmail: " + filteredEmail);
                 setemail(filteredEmail);
                 try {
-                  const itemRef = ref(db, 'housemates/' + filteredEmail);
-                  var houses;
-                  onValue(itemRef, (snapshot) => {
+                    const itemRef = ref(db, 'housemates/' + filteredEmail);
+                    var houses;
+                    onValue(itemRef, (snapshot) => {
                     try {
                         const data = snapshot.val();
                         houses = (data.houses[0]).toString();
@@ -57,9 +78,9 @@ export default function List() {
                         console.log("failed to get houses");
                         // setusergotten(gottenuser + 1);
                     }
-                  });
-                  const houseRef = ref(db, 'houses/' + houses);
-                  onValue(houseRef, (snapshot) => {
+                    });
+                    const houseRef = ref(db, 'houses/' + houses);
+                    onValue(houseRef, (snapshot) => {
                     try {
                         const data = snapshot.val();
                         console.log("data: " + data);
@@ -78,7 +99,7 @@ export default function List() {
                         console.log("failed to get members from house");
                         setusergotten(gottenuser + 1);
                     }
-                  });
+                    });
                 }
                 catch {
                     console.log("failed to get user");
@@ -88,21 +109,18 @@ export default function List() {
                 console.log("no user");
                 window.location.href = "/login"; // Redirect if not logged in
             }
-          }
+            }
         );
-      
+
         return () => colorsget();
       }, [gottenuser]);
 
-    
-
-
     useEffect(() => {
-        const queryString = window.location.search;
-        const urlParams = new URLSearchParams(queryString);
-        const grocerylistid = urlParams.get('grocerylist');
-        onChangeList(grocerylistid);
-        const itemRef = ref(db, "grocerylists/"+grocerylistid+"/groceryitems");
+        // const queryString = window.location.search;
+        // const urlParams = new URLSearchParams(queryString);
+        // const grocerylistid = urlParams.get('grocerylist');
+        // onChangeList(grocerylistid);
+        const itemRef = ref(db, "grocerylists/"+grocerylist+"/groceryitems");
         const fetchData = onValue(itemRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -162,7 +180,7 @@ export default function List() {
                     <Text className="text-1xl text-right text-gray-400 w-1/5 pr-[2%]">Split by</Text>
                     <Text className="text-1xl text-right text-gray-400 w-1/5 pr-[2%]">Quantity</Text>
                 </View>
-                {Object.keys(groceryItems).length > 0 ? (
+                {groceryItems && Object.keys(groceryItems).length > 0 ? (
                     <FlatList 
                     className="h-full"
                     data={Object.keys(groceryItems)}
@@ -176,11 +194,11 @@ export default function List() {
                     </View>
                 )}
             </View>
-            <NavBar grocerylist_id = {grocerylist}/>
+            <NavBar location="home"/>
 
             <Link href="/" asChild>
                 <Pressable 
-                    className="absolute w-fit h-8 items-center justify-center left-10 bottom-20 bg-[#3e5636] hover:bg-gray-600 py-2.5 px-4 rounded-lg shadow-lg"
+                    className="absolute w-fit h-8 items-center justify-center left-10 bottom-20 bg-emerald-900 hover:bg-gray-600 py-2.5 px-4 rounded-lg shadow-lg"
                 >
                     <Text className="text-white text-center self-center">See Past Items</Text>
                 </Pressable>
@@ -189,7 +207,7 @@ export default function List() {
                 className="absolute w-10 h-8 items-center justify-center right-12 bottom-20 shadow-lg"
                 onPress={toggleModal}
             >
-                <Ionicons name="add-circle" size={76} color="#3e5636"/>
+                <Ionicons name="add-circle" size={76} color="#164e2d"/>
             </Pressable>
             
             <Modal 
@@ -211,13 +229,13 @@ export default function List() {
                         onKeyPress={handleWriteItem}
                     />
                     <Pressable 
-                        className="bg-[#3e5636] hover:bg-gray-600 py-2.5 px-4 w-fit self-center rounded-lg"
+                        className="bg-emerald-900 hover:bg-gray-600 py-2.5 px-4 w-fit self-center rounded-lg"
                         onPress={writeItem}
                         >
                         <Text className="text-white text-center self-center">Add</Text>
                     </Pressable>
                     <Pressable 
-                        className="bg-[#3e5636] hover:bg-gray-600 mt-6 py-2.5 px-4 w-fit self-center rounded-lg"
+                        className="bg-emerald-900 hover:bg-gray-600 mt-6 py-2.5 px-4 w-fit self-center rounded-lg"
                         >
                         <Text className="text-white text-center self-center">See All Past Items</Text>
                     </Pressable>

@@ -162,7 +162,7 @@ export default function UnmatchedItem( ) {
                     <ProfileButton/>
                   </View>
               </View>
-              <NavBar />
+              <NavBar location="unmatched"/>
           </View>
         </View>
     );

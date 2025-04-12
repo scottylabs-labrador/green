@@ -6,6 +6,7 @@ import React, { useState, useCallback } from "react";
 import { useRouter } from "expo-router";
 import Button from "../components/CustomButton";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getGroceryListId } from "../api/grocerylist";
 
 async function handleSubmit(email: string, password: string) {
   try {
@@ -17,10 +18,6 @@ async function handleSubmit(email: string, password: string) {
   }
 }
 
-async function getgrocerylist(filteredemail) {
-  
-}
-
 export default function Login() {
   const [email, onChangeEmail] = useState("");
   const [password, onChangePassword] = useState("");
@@ -29,10 +26,15 @@ export default function Login() {
   const db = getDatabase();
   
   const auth = getAuth();
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         console.log("user signed in: ", user);
-        window.location.href = "/list";
+        getGroceryListId()
+          .then(groceryListId => 
+            router.replace(
+              {pathname: '/list', 
+              params: { grocerylist: groceryListId }
+              }));
       }
     });
 

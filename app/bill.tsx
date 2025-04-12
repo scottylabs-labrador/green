@@ -1,8 +1,6 @@
 import { View, Text, Pressable, ScrollView, Modal, FlatList, TextInput } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { getDatabase, ref, set, push, onValue, get } from "firebase/database";
-import { Link } from "expo-router"; 
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import NavBar from '../components/NavBar';
 import ReceiptItem from '../components/ReceiptItem';
 import { useLocalSearchParams } from "expo-router"; 
@@ -17,7 +15,6 @@ export default function Bill() {
     const [matchedItems, setMatchedItems] = useState({});
     const [unmatchedItems, setUnmatchedItems] = useState({});
     const [modalVisible, setModalVisible] = useState(false);
-    // const [receiptId, setReceiptId] = useState('');
     const [item, onChangeItem] = useState('');
     const db = getDatabase();
     
@@ -33,19 +30,14 @@ export default function Bill() {
                     console.log("item: ", data[key].groceryItem, typeof data[key].groceryItem);
                     if (data[key].groceryItem.length == 0) {
                         unmatched[key] = data[key];
-                        // setUnmatchedItems([...unmatchedItems, data[i]]);
-                        console.log("unmatched: ", data[key], unmatched);
                     }
                     else {
                         matched[key] = data[key];
-                        // setMatchedItems([...matchedItems, data[i]]);
-                        console.log("matched: ", data[key]);
                     }
                 }
                 setUnmatchedItems(unmatched);
                 setMatchedItems(matched);
                 console.log("receipt items: ", data);
-                // setMatchedItems(data);
             });
         }
         fetchData();
@@ -124,7 +116,7 @@ export default function Bill() {
                     )}
                 </View>
             </View>
-            <NavBar />
+            <NavBar grocerylist_id = {""} location="bill"/>
         </View>
         </View>
     );

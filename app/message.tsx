@@ -60,7 +60,7 @@ export default function Message() {
                   </Pressable>
                 </View>
             </View>
-            <NavBar />
+            <NavBar location="message"/>
         </View>
         </View>
     );

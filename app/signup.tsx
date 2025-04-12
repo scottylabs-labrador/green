@@ -6,6 +6,7 @@ import { createUser } from "../api/firebase";
 import { useRouter } from "expo-router";
 import Button from "../components/CustomButton";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getGroceryListId } from "../api/grocerylist";
 
 async function handleSubmit(
   email: string,
@@ -55,12 +56,17 @@ export default function SignUp({ route, navigation, ...props }) {
   const router = useRouter();
 
   const auth = getAuth();
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log("user signed in: ", user);
-        window.location.href = "/list";
-      }
-    });
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          console.log("user signed in: ", user);
+          getGroceryListId()
+            .then(groceryListId => 
+              router.replace(
+                {pathname: '/list', 
+                params: { grocerylist: groceryListId }
+                }));
+        }
+      });
     
   return (
     <KeyboardAvoidingView className="flex-1 w-full padding-24" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>

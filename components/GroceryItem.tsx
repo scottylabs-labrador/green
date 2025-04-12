@@ -65,7 +65,7 @@ const GroceryItem = ({grocerylist, id, name, quantity, splits, member, colors} :
           <Text className="flex-1 text-1xl text-left w-1/2 self-center">{name}</Text>
           {/* View needs to be fixed :(( */}
           <View className="flex-row self-center items-center w-fit gap-4">
-            <FlatList 
+          {splits ? <FlatList 
                 className="v-full"
                 data={Object.keys(splits)}
                 renderItem={renderColor}
@@ -73,20 +73,21 @@ const GroceryItem = ({grocerylist, id, name, quantity, splits, member, colors} :
                 horizontal={true}
                 contentContainerStyle={{ padding: 16 }} 
                 />
+            : <View></View>}
           </View>
           <View className="flex-row self-center items-center w-fit gap-1">
               <Pressable className="center-right justify-center" onPress={() => handleSubItem(grocerylist, id, name, quantity, splits)}>
                   <Ionicons 
                       name="remove-circle" 
                       size={20} 
-                      color="#3e5636"/>
+                      color="#164e2d"/>
               </Pressable>
               <Text className="text-1xl text-center w-fit justify-center">{quantity}</Text>
               <Pressable className="center-left justify-center margin-left-50" onPress={() => handleAddItem(grocerylist, id, name, quantity, splits)}>
                   <Ionicons 
                       name="add-circle" 
                       size={20} 
-                      color="#3e5636"/>
+                      color="#164e2d"/>
               </Pressable>
           </View>
       </View>

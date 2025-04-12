@@ -3,7 +3,8 @@ import { Link } from "expo-router";
 
 import React, { useState, useCallback , useEffect } from 'react';
 import { getDatabase, ref, set, push, onValue, get } from "firebase/database";
-import { router } from "expo-router"
+import { router, useRouter } from "expo-router";
+import CustomButton from "../components/CustomButton";
 
 
 import "../main.css";
@@ -73,12 +74,13 @@ export default function Page() {
                 onChangeText={onChangeCode}
                 value={code}
             />
-            <TouchableOpacity 
+            <CustomButton buttonLabel="Join House" onPress={redirectToHouse}></CustomButton>
+            {/* <TouchableOpacity 
                 className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
-                onPress = {() => redirectToHouse()}
+                onPress = {redirectToHouse}
                 >
                 <Text className="text-white text-center self-center">Join House</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
         </View>
         </View>
     );
