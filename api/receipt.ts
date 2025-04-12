@@ -1,6 +1,6 @@
 import Fuse from "fuse.js";
 
-export const matchWords = (receiptItems, groceryListItems, threshold = 0.3) => {
+export const matchWords = (receiptItems, groceryListItems, groceryItemObjects, threshold = 0.3) => {
     const fuse = new Fuse(groceryListItems, { threshold });
     const usedWords = new Set();
 
@@ -10,7 +10,13 @@ export const matchWords = (receiptItems, groceryListItems, threshold = 0.3) => {
 
         if (bestMatch) {
             usedWords.add(bestMatch.item);
-            return { receiptItem: word, groceryItem: bestMatch.item }; // word is from the receiptItems, bestMatch is from groceryListItems
+            let splits = [];
+            for (let i = 0; i < groceryItemObjects.length; i++) {
+                if (groceryItemObjects[i].name == bestMatch.item) {
+                    splits = groceryItemObjects[i].splits
+                }
+            }
+            return { receiptItem: word, groceryItem: bestMatch.item, price: receiptItems[word], splits: splits }; // word is from the receiptItems, bestMatch is from groceryListItems
         }
         return { receiptItem: word, groceryItem: "", price: receiptItems[word] };
     });

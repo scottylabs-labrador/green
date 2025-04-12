@@ -18,6 +18,7 @@ export default function Page() {
   const cameraRef = useRef(null);
   const [receiptLines, setReceiptLines] = useState([]);
   const [groceryItems, setGroceryItems] = useState([]);
+  const [groceryItemObjects, setGroceryItemObjects] = useState([]);
   const db = getDatabase();
   const router = useRouter();
 
@@ -68,11 +69,14 @@ export default function Page() {
               const data = snapshot.val();
               // console.log("data for list items:" + JSON.stringify(data.groceryitems));
               let items = [];
+              let itemObjects = [];
               for (const [_, value] of Object.entries(data.groceryitems)) {
                 items.push((value as groceryListType).name);
+                itemObjects.push((value as groceryListType));
               }
               console.log("grocery items:", items);
               setGroceryItems(items);
+              setGroceryItemObjects(itemObjects);
             }
             else {
               console.log("failed to get grocery items");
@@ -126,13 +130,14 @@ export default function Page() {
       }).then((data) => {
         console.log("data:", data);
         let receiptLines = JSON.parse(data).items;
-        let receiptItems= matchWords(receiptLines, groceryItems);
+        let receiptItems = matchWords(receiptLines, groceryItems, groceryItemObjects);
         console.log(receiptItems);
         const receiptId = window.crypto.randomUUID();
         writeMatches(receiptId, receiptItems);
         router.replace(
-          {pathname: '/bill', 
-           params: { receiptId: receiptId }
+          {
+            pathname: '/bill',
+            params: { receiptId: receiptId }
           });
       });
       // .then((receipt) => {

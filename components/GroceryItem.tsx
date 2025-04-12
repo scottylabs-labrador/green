@@ -63,7 +63,7 @@ const GroceryItem = ({grocerylist, id, name, quantity, splits, member, colors} :
   return (
       <View className="flex-row items-stretch justify-center w-[85%] h-12 self-center my-2 px-2 border border-gray-300 rounded-lg">
           <Text className="flex-1 text-1xl text-left w-1/2 self-center">{name}</Text>
-          {/* View needs to be fixed :(( */}
+          {/* View fixed :)) */}
           <View className="flex-row self-center items-center w-fit gap-4">
           {splits ? <FlatList 
                 className="v-full"
