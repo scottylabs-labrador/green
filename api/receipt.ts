@@ -12,7 +12,7 @@ export const matchWords = (receiptItems, groceryListItems, groceryItemObjects, t
             usedWords.add(bestMatch.item);
             let splits = [];
             for (let i = 0; i < groceryItemObjects.length; i++) {
-                if (groceryItemObjects[i].name == word) {
+                if (groceryItemObjects[i].name == bestMatch.item) {
                     splits = groceryItemObjects[i].splits
                 }
             }
