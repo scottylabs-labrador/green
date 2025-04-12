@@ -18,7 +18,7 @@ export const matchWords = (receiptItems, groceryListItems, groceryItemObjects, t
             }
             return { receiptItem: word, groceryItem: bestMatch.item, price: receiptItems[word], splits: splits }; // word is from the receiptItems, bestMatch is from groceryListItems
         }
-        return { receiptItem: word, groceryItem: "", price: receiptItems[word] };
+        return { receiptItem: word, groceryItem: "", price: receiptItems[word], splits: [] };
     });
 
     return listOfItems.reduce((obj, item) => {
