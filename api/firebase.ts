@@ -197,19 +197,24 @@ export function writeGroceryList(grocerylist, name) {
   return postListRef;
 }
 
-export function writeMatches(receiptId, receiptItems) {
+export function writeMatches(receiptId, houseCode, receiptItems) {
   const db = getDatabase();
   const postReceiptRef = ref(db, 'receipts/' + receiptId);
   set(postReceiptRef, {
     receiptitems: receiptItems
   });
   return postReceiptRef;
+  // const updates = {};
+  // updates['/receipts/' + receiptId] = { receiptitems: receiptItems};
+  // updates['/houses/' + houseCode + '/receipts/' + receiptId] = Date.now();
+  // return update(ref(db), updates);
 }
 
-export function matchReceiptItem(receiptId, receiptItemId, groceryItemName) {
+export function matchReceiptItem(receiptId, receiptItemId, groceryItemName, splits) {
   const db = getDatabase();
   const updates = {};
   updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/groceryItem'] = groceryItemName;
+  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/splits'] = splits;
   return update(ref(db), updates);
 }
 

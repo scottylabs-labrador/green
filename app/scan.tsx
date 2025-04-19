@@ -19,6 +19,7 @@ export default function Page() {
   const [receiptLines, setReceiptLines] = useState([]);
   const [groceryItems, setGroceryItems] = useState([]);
   const [groceryItemObjects, setGroceryItemObjects] = useState([]);
+  const [houseCode, setHouseCode] = useState("");
   const db = getDatabase();
   const router = useRouter();
 
@@ -43,6 +44,7 @@ export default function Page() {
               const data = snapshot.val();
               // console.log("data for house:" + data.houses[0].toString());
               let houses = data.houses[0].toString();
+              setHouseCode(houses);
               const houseRef = child(dbRef, `houses/${houses}`);
               return get(houseRef);
             }
@@ -133,7 +135,7 @@ export default function Page() {
         let receiptItems = matchWords(receiptLines, groceryItems, groceryItemObjects);
         console.log(receiptItems);
         const receiptId = window.crypto.randomUUID();
-        writeMatches(receiptId, receiptItems);
+        writeMatches(receiptId, houseCode, receiptItems);
         router.replace(
           {
             pathname: '/bill',

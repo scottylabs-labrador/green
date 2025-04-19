@@ -215,7 +215,7 @@ export default function List() {
                 animationType="slide"
                 transparent={true}
             >
-                <View className="w-2/3 h-1/3 m-auto bg-white rounded-lg p-10 align-center">
+                <View className="w-2/3 h-fit m-auto bg-white shadow-md rounded-lg py-5 px-7 align-center">
                     <Ionicons
                         name='close'
                         size={24}

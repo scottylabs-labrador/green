@@ -177,7 +177,7 @@ export default function UnmatchedItem() {
             }}
             onPress={() => {
               if (selectedItem !== "") {
-                matchReceiptItem(receiptId, itemId, selectedItem);
+                matchReceiptItem(receiptId, itemId, selectedItem, splits);
               }
               updateItemPrice(receiptId, itemId, parseFloat(price));
             }}
@@ -218,11 +218,12 @@ export default function UnmatchedItem() {
           <Text className="text-2xl text-left font-medium text-black">Claimed by:</Text>
           <View>
             {splits ? <FlatList 
-                            className="h-10 p-0 mt-1"
+                            className="v-full h-10 p-0 mt-1"
                             data={Object.keys(splits)}
                             renderItem={renderColor}
                             keyExtractor={item => item}
                             horizontal={true} 
+                            contentContainerStyle={{ gap: 5 }}
                             />
                         : <View></View>}
           </View>

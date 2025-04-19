@@ -23,7 +23,7 @@ const HouseInfo = ({ name, houseid, members }: HouseInfoProps) => {
     return (
       <View className="flex-row items-center justify-center w-full py-1 self-center pl-1">
         <Text className = 'text-lg grow text-left w-1/3 self-center'>{members[item].name}</Text>
-        <Text className = 'text-lg grow text-right w-2/3 self-center text-gray-500'>{item}</Text>
+        <Text className = 'text-lg grow text-right w-2/3 self-center text-gray-500'>{item.replaceAll(":", ".")}</Text>
       </View>
     );
   }

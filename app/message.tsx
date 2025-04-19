@@ -23,24 +23,50 @@ export default function Message() {
     
 
     useEffect(() => {
-        const createMessage = (splits) =>{
+        const createMessage = async () =>{
             let currmessage = `Hi friends, I bought this week's groceries! Here is the breakdown:\n`;
-            for (const user in splits){
-                currmessage = currmessage + "\n" + user + ": " + splits[user];
-            }
-            return currmessage;
-        }
-        const fetchData = () => {
             const receiptItemRef = ref(db, "receipts/"+receiptId+"/receiptitems");
+            const housematesRef = ref(db, "housemates");
             get(receiptItemRef).then((snapshot) => {
                 const data = snapshot.val();
                 const svalues = calculateSplits(data);
+                console.log("svalues:", svalues);
                 setSplits(svalues);
-                let msg = createMessage(svalues);
-                setMessage(msg);
+                return svalues;
+            }).then((splits) => {
+                return {snapshot: get(housematesRef), splits: splits};
+            }).then(async ({snapshot: snapshot, splits: splits}) => {
+                const data = (await snapshot).val();
+                console.log("data:", data);
+                for (const user in splits){
+                    console.log("user: ", data[user].name);
+                    currmessage = currmessage + "\n" + data[user].name + ": $" + splits[user];
+                }
+                setMessage(currmessage);
             });
+            
+            // const housematesRef = ref(db, "housemates");
+            // get(housematesRef).then((snapshot) => {
+            //     const data = snapshot.val();
+            //     console.log("data:", data);
+            //     for (const user in splits){
+            //         console.log("user: ", data[user].name);
+            //         currmessage = currmessage + "\n" + data[user].name + ": $" + splits[user];
+            //     }
+            //     setMessage(currmessage);
+            // })
+            // .then(() => {
+            //     const receiptItemRef = ref(db, "receipts/"+receiptId+"/receiptitems");
+            //     return get(receiptItemRef) })
+            // .then((snapshot) => {
+            //     const data = snapshot.val();
+            //     const svalues = calculateSplits(data);
+            //     console.log("svalues:", svalues);
+            //     setSplits(svalues);
+            // });
         }
-        fetchData();
+
+        createMessage();
     }, [db]);
 
     async function copyMessage(){
@@ -76,7 +102,10 @@ export default function Message() {
                   >
                       <Text className="text-white text-center">Copy Message</Text>
                   </Pressable> */}
-                  <CustomButton buttonLabel="Create House" onPress={() => copyMessage()}></CustomButton>
+                  <Pressable className="bg-emerald-900 rounded-lg py-3 px-6 self-center hover:bg-[#3e5636]" onPress={copyMessage}>
+                       <Text className="text-white text-sm font-semibold">Copy Message</Text>
+                  </Pressable>
+                  {/* <CustomButton buttonLabel="Create House" onPress={() => copyMessage()}></CustomButton> */}
                 </View>
             </View>
             <NavBar location="message"/>

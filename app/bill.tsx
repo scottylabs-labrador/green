@@ -3,7 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { getDatabase, ref, set, push, onValue, get } from "firebase/database";
 import NavBar from '../components/NavBar';
 import ReceiptItem from '../components/ReceiptItem';
-import { useLocalSearchParams } from "expo-router"; 
+import { useLocalSearchParams, useRouter, Link } from "expo-router"; 
+import LinkButton from "../components/LinkButton";
+import CustomButton from '../components/CustomButton';
 
 export default function Bill() {
     // TODO: Implement the bill page
@@ -17,6 +19,7 @@ export default function Bill() {
     const [modalVisible, setModalVisible] = useState(false);
     const [item, onChangeItem] = useState('');
     const db = getDatabase();
+    const router = useRouter();
     
 
     useEffect(() => {
@@ -86,7 +89,7 @@ export default function Bill() {
                     <Text className="text-1xl text-right text-white font-light">Change</Text>
                 </View>
             </View>
-            <View className="flex gap-4 w-full h-[200px] flex-grow bg-white self-end rounded-t-[40px] px-4 pt-6 pb-24 overflow-hidden ">
+            <View className="flex gap-4 w-full h-[200px] flex-grow bg-white self-end rounded-t-[40px] px-4 pt-6 pb-20 overflow-hidden ">
                 {Object.keys(unmatchedItems).length > 0 ? (
                     <View className="h-1/2">
                         <Text className="text-1xl text-left font-medium text-black w-1/2 mx-4 mb-4">Unmatched Items:</Text>
@@ -100,7 +103,7 @@ export default function Bill() {
                 ) : (
                     <View></View>
                 )}
-                <View className="h-1/2">
+                <View className="h-1/2 flex-1">
                     <Text className="text-1xl text-left font-medium text-black w-1/2 mx-4 mb-4">Matched Items:</Text>
                     {Object.keys(matchedItems).length > 0 ? (
                         <FlatList 
@@ -115,8 +118,20 @@ export default function Bill() {
                         </View>
                     )}
                 </View>
+                {Object.keys(unmatchedItems).length == 0 ? (
+                    <View className="bg-white">
+                        <Pressable className="bg-[#6d0846] rounded-lg py-3 px-6 self-center hover:bg-[#560638]">
+                            <Link href={{pathname: "/message", 
+                                params: { receiptId: receiptId }}} className="flex items-center justify-center">
+                            <Text className="text-white text-sm font-semibold">Generate Totals</Text>
+                            </Link>
+                        </Pressable>
+                    </View>
+                ) : (
+                    <View></View>
+                )}
             </View>
-            <NavBar grocerylist_id = {""} location="bill"/>
+            <NavBar location="bill"/>
         </View>
         </View>
     );
