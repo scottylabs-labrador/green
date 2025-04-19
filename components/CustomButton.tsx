@@ -15,7 +15,7 @@ const CustomButton = ({ buttonLabel, onPress }: ButtonProps) => {
   };
 
   return (
-    <Pressable className="bg-emerald-900 rounded-lg py-3 px-6 self-center hover:bg-[#3e5636] mb-4" onPress={handlePress}>
+    <Pressable className="bg-emerald-900 rounded-lg py-3 px-6 self-center hover:bg-emerald-950 mb-4" onPress={handlePress}>
         <Text className="text-white text-lg font-semibold">{buttonLabel}</Text>
     </Pressable>
   )

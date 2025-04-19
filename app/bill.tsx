@@ -29,18 +29,20 @@ export default function Bill() {
                 const data = snapshot.val();
                 let unmatched = {};
                 let matched = {};
-                for (const key of Object.keys(data)) {
-                    console.log("item: ", data[key].groceryItem, typeof data[key].groceryItem);
-                    if (data[key].groceryItem.length == 0) {
-                        unmatched[key] = data[key];
+                if (data) {
+                    for (const key of Object.keys(data)) {
+                        console.log("item: ", data[key].groceryItem, typeof data[key].groceryItem);
+                        if (data[key].groceryItem.length == 0) {
+                            unmatched[key] = data[key];
+                        }
+                        else {
+                            matched[key] = data[key];
+                        }
                     }
-                    else {
-                        matched[key] = data[key];
-                    }
+                    setUnmatchedItems(unmatched);
+                    setMatchedItems(matched);
+                    console.log("receipt items: ", data);
                 }
-                setUnmatchedItems(unmatched);
-                setMatchedItems(matched);
-                console.log("receipt items: ", data);
             });
         }
         fetchData();

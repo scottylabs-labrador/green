@@ -29,9 +29,12 @@ import Fuse from "fuse.js";
 //     }, {});
 // };
 
-export const matchWords = (receiptItems, groceryListItems, groceryItemObjects, threshold = 0.3) => {
+export const matchWords = (userEmail, receiptItems, groceryListItems, groceryItemObjects, threshold = 0.3) => {
     const fuse = new Fuse(groceryListItems, { threshold });
     const usedWords = new Set();
+    console.log("userEmail:", userEmail);
+    var emailParts = userEmail.split(".");
+    var filteredEmail = emailParts[0] + ":" + emailParts[1];
 
     let listOfItems = Object.keys(receiptItems).map(word => {
         const results = fuse.search(word);
@@ -47,7 +50,7 @@ export const matchWords = (receiptItems, groceryListItems, groceryItemObjects, t
             }
             return { receiptItem: word, groceryItem: bestMatch.item, price: receiptItems[word], splits: splits }; // word is from the receiptItems, bestMatch is from groceryListItems
         }
-        return { receiptItem: word, groceryItem: "", price: receiptItems[word], splits: [] };
+        return { receiptItem: word, groceryItem: "", price: receiptItems[word], splits: [filteredEmail] };
     });
 
     return listOfItems.reduce((obj, item) => {

@@ -40,7 +40,7 @@ export default function Message() {
                 console.log("data:", data);
                 for (const user in splits){
                     console.log("user: ", data[user].name);
-                    currmessage = currmessage + "\n" + data[user].name + ": $" + splits[user];
+                    currmessage = currmessage + "\n" + data[user].name + ": $" + splits[user].toFixed(2);
                 }
                 setMessage(currmessage);
             });

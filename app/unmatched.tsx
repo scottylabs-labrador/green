@@ -17,8 +17,9 @@ export default function UnmatchedItem() {
   const [colors, setColors] = useState({});
   const [price, setPrice] = useState('');
   const [splits, setSplits] = useState([]);
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  // const [newItem, setNewItem] = useState('');
+  const [selectedUsers, setSelectedUsers] = useState<[]>([]);
+  const [newItem, setNewItem] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
   const db = getDatabase();
 
   type groceryListType = {
@@ -27,14 +28,18 @@ export default function UnmatchedItem() {
     splits: String[]
   }
 
+  const inSplit = 'outline outline-emerald-900 outline-offset-1';
+
   useEffect(() => {
     onValue(ref(db, 'receipts/' + receiptId + '/receiptitems/' + itemId), (snapshot) => {
       const data = snapshot.val();
-      console.log("splits: " + data.price);
-      setItemName(data.receiptItem);
-      setSelectedItem(data.groceryItem);
-      setPrice(data.price.toFixed(2).toString());
-      setSplits(data.splits);
+      // console.log("splits: " + data.price);
+      if (data) {
+        setItemName(data.receiptItem);
+        setSelectedItem(data.groceryItem);
+        setPrice(data?.price.toFixed(2).toString());
+        setSplits(data.splits);
+      }
     });
   }, []);
 
@@ -62,7 +67,7 @@ export default function UnmatchedItem() {
           .then((snapshot) => {
             if (snapshot.exists()) {
               const data = snapshot.val();
-              // console.log("data for grocery lists:" + data.grocerylist);
+              // console.log("data for grocery lists:" + data);
               let members = data.members;
               setColors(members);
               let groceryList = data.grocerylist;
@@ -97,10 +102,14 @@ export default function UnmatchedItem() {
     setSplits(groceryItems[id].splits);
   };
 
-  const ProfileButton = () => {
+  const ProfileButton = ({ item }) => {
     return (
-      <Pressable className="w-10 h-10 justify-center items-center bg-sky-200 rounded-full ">
-        <Text className="text-2xl text-white">A</Text>
+      // <Pressable className="w-10 h-10 justify-center items-center bg-sky-200 rounded-full ">
+      //   <Text className="text-2xl text-white">A</Text>
+      // </Pressable>
+      <Pressable className={`w-10 h-10 rounded-full self-center flex items-center justify-center ${splits.includes(item) ? inSplit : ''}`} style={{ backgroundColor: "#"+ colors[item].color}}
+                onPress={() => {prev=>setSplits([...prev, item])}}>
+          <Text className="text-2xl w-1/2 self-center text-center text-white">{colors[item].name[0].toUpperCase()}</Text>
       </Pressable>
     )
   }
@@ -149,41 +158,6 @@ export default function UnmatchedItem() {
     );
   }
 
-  const createNewItem = (item: string) => {
-    console.log("create", item);
-    setSelectedItem(item);
-    setSplits([]);
-  }
-
-  const AddNewItem = ({ onSubmit }) => {
-    const [newItem2, setNewItem2] = useState('');
-
-    const handleSubmit = () => {
-      console.log("new item: ", newItem2);
-      onSubmit(newItem2);
-      setNewItem2(newItem2);
-      // setSelectedItem(text);
-      // setSplits([]);
-    }
-
-    return (
-      <View className="flex-row items-center justify-start w-full h-12 self-center px-2 border-y border-gray-200 focus:bg-black">
-          <TextInput 
-              className="text-gray-400 text-left w-1/2 grow h-fit rounded-md outline-none" 
-              placeholder="New Item"
-              value={newItem2}
-              onChangeText={setNewItem2}
-              returnKeyType="done"
-              onSubmitEditing={handleSubmit}/>
-          <Octicons
-            name="check-circle-fill"
-            size={20}
-            color={selectedItem == newItem2 ? '#1cb022' : 'lightgray'}
-          />
-      </View>
-    )
-  }
-
   const handlePriceChange = (value: string) => {
     let sanitized = value.replace(/[^\d.]/g, '');
 
@@ -199,6 +173,15 @@ export default function UnmatchedItem() {
 
     setPrice(sanitized);
   };
+
+  const handleNewItem = (value: string) => {
+    setNewItem(value);
+    setSelectedItem(value);
+  }
+
+  const toggleModal = () => {
+    setModalVisible(!modalVisible);
+};
 
   return (
     <View className="flex-1 items-center">
@@ -237,8 +220,20 @@ export default function UnmatchedItem() {
               renderItem={renderUnmatchedItem}
               keyExtractor={item => item}
               ListFooterComponent={
-                <AddNewItem
-                  onSubmit={createNewItem}/>
+                // <AddNewItem
+                //   onSubmit={createNewItem}/>
+                <View className="flex-row items-center justify-start w-full h-12 self-center px-2 border-y border-gray-200 focus:bg-black">
+                  <TextInput 
+                      className="text-gray-400 text-left w-1/2 grow h-fit rounded-md outline-none" 
+                      placeholder="New Item"
+                      value={newItem}
+                      onChangeText={handleNewItem}/>
+                  <Octicons
+                    name="check-circle-fill"
+                    size={20}
+                    color={selectedItem == newItem ? '#1cb022' : 'lightgray'}
+                  />
+              </View>
               }
             />
           ) : (
@@ -260,14 +255,24 @@ export default function UnmatchedItem() {
           <Text className="text-2xl text-left font-medium text-black">Claimed by:</Text>
           <View>
             {splits ? <FlatList 
-                            className="v-full h-10 p-0 mt-1"
-                            data={Object.keys(splits)}
-                            renderItem={renderColor}
-                            keyExtractor={item => item}
-                            horizontal={true} 
-                            contentContainerStyle={{ gap: 5 }}
-                            />
-                        : <View></View>}
+                        className="v-full h-10 p-0 mt-1"
+                        data={Object.keys(splits)}
+                        renderItem={renderColor}
+                        keyExtractor={item => item}
+                        horizontal={true} 
+                        contentContainerStyle={{ gap: 5 }}
+                        ListFooterComponent={
+                          <View>
+                            <Pressable 
+                              className="w-10 h-10 items-center justify-center"
+                              onPress={toggleModal}
+                          >
+                              <Ionicons name="add-circle" size={36} color="lightgray"/>
+                          </Pressable>
+                          </View>
+                        }
+                        />
+                      : <View></View>}
           </View>
           <View className="absolute right-6 bottom-8 flex flex-row gap-3 justify-center items-center">
             <Pressable className="">
@@ -302,6 +307,28 @@ export default function UnmatchedItem() {
               </Pressable>
               : <View></View>}
           </View>
+
+          <Modal 
+            visible={modalVisible}
+            animationType="slide"
+            transparent={true}
+            >
+            <View className="w-2/3 h-36 m-auto bg-white shadow-md rounded-lg py-5 px-7 align-center">
+                <Ionicons
+                    name='close'
+                    size={24}
+                    onPress={toggleModal}/>
+                <Text className="self-center">Add Split</Text>
+                <FlatList 
+                  className="v-full h-10 p-0 px-2 mt-1"
+                  data={Object.keys(colors)}
+                  renderItem={ProfileButton}
+                  horizontal={true}
+                  keyExtractor={item => item}
+                  contentContainerStyle={{ gap: 10 }}
+                  />
+              </View>
+          </Modal>
         </View>
         <NavBar location="unmatched" />
       </View>

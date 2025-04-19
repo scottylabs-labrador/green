@@ -132,7 +132,7 @@ export default function Page() {
       }).then((data) => {
         console.log("data:", data);
         let receiptLines = JSON.parse(data).items;
-        let receiptItems = matchWords(receiptLines, groceryItems, groceryItemObjects);
+        let receiptItems = matchWords(getCurrentUser().email, receiptLines, groceryItems, groceryItemObjects);
         console.log(receiptItems);
         const receiptId = window.crypto.randomUUID();
         writeMatches(receiptId, houseCode, receiptItems);
