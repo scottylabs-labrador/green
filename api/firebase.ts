@@ -225,6 +225,14 @@ export function updateItemPrice(receiptId, receiptItemId, price) {
   return update(ref(db), updates);
 }
 
+export function deleteReceiptItem(receiptId, receiptItemId) {
+  const db = getDatabase();
+  const itemRef = ref(db, `receipts/${receiptId}/receiptitems/${receiptItemId}`);
+  remove(itemRef) // Remove the item
+    .then(() => console.log(`Removed item: ${name}`))
+    .catch((error) => console.error('Error removing item:', error));
+}
+
 export async function createUser(
   name: string,
   phone_number: string,

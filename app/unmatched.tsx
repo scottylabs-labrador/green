@@ -5,7 +5,9 @@ import { Link, useRouter, useLocalSearchParams } from "expo-router";
 import { Octicons } from '@expo/vector-icons';
 import NavBar from '../components/NavBar';
 import { onAuthChange } from "../api/auth";
-import { getCurrentUser, matchReceiptItem, updateItemPrice } from "../api/firebase";
+import { getCurrentUser, matchReceiptItem, updateItemPrice, deleteReceiptItem } from "../api/firebase";
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function UnmatchedItem() {
   const { itemId, receiptId } = useLocalSearchParams();
@@ -16,6 +18,7 @@ export default function UnmatchedItem() {
   const [price, setPrice] = useState('');
   const [splits, setSplits] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  // const [newItem, setNewItem] = useState('');
   const db = getDatabase();
 
   type groceryListType = {
@@ -146,6 +149,41 @@ export default function UnmatchedItem() {
     );
   }
 
+  const createNewItem = (item: string) => {
+    console.log("create", item);
+    setSelectedItem(item);
+    setSplits([]);
+  }
+
+  const AddNewItem = ({ onSubmit }) => {
+    const [newItem2, setNewItem2] = useState('');
+
+    const handleSubmit = () => {
+      console.log("new item: ", newItem2);
+      onSubmit(newItem2);
+      setNewItem2(newItem2);
+      // setSelectedItem(text);
+      // setSplits([]);
+    }
+
+    return (
+      <View className="flex-row items-center justify-start w-full h-12 self-center px-2 border-y border-gray-200 focus:bg-black">
+          <TextInput 
+              className="text-gray-400 text-left w-1/2 grow h-fit rounded-md outline-none" 
+              placeholder="New Item"
+              value={newItem2}
+              onChangeText={setNewItem2}
+              returnKeyType="done"
+              onSubmitEditing={handleSubmit}/>
+          <Octicons
+            name="check-circle-fill"
+            size={20}
+            color={selectedItem == newItem2 ? '#1cb022' : 'lightgray'}
+          />
+      </View>
+    )
+  }
+
   const handlePriceChange = (value: string) => {
     let sanitized = value.replace(/[^\d.]/g, '');
 
@@ -175,12 +213,12 @@ export default function UnmatchedItem() {
               pathname: '/bill',
               params: { receiptId: receiptId }
             }}
-            onPress={() => {
-              if (selectedItem !== "") {
-                matchReceiptItem(receiptId, itemId, selectedItem, splits);
-              }
-              updateItemPrice(receiptId, itemId, parseFloat(price));
-            }}
+            // onPress={() => {
+            //   if (selectedItem !== "") {
+            //     matchReceiptItem(receiptId, itemId, selectedItem, splits);
+            //   }
+            //   updateItemPrice(receiptId, itemId, parseFloat(price));
+            // }}
             className="absolute top-4 right-6 w-fit h-fit"
             asChild>
             <Pressable className="absolute top-4 right-6">
@@ -198,6 +236,10 @@ export default function UnmatchedItem() {
               data={Object.keys(groceryItems)}
               renderItem={renderUnmatchedItem}
               keyExtractor={item => item}
+              ListFooterComponent={
+                <AddNewItem
+                  onSubmit={createNewItem}/>
+              }
             />
           ) : (
             <View>
@@ -226,6 +268,39 @@ export default function UnmatchedItem() {
                             contentContainerStyle={{ gap: 5 }}
                             />
                         : <View></View>}
+          </View>
+          <View className="absolute right-6 bottom-8 flex flex-row gap-3 justify-center items-center">
+            <Pressable className="">
+              <Link
+                href={{
+                  pathname: '/bill',
+                  params: { receiptId: receiptId }
+                }}
+                onPress={() => deleteReceiptItem(receiptId, itemId)}>
+                <FontAwesome6 name="trash-can" size={24} color="gray" />
+              </Link>
+            </Pressable>
+            {selectedItem ? 
+              <Pressable>
+                <Link
+                  href={{
+                    pathname: '/bill',
+                    params: { receiptId: receiptId }
+                  }}
+                  onPress={() => {
+                    if (selectedItem !== "") {
+                      matchReceiptItem(receiptId, itemId, selectedItem, splits);
+                    }
+                    updateItemPrice(receiptId, itemId, parseFloat(price));
+                  }}>
+                  <Octicons
+                    name="check-circle-fill"
+                    size={24}
+                    color="#064e3b"
+                  />
+                </Link>
+              </Pressable>
+              : <View></View>}
           </View>
         </View>
         <NavBar location="unmatched" />
