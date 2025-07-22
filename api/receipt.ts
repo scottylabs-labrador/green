@@ -1,12 +1,24 @@
-import { getDatabase, ref, set, push, onValue, remove, update, orderByChild, query, equalTo, get } from "firebase/database";
+import {
+  getDatabase,
+  ref,
+  set,
+  push,
+  onValue,
+  remove,
+  update,
+  orderByChild,
+  query,
+  equalTo,
+  get,
+} from 'firebase/database';
 import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-} from "firebase/auth";
-import Fuse from "fuse.js";
+} from 'firebase/auth';
+import Fuse from 'fuse.js';
 
 // export const matchWords = (receiptItems, groceryListItems, groceryItemObjects, threshold = 0.3) => {
 //     const fuse = new Fuse(Object.keys(receiptItems), { threshold });
@@ -37,37 +49,48 @@ import Fuse from "fuse.js";
 //     }, {});
 // };
 
-export const matchWords = (userEmail, receiptItems, groceryListItems, groceryItemObjects, threshold = 0.3) => {
-    const fuse = new Fuse(groceryListItems, { threshold });
-    const usedWords = new Set();
-    console.log("userEmail:", userEmail);
-    var emailParts = userEmail.split(".");
-    var filteredEmail = emailParts[0] + ":" + emailParts[1];
+export const matchWords = (
+  userEmail,
+  receiptItems,
+  groceryListItems,
+  groceryItemObjects,
+  threshold = 0.3,
+) => {
+  const fuse = new Fuse(groceryListItems, { threshold });
+  const usedWords = new Set();
+  console.log('userEmail:', userEmail);
+  var emailParts = userEmail.split('.');
+  var filteredEmail = emailParts[0] + ':' + emailParts[1];
 
-    let listOfItems = Object.keys(receiptItems).map(word => {
-        const results = fuse.search(word);
-        const bestMatch = results.find(r => !usedWords.has(r.item));
+  let listOfItems = Object.keys(receiptItems).map(word => {
+    const results = fuse.search(word);
+    const bestMatch = results.find(r => !usedWords.has(r.item));
 
-        if (bestMatch) {
-            usedWords.add(bestMatch.item);
-            let splits = [];
-            for (let i = 0; i < groceryItemObjects.length; i++) {
-                if (groceryItemObjects[i].name == bestMatch.item) {
-                    splits = groceryItemObjects[i].splits
-                }
-            }
-            return { receiptItem: word, groceryItem: bestMatch.item, price: receiptItems[word], splits: splits }; // word is from the receiptItems, bestMatch is from groceryListItems
+    if (bestMatch) {
+      usedWords.add(bestMatch.item);
+      let splits = [];
+      for (let i = 0; i < groceryItemObjects.length; i++) {
+        if (groceryItemObjects[i].name == bestMatch.item) {
+          splits = groceryItemObjects[i].splits;
         }
-        let splits = {};
-        splits[filteredEmail] = 1;
-        return { receiptItem: word, groceryItem: "", price: receiptItems[word], splits: splits };
-    });
+      }
+      return {
+        receiptItem: word,
+        groceryItem: bestMatch.item,
+        price: receiptItems[word],
+        splits: splits,
+      }; // word is from the receiptItems, bestMatch is from groceryListItems
+    }
+    let splits = {};
+    splits[filteredEmail] = 1;
+    return { receiptItem: word, groceryItem: '', price: receiptItems[word], splits: splits };
+  });
 
-    return listOfItems.reduce((obj, item) => {
-        let itemId = window.crypto.randomUUID();
-        obj[itemId] = item;
-        return obj;
-    }, {});
+  return listOfItems.reduce((obj, item) => {
+    let itemId = window.crypto.randomUUID();
+    obj[itemId] = item;
+    return obj;
+  }, {});
 };
 
 // https://chatgpt.com/c/67b11891-1e2c-8009-86bf-ee0c7c6b02a8
@@ -76,25 +99,39 @@ export const matchWords = (userEmail, receiptItems, groceryListItems, groceryIte
 
 export function writeMatches(receiptId, houseCode, receiptItems) {
   const db = getDatabase();
-//   const postReceiptRef = ref(db, 'receipts/' + receiptId);
-//   set(postReceiptRef, {
-//     receiptitems: receiptItems
-//   });
-//   return postReceiptRef;
+  //   const postReceiptRef = ref(db, 'receipts/' + receiptId);
+  //   set(postReceiptRef, {
+  //     receiptitems: receiptItems
+  //   });
+  //   return postReceiptRef;
   const updates = {};
   const currentDate = new Date();
-  updates['/receipts/' + receiptId] = { receiptitems: receiptItems, date: currentDate.toLocaleDateString() };
-  updates['/houses/' + houseCode + '/receipts/' + receiptId] = { date: currentDate.toLocaleDateString() };
+  updates['/receipts/' + receiptId] = {
+    receiptitems: receiptItems,
+    date: currentDate.toLocaleDateString(),
+  };
+  updates['/houses/' + houseCode + '/receipts/' + receiptId] = {
+    date: currentDate.toLocaleDateString(),
+  };
   return update(ref(db), updates);
 }
 
-export function updateReceiptItem(receiptId, receiptItemId, receiptItemName, groceryItemName, splits, price) {
+export function updateReceiptItem(
+  receiptId,
+  receiptItemId,
+  receiptItemName,
+  groceryItemName,
+  splits,
+  price,
+) {
   const db = getDatabase();
   const updates = {};
-  console.log("update receiptItemId: ", receiptItemId);
-  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/groceryItem'] = groceryItemName;
-  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/splits'] = splits;
-  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/receiptItem'] = receiptItemName;
-  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/price'] = price;
+  console.log('update receiptItemId: ', receiptItemId);
+  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/groceryItem'] =
+    groceryItemName;
+  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/splits'] = splits;
+  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/receiptItem'] =
+    receiptItemName;
+  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/price'] = price;
   return update(ref(db), updates);
 }

@@ -5,7 +5,7 @@ import { getCurrentUser, userSignOut, db } from '../../api/firebase';
 import { onAuthChange } from '../../api/auth';
 import HouseInfo from '../../components/HouseInfo';
 import Button from '../../components/CustomButton';
-import { useRouter } from "expo-router";
+import { useRouter } from 'expo-router';
 
 export default function Profile() {
   const [name, setName] = useState('Name');
@@ -18,7 +18,7 @@ export default function Profile() {
   const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthChange((user) => {
+    const unsubscribe = onAuthChange(user => {
       if (!user) {
         router.replace('/login');
         return;
@@ -66,19 +66,19 @@ export default function Profile() {
 
   return (
     <View className="flex-1 items-center justify-start p-6">
-      <View className="pt-10 flex justify-center items-center max-w-lg w-full gap-1">
+      <View className="flex w-full max-w-lg items-center justify-center gap-1 pt-10">
         <View
-          className="ml-1 w-32 h-32 rounded-full self-center flex items-center justify-center"
+          className="ml-1 flex h-32 w-32 items-center justify-center self-center rounded-full"
           style={{ backgroundColor: `#${color}` }}
         >
-          <Text className="text-5xl text-white text-center">{name[0]?.toUpperCase()}</Text>
+          <Text className="text-center text-5xl text-white">{name[0]?.toUpperCase()}</Text>
         </View>
 
-        <Text className="pt-2 text-3xl font-bold text-center">{name}</Text>
-        <Text className="text-lg text-center text-gray-500 pb-4">{email}</Text>
+        <Text className="pt-2 text-center text-3xl font-bold">{name}</Text>
+        <Text className="pb-4 text-center text-lg text-gray-500">{email}</Text>
 
-        <View className="flex-col justify-center items-center w-full mb-32">
-          <Text className="w-full text-left px-5 text-lg text-gray-500 font-medium">Houses</Text>
+        <View className="mb-32 w-full flex-col items-center justify-center">
+          <Text className="w-full px-5 text-left text-lg font-medium text-gray-500">Houses</Text>
           <HouseInfo name={houseName} houseid={houseId} members={members} />
         </View>
 

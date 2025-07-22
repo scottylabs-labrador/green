@@ -1,10 +1,9 @@
-
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import React, { useRef, useState, useEffect } from 'react';
-import { onAuthChange } from "../../api/auth";
-import { getCurrentUser } from "../../api/firebase";
-import { writeMatches } from "../../api/receipt";
-import { getDatabase, ref, set, push, onValue, get, remove, child } from "firebase/database";
+import { onAuthChange } from '../../api/auth';
+import { getCurrentUser } from '../../api/firebase';
+import { writeMatches } from '../../api/receipt';
+import { getDatabase, ref, set, push, onValue, get, remove, child } from 'firebase/database';
 import { Button, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { matchWords } from '../../api/receipt';
@@ -12,7 +11,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function Page() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
   const [imageUri, setImageUri] = useState(null);
@@ -20,27 +19,27 @@ export default function Page() {
   const [receiptLines, setReceiptLines] = useState([]);
   const [groceryItems, setGroceryItems] = useState([]);
   const [groceryItemObjects, setGroceryItemObjects] = useState([]);
-  const [houseCode, setHouseCode] = useState("");
+  const [houseCode, setHouseCode] = useState('');
   const db = getDatabase();
   const router = useRouter();
 
   let RECEIPT_API_URL = 'http://127.0.0.1:8000/receiptLines';
 
   type groceryListType = {
-    name: String,
-    quantity: number,
-    splits: String[]
-  }
+    name: String;
+    quantity: number;
+    splits: String[];
+  };
 
   useEffect(() => {
-    const getGroceryList = onAuthChange((user) => {
+    const getGroceryList = onAuthChange(user => {
       if (user) {
         let email = getCurrentUser().email;
-        var emailParts = email.split(".");
-        var filteredEmail = emailParts[0] + ":" + emailParts[1];
+        var emailParts = email.split('.');
+        var filteredEmail = emailParts[0] + ':' + emailParts[1];
         const dbRef = ref(db);
         get(child(dbRef, `housemates/${filteredEmail}`))
-          .then((snapshot) => {
+          .then(snapshot => {
             if (snapshot.exists()) {
               const data = snapshot.val();
               // console.log("data for house:" + data.houses[0].toString());
@@ -48,26 +47,24 @@ export default function Page() {
               setHouseCode(houses);
               const houseRef = child(dbRef, `houses/${houses}`);
               return get(houseRef);
-            }
-            else {
-              console.log("failed to get houses");
-              return Promise.reject("no house found");
+            } else {
+              console.log('failed to get houses');
+              return Promise.reject('no house found');
             }
           })
-          .then((snapshot) => {
+          .then(snapshot => {
             if (snapshot.exists()) {
               const data = snapshot.val();
               // console.log("data for grocery lists:" + data.grocerylist);
               let groceryList = data.grocerylist;
               const itemRef = child(dbRef, `grocerylists/${groceryList}`);
               return get(itemRef);
-            }
-            else {
-              console.log("failed to get grocery list");
-              return Promise.reject("no grocery list")
+            } else {
+              console.log('failed to get grocery list');
+              return Promise.reject('no grocery list');
             }
           })
-          .then((snapshot) => {
+          .then(snapshot => {
             if (snapshot.exists()) {
               const data = snapshot.val();
               // console.log("data for list items:" + JSON.stringify(data.groceryitems));
@@ -75,20 +72,18 @@ export default function Page() {
               let itemObjects = [];
               for (const [_, value] of Object.entries(data.groceryitems)) {
                 items.push((value as groceryListType).name);
-                itemObjects.push((value as groceryListType));
+                itemObjects.push(value as groceryListType);
               }
-              console.log("grocery items:", items);
+              console.log('grocery items:', items);
               setGroceryItems(items);
               setGroceryItemObjects(itemObjects);
-            }
-            else {
-              console.log("failed to get grocery items");
+            } else {
+              console.log('failed to get grocery items');
             }
           });
-      }
-      else {
-        console.log("no user");
-        window.location.href = "/login"; // Redirect if not logged in
+      } else {
+        console.log('no user');
+        window.location.href = '/login'; // Redirect if not logged in
       }
     });
   }, []);
@@ -125,24 +120,30 @@ export default function Page() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          "image": photo.base64
+          image: photo.base64,
         }),
-      }).then((response) => {
-        // receipt lines
-        return response.json()
-      }).then((data) => {
-        console.log("data:", data);
-        let receiptLines = JSON.parse(data).items;
-        let receiptItems = matchWords(getCurrentUser().email, receiptLines, groceryItems, groceryItemObjects);
-        console.log(receiptItems);
-        const receiptId = window.crypto.randomUUID();
-        writeMatches(receiptId, houseCode, receiptItems);
-        router.replace(
-          {
+      })
+        .then(response => {
+          // receipt lines
+          return response.json();
+        })
+        .then(data => {
+          console.log('data:', data);
+          let receiptLines = JSON.parse(data).items;
+          let receiptItems = matchWords(
+            getCurrentUser().email,
+            receiptLines,
+            groceryItems,
+            groceryItemObjects,
+          );
+          console.log(receiptItems);
+          const receiptId = window.crypto.randomUUID();
+          writeMatches(receiptId, houseCode, receiptItems);
+          router.replace({
             pathname: '/bill',
-            params: { receiptId: receiptId }
+            params: { receiptId: receiptId },
           });
-      });
+        });
       // .then((receipt) => {
 
       // })
@@ -150,26 +151,37 @@ export default function Page() {
   }
 
   return (
-    <View className="w-full h-full flex-1 justify-center">
-      {imageUri ? <Image source={{ uri: imageUri }} className="w-full h-full" /> :
+    <View className="h-full w-full flex-1 justify-center">
+      {imageUri ? (
+        <Image source={{ uri: imageUri }} className="h-full w-full" />
+      ) : (
         <View className="h-full w-full">
           <CameraView ref={cameraRef} className="flex-1" facing={facing}>
-            <View className="flex-1 flex-row m-6 justify-center">
-              <Text className="text-white font-medium">Make sure receipt is flat and lighting is good</Text>
+            <View className="m-6 flex-1 flex-row justify-center">
+              <Text className="font-medium text-white">
+                Make sure receipt is flat and lighting is good
+              </Text>
             </View>
           </CameraView>
           <View className="absolute bottom-0 left-0 w-full flex-row items-center justify-center px-2 py-4">
-            <View className="w-16 h-16"></View>
-            <View className="flex-1 justify-center items-center">
-              <TouchableOpacity className='w-16 h-16 rounded-full bg-white shadow-lg' onPress={takePicture}></TouchableOpacity>
+            <View className="h-16 w-16"></View>
+            <View className="flex-1 items-center justify-center">
+              <TouchableOpacity
+                className="h-16 w-16 rounded-full bg-white shadow-lg"
+                onPress={takePicture}
+              ></TouchableOpacity>
             </View>
-            <View className="flex justify-center items-center w-16 h-16">
-              <TouchableOpacity className='w-14 h-14 rounded-full bg-black shadow-lg justify-center items-center' onPress={toggleCameraFacing}>
+            <View className="flex h-16 w-16 items-center justify-center">
+              <TouchableOpacity
+                className="h-14 w-14 items-center justify-center rounded-full bg-black shadow-lg"
+                onPress={toggleCameraFacing}
+              >
                 <FontAwesome6 name="arrows-rotate" size={24} color="white" />
               </TouchableOpacity>
             </View>
           </View>
-        </View>}
+        </View>
+      )}
     </View>
   );
 }

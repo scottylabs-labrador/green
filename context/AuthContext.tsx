@@ -7,8 +7,8 @@ type AuthContextType = {
   loading: boolean;
 };
 
-const AuthContext = createContext<AuthContextType>({ 
-  user: null, 
+const AuthContext = createContext<AuthContextType>({
+  user: null,
   loading: true,
 });
 
@@ -17,7 +17,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const authState = onAuthStateChanged(auth, (user) => {
+    const authState = onAuthStateChanged(auth, user => {
       setUser(user);
       setLoading(false);
     });
@@ -25,11 +25,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return authState;
   }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, loading }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, loading }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => useContext(AuthContext);

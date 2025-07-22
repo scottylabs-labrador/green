@@ -1,11 +1,20 @@
-import { View, Text, Pressable, TouchableOpacity, ScrollView, Modal, FlatList, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+  FlatList,
+  TextInput,
+} from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { getDatabase, ref, set, push, onValue, get, child } from "firebase/database";
-import { Link, useRouter, useLocalSearchParams } from "expo-router";
+import { getDatabase, ref, set, push, onValue, get, child } from 'firebase/database';
+import { Link, useRouter, useLocalSearchParams } from 'expo-router';
 import { Octicons } from '@expo/vector-icons';
-import { onAuthChange } from "../../api/auth";
-import { getCurrentUser, deleteReceiptItem, db } from "../../api/firebase";
-import { updateReceiptItem } from "../../api/receipt";
+import { onAuthChange } from '../../api/auth';
+import { getCurrentUser, deleteReceiptItem, db } from '../../api/firebase';
+import { updateReceiptItem } from '../../api/receipt';
 import SplitProfile from '../../components/SplitProfile';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -15,7 +24,7 @@ export default function UnmatchedItem() {
   const [userId, setUserId] = useState('');
   const [itemName, setItemName] = useState('');
   const [groceryItems, setGroceryItems] = useState({});
-  const [selectedItem, setSelectedItem] = useState("");
+  const [selectedItem, setSelectedItem] = useState('');
   const [colors, setColors] = useState({});
   const [price, setPrice] = useState('');
   const [splits, setSplits] = useState({});
@@ -28,7 +37,7 @@ export default function UnmatchedItem() {
 
   useEffect(() => {
     if (itemId !== undefined) {
-      onValue(ref(db, 'receipts/' + receiptId + '/receiptitems/' + itemId), (snapshot) => {
+      onValue(ref(db, 'receipts/' + receiptId + '/receiptitems/' + itemId), snapshot => {
         const data = snapshot.val();
         if (data) {
           setItemName(data.receiptItem);
@@ -37,34 +46,32 @@ export default function UnmatchedItem() {
           setSplits(data.splits);
         }
       });
-    }
-    else {
+    } else {
       itemId = window.crypto.randomUUID();
     }
   }, []);
 
   useEffect(() => {
-    const getGroceryList = onAuthChange((user) => {
+    const getGroceryList = onAuthChange(user => {
       if (user) {
         let email = getCurrentUser().email;
-        var emailParts = email.split(".");
-        var filteredEmail = emailParts[0] + ":" + emailParts[1];
+        var emailParts = email.split('.');
+        var filteredEmail = emailParts[0] + ':' + emailParts[1];
         setUserId(filteredEmail);
         const dbRef = ref(db);
         get(child(dbRef, `housemates/${filteredEmail}`))
-          .then((snapshot) => {
+          .then(snapshot => {
             if (snapshot.exists()) {
               const data = snapshot.val();
               let houses = data.houses[0].toString();
               const houseRef = child(dbRef, `houses/${houses}`);
               return get(houseRef);
-            }
-            else {
-              console.error("failed to get houses");
-              return Promise.reject("no house found");
+            } else {
+              console.error('failed to get houses');
+              return Promise.reject('no house found');
             }
           })
-          .then((snapshot) => {
+          .then(snapshot => {
             if (snapshot.exists()) {
               const data = snapshot.val();
               let members = data.members;
@@ -72,25 +79,22 @@ export default function UnmatchedItem() {
               let groceryList = data.grocerylist;
               const itemRef = child(dbRef, `grocerylists/${groceryList}`);
               return get(itemRef);
-            }
-            else {
-              console.error("failed to get grocery list");
-              return Promise.reject("no grocery list")
+            } else {
+              console.error('failed to get grocery list');
+              return Promise.reject('no grocery list');
             }
           })
-          .then((snapshot) => {
+          .then(snapshot => {
             if (snapshot.exists()) {
               const data = snapshot.val();
               setGroceryItems(data.groceryitems);
-            }
-            else {
-              console.error("failed to get grocery items");
+            } else {
+              console.error('failed to get grocery items');
             }
           });
-      }
-      else {
-        console.error("no user");
-        router.replace("/login"); // Redirect if not logged in
+      } else {
+        console.error('no user');
+        router.replace('/login'); // Redirect if not logged in
       }
     });
   }, []);
@@ -103,25 +107,28 @@ export default function UnmatchedItem() {
   const toggleSplit = (id: string) => {
     if (splits && Object.keys(splits).includes(id)) {
       // setSplits(prev => prev.filter(elem => elem != id));
-    }
-    else if (splits) {
+    } else if (splits) {
       // setSplits(prev => [...prev, id]);
-    }
-    else {
+    } else {
       let newSplits = {};
       newSplits[userId] = 1;
       setSplits(newSplits);
     }
-  }
+  };
 
   const renderProfileButton = ({ item }) => {
     return (
-      <Pressable className={`w-10 h-10 rounded-full self-center flex items-center justify-center ${splits && Object.keys(splits).includes(item) ? inSplit : ''}`} style={{ backgroundColor: "#"+ colors[item].color}}
-                  onPress={() => toggleSplit(item)}>
-        <Text className="text-2xl w-1/2 self-center text-center text-white">{colors[item].name[0].toUpperCase()}</Text>
+      <Pressable
+        className={`flex h-10 w-10 items-center justify-center self-center rounded-full ${splits && Object.keys(splits).includes(item) ? inSplit : ''}`}
+        style={{ backgroundColor: '#' + colors[item].color }}
+        onPress={() => toggleSplit(item)}
+      >
+        <Text className="w-1/2 self-center text-center text-2xl text-white">
+          {colors[item].name[0].toUpperCase()}
+        </Text>
       </Pressable>
-    )
-  }
+    );
+  };
 
   const renderColor = ({ item }) => {
     // return <SplitProfile
@@ -131,14 +138,16 @@ export default function UnmatchedItem() {
     //   size={10}
     //   fontSize={"2xl"}
     // />
-    return <SplitProfile
-          key={item}
-          colors={colors}
-          item={item}
-          size={10}
-          fontSize={"2xl"}
-          quantity={splits[item]}
-        />
+    return (
+      <SplitProfile
+        key={item}
+        colors={colors}
+        item={item}
+        size={10}
+        fontSize={'2xl'}
+        quantity={splits[item]}
+      />
+    );
     // try{
     //   return (
     //     // <Text className="flex-1 text-1xl text-left w-1/2 self-center">{colors[item]}</Text>
@@ -155,45 +164,37 @@ export default function UnmatchedItem() {
     //         </View>
     //       );
     // }
-  }
+  };
 
   const AddSplit = () => {
     return (
       <View>
-        <Pressable 
-          className="w-10 h-10 items-center justify-center"
-          onPress={toggleModal}
-        >
-          <Ionicons name="add-circle" size={36} color="lightgray"/>
+        <Pressable className="h-10 w-10 items-center justify-center" onPress={toggleModal}>
+          <Ionicons name="add-circle" size={36} color="lightgray" />
         </Pressable>
       </View>
-    )
-  }
+    );
+  };
 
   const UnmatchedItem = ({ id, name }) => {
     return (
       <Pressable
-        className="flex-row items-center justify-start w-full h-12 self-center px-2 border-y border-gray-200"
-        onPress={() => toggleOption(id)}>
-        <Text className="text-1xl text-left font-medium w-1/2 grow">{name}</Text>
+        className="h-12 w-full flex-row items-center justify-start self-center border-y border-gray-200 px-2"
+        onPress={() => toggleOption(id)}
+      >
+        <Text className="text-1xl w-1/2 grow text-left font-medium">{name}</Text>
         <Octicons
           name="check-circle-fill"
           size={20}
           color={selectedItem == name ? '#1cb022' : 'lightgray'}
         />
       </Pressable>
-    )
-  }
+    );
+  };
 
   const renderUnmatchedItem = ({ item }) => {
-    return (
-      <UnmatchedItem
-        key={item}
-        id={item}
-        name={groceryItems[item].name}
-      />
-    );
-  }
+    return <UnmatchedItem key={item} id={item} name={groceryItems[item].name} />;
+  };
 
   const handlePriceChange = (value: string) => {
     let sanitized = value.replace(/[^\d.]/g, '');
@@ -217,7 +218,7 @@ export default function UnmatchedItem() {
     let newSplits = {};
     newSplits[userId] = 1;
     setSplits(newSplits);
-  }
+  };
 
   const toggleModal = () => {
     setModalVisible(!modalVisible);
@@ -225,32 +226,33 @@ export default function UnmatchedItem() {
 
   return (
     <View className="flex-1 items-center">
-      <View className="flex-1 w-full h-full">
-        <View className="flex flex-col justify-center items-center mt-16 mb-8 h-16">
-          <Text className="text-1xl text-center text-white font-medium">Scanned Receipt</Text>
-          <Text className="text-4xl text-center text-white font-medium">Unmatched Item</Text>
+      <View className="h-full w-full flex-1">
+        <View className="mb-8 mt-16 flex h-16 flex-col items-center justify-center">
+          <Text className="text-1xl text-center font-medium text-white">Scanned Receipt</Text>
+          <Text className="text-center text-4xl font-medium text-white">Unmatched Item</Text>
         </View>
-        <View className="relative w-full h-[200px] flex-grow bg-white self-end rounded-3xl p-8 overflow-hidden mb-8">
+        <View className="relative mb-8 h-[200px] w-full flex-grow self-end overflow-hidden rounded-3xl bg-white p-8">
           <Link
             href={{
               pathname: '/bill',
-              params: { receiptId: receiptId }
+              params: { receiptId: receiptId },
             }}
-            className="absolute top-4 right-6 w-fit h-fit"
-            asChild>
-            <Pressable className="absolute top-4 right-6">
-              <Octicons
-                name="x"
-                size={24}
-                color="black" />
+            className="absolute right-6 top-4 h-fit w-fit"
+            asChild
+          >
+            <Pressable className="absolute right-6 top-4">
+              <Octicons name="x" size={24} color="black" />
             </Pressable>
           </Link>
-          <TextInput 
-            className={`text-3xl text-left font-medium border-b border-gray-200 mb-2 ${itemName.length > 0 ? "text-black" : "text-gray-400"}`}
+          <TextInput
+            className={`mb-2 border-b border-gray-200 text-left text-3xl font-medium ${itemName.length > 0 ? 'text-black' : 'text-gray-400'}`}
             placeholder="Item"
             value={itemName}
-            onChangeText={setItemName}/> 
-          <Text className="text-left text-black mb-2">Match the product to a grocery list item from this week!</Text>
+            onChangeText={setItemName}
+          />
+          <Text className="mb-2 text-left text-black">
+            Match the product to a grocery list item from this week!
+          </Text>
           {Object.keys(groceryItems).length > 0 ? (
             <FlatList
               className="mb-2"
@@ -258,68 +260,73 @@ export default function UnmatchedItem() {
               renderItem={renderUnmatchedItem}
               keyExtractor={item => item}
               ListFooterComponent={
-                <View className="flex-row items-center justify-start w-full h-12 self-center px-2 border-y border-gray-200">
-                  <TextInput 
-                      className="text-gray-400 text-left w-1/2 grow h-fit rounded-md outline-none" 
-                      placeholder="New Item"
-                      value={newItem}
-                      onChangeText={handleNewItem}/>
+                <View className="h-12 w-full flex-row items-center justify-start self-center border-y border-gray-200 px-2">
+                  <TextInput
+                    className="h-fit w-1/2 grow rounded-md text-left text-gray-400 outline-none"
+                    placeholder="New Item"
+                    value={newItem}
+                    onChangeText={handleNewItem}
+                  />
                   <Octicons
                     name="check-circle-fill"
                     size={20}
                     color={selectedItem == newItem ? '#1cb022' : 'lightgray'}
                   />
-              </View>
+                </View>
               }
             />
           ) : (
             <View>
-              <Text className="text-3xl font-semibold text-center">Your list is empty!</Text>
-              <Text className="text-1xl text-center">Hit the "add" button to begin creating your shared list</Text>
+              <Text className="text-center text-3xl font-semibold">Your list is empty!</Text>
+              <Text className="text-1xl text-center">
+                Hit the "add" button to begin creating your shared list
+              </Text>
             </View>
           )}
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-2xl text-left font-medium text-black">Price:</Text>
-            <TextInput 
-              className={`text-center w-14 h-fit bg-slate-100 p-2 border-solid rounded-md text-${price ? 'black' : 'slate-400'}`}
+          <View className="mb-2 flex-row items-center justify-between">
+            <Text className="text-left text-2xl font-medium text-black">Price:</Text>
+            <TextInput
+              className={`h-fit w-14 rounded-md border-solid bg-slate-100 p-2 text-center text-${price ? 'black' : 'slate-400'}`}
               placeholder={`0.00`}
               keyboardType="decimal-pad"
               value={price}
               onChangeText={handlePriceChange}
-              />
+            />
           </View>
-          <Text className="text-2xl text-left font-medium text-black">Claimed by:</Text>
+          <Text className="text-left text-2xl font-medium text-black">Claimed by:</Text>
           <View className="">
-            {splits ? <FlatList 
-                        className="v-full h-10 p-0 mt-1"
-                        data={Object.keys(splits)}
-                        renderItem={renderColor}
-                        keyExtractor={item => item}
-                        horizontal={true} 
-                        contentContainerStyle={{ gap: 5 }}
-                        ListFooterComponent={
-                          <AddSplit/>
-                        }
-                        />
-                      : <AddSplit/>}
+            {splits ? (
+              <FlatList
+                className="v-full mt-1 h-10 p-0"
+                data={Object.keys(splits)}
+                renderItem={renderColor}
+                keyExtractor={item => item}
+                horizontal={true}
+                contentContainerStyle={{ gap: 5 }}
+                ListFooterComponent={<AddSplit />}
+              />
+            ) : (
+              <AddSplit />
+            )}
           </View>
-          <View className="absolute right-6 bottom-8 flex flex-row gap-3 justify-center items-center">
+          <View className="absolute bottom-8 right-6 flex flex-row items-center justify-center gap-3">
             <Pressable className="">
               <Link
                 href={{
                   pathname: '/bill',
-                  params: { receiptId: receiptId }
+                  params: { receiptId: receiptId },
                 }}
-                onPress={() => deleteReceiptItem(receiptId, itemId)}>
+                onPress={() => deleteReceiptItem(receiptId, itemId)}
+              >
                 <FontAwesome6 name="trash-can" size={24} color="gray" />
               </Link>
             </Pressable>
-            {selectedItem ? 
+            {selectedItem ? (
               <Pressable>
                 <Link
                   href={{
                     pathname: '/bill',
-                    params: { receiptId: receiptId }
+                    params: { receiptId: receiptId },
                   }}
                   onPress={() => {
                     if (!itemId) {
@@ -328,38 +335,37 @@ export default function UnmatchedItem() {
                     if (price.length == 0) {
                       setPrice('0.00');
                     }
-                    updateReceiptItem(receiptId, itemId, itemName, selectedItem, splits, parseFloat(price));
-                  }}>
-                  <Octicons
-                    name="check-circle-fill"
-                    size={24}
-                    color="#064e3b"
-                  />
+                    updateReceiptItem(
+                      receiptId,
+                      itemId,
+                      itemName,
+                      selectedItem,
+                      splits,
+                      parseFloat(price),
+                    );
+                  }}
+                >
+                  <Octicons name="check-circle-fill" size={24} color="#064e3b" />
                 </Link>
               </Pressable>
-              : <View></View>}
+            ) : (
+              <View></View>
+            )}
           </View>
 
-          <Modal 
-            visible={modalVisible}
-            animationType="slide"
-            transparent={true}
-            >
-            <View className="w-2/3 h-36 m-auto bg-white shadow-md rounded-lg py-5 px-7 align-center">
-                <Ionicons
-                    name='close'
-                    size={24}
-                    onPress={toggleModal}/>
-                <Text className="self-center">Add Split</Text>
-                <FlatList 
-                  className="v-full h-10 p-0 px-2 mt-1"
-                  data={Object.keys(colors)}
-                  renderItem={renderProfileButton}
-                  horizontal={true}
-                  keyExtractor={item => item}
-                  contentContainerStyle={{ gap: 10 }}
-                  />
-              </View>
+          <Modal visible={modalVisible} animationType="slide" transparent={true}>
+            <View className="align-center m-auto h-36 w-2/3 rounded-lg bg-white px-7 py-5 shadow-md">
+              <Ionicons name="close" size={24} onPress={toggleModal} />
+              <Text className="self-center">Add Split</Text>
+              <FlatList
+                className="v-full mt-1 h-10 p-0 px-2"
+                data={Object.keys(colors)}
+                renderItem={renderProfileButton}
+                horizontal={true}
+                keyExtractor={item => item}
+                contentContainerStyle={{ gap: 10 }}
+              />
+            </View>
           </Modal>
         </View>
       </View>
