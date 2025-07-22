@@ -3,9 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { getDatabase, ref, set, push, onValue, get } from "firebase/database";
 import { Link } from "expo-router"; 
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
-import NavBar from '../components/NavBar';
-import MatchedItem from '../components/MatchedItem';
-import CustomButton from "../components/CustomButton";
+import NavBar from '../../components/NavBar';
+import MatchedItem from '../../components/MatchedItem';
+import CustomButton from "../../components/CustomButton";
 
 export default function MatchedBill() {
     // TODO: Implement the bill page
@@ -89,7 +89,6 @@ export default function MatchedBill() {
                   </Pressable>
                 </View>
             </View>
-            <NavBar location="matchedbill"/>
         </View>
         </View>
     );

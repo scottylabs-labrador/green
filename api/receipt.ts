@@ -1,3 +1,11 @@
+import { getDatabase, ref, set, push, onValue, remove, update, orderByChild, query, equalTo, get } from "firebase/database";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+} from "firebase/auth";
 import Fuse from "fuse.js";
 
 // export const matchWords = (receiptItems, groceryListItems, groceryItemObjects, threshold = 0.3) => {
@@ -50,7 +58,9 @@ export const matchWords = (userEmail, receiptItems, groceryListItems, groceryIte
             }
             return { receiptItem: word, groceryItem: bestMatch.item, price: receiptItems[word], splits: splits }; // word is from the receiptItems, bestMatch is from groceryListItems
         }
-        return { receiptItem: word, groceryItem: "", price: receiptItems[word], splits: [filteredEmail] };
+        let splits = {};
+        splits[filteredEmail] = 1;
+        return { receiptItem: word, groceryItem: "", price: receiptItems[word], splits: splits };
     });
 
     return listOfItems.reduce((obj, item) => {
@@ -63,3 +73,28 @@ export const matchWords = (userEmail, receiptItems, groceryListItems, groceryIte
 // https://chatgpt.com/c/67b11891-1e2c-8009-86bf-ee0c7c6b02a8
 
 // matchWords(["apple", "banana", "cherry"], ["aple", "banana", "cherry"])
+
+export function writeMatches(receiptId, houseCode, receiptItems) {
+  const db = getDatabase();
+//   const postReceiptRef = ref(db, 'receipts/' + receiptId);
+//   set(postReceiptRef, {
+//     receiptitems: receiptItems
+//   });
+//   return postReceiptRef;
+  const updates = {};
+  const currentDate = new Date();
+  updates['/receipts/' + receiptId] = { receiptitems: receiptItems, date: currentDate.toLocaleDateString() };
+  updates['/houses/' + houseCode + '/receipts/' + receiptId] = { date: currentDate.toLocaleDateString() };
+  return update(ref(db), updates);
+}
+
+export function updateReceiptItem(receiptId, receiptItemId, receiptItemName, groceryItemName, splits, price) {
+  const db = getDatabase();
+  const updates = {};
+  console.log("update receiptItemId: ", receiptItemId);
+  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/groceryItem'] = groceryItemName;
+  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/splits'] = splits;
+  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/receiptItem'] = receiptItemName;
+  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/price'] = price;
+  return update(ref(db), updates);
+}

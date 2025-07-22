@@ -60,7 +60,7 @@ export class Housemate extends Realm.Object<Housemate> {
 export class GroceryList extends Realm.Object<GroceryList> {
     _id!: number;
     housemates!: Realm.List<Housemate>;
-    items!: Realm.List<GroceryItem>;
+    items!: Realm.Object<GroceryItem>;
 
     static schema: ObjectSchema = {
         name: 'GroceryList',

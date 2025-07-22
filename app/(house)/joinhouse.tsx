@@ -3,14 +3,14 @@ import { Text, View, TextInput, TouchableOpacity} from "react-native";
 import { Link } from "expo-router";
 import React, { useState, useCallback , useEffect } from 'react';
 import { getDatabase, ref, set, push, onValue, get, update } from "firebase/database";
-import { getCurrentUser } from "../api/firebase";
+import { getCurrentUser } from "../../api/firebase";
 import { router, useRouter } from "expo-router"
 
-import "../main.css";
-import { writeGroceryItem } from "../api/firebase";
-import CustomButton from "../components/CustomButton";
-import LinkButton from "../components/LinkButton";
-import { onAuthChange } from "../api/auth";
+import "../../main.css";
+import { writeGroceryItem } from "../../api/firebase";
+import CustomButton from "../../components/CustomButton";
+import LinkButton from "../../components/LinkButton";
+import { onAuthChange } from "../../api/auth";
 
 export default function Page() {
     // TODO: Implement the list page

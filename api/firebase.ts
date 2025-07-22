@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, set, push, onValue, remove, update, orderByChild, query, equalTo, get } from "firebase/database";
 import {
@@ -7,8 +8,11 @@ import {
   signOut,
   onAuthStateChanged,
 } from "firebase/auth";
-import { setPersistence, browserLocalPersistence } from "firebase/auth";
 import * as schema from "./classes";
+//@ts-ignore
+import { initializeAuth, getReactNativePersistence, browserLocalPersistence } from '@firebase/auth';
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+
 
 // TODO: Replace the following with your app's Firebase project configuration
 // See: https://firebase.google.com/docs/web/learn-more#config-object
@@ -32,10 +36,27 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Initialize Realtime Database and get a reference to the service
-const database = getDatabase(app);
+export const db = getDatabase(app);
 
 // Initialize Firebase Auth
-const auth = getAuth(app);
+// export const auth = initializeAuth(app, {
+//   persistence: getReactNativePersistence(ReactNativeAsyncStorage),
+// })
+let auth;
+
+if (Platform.OS === 'web') {
+  // Web persistence
+  auth = initializeAuth(app, {
+    persistence: browserLocalPersistence,
+  });
+} else {
+  // React Native persistence using AsyncStorage
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(ReactNativeAsyncStorage),
+  });
+}
+
+export { auth };
 
 // Set Auth Persistence
 
@@ -46,8 +67,6 @@ const auth = getAuth(app);
 //   .catch((error) => {
 //     console.error("Error setting persistence:", error);
 //   });
-
-export { database, auth };
 
 export function writeUserData(
   name: string,
@@ -79,7 +98,7 @@ export function writeGroceryItem(name: string, quantity = 1, splits = []) {
   });
 }
 
-export function writeGroceryItemGrocerylist(grocerylist: string, name: string, member: string, quantity = 1) {
+export function writeGroceryItemGrocerylist(grocerylist: string | string[], name: string, member: string, quantity = 1) {
   const db = getDatabase();
   const postListRef = ref(db, "grocerylists/" +grocerylist+"/groceryitems");
   const item = new schema.GroceryItem(name, quantity, [member]);
@@ -120,6 +139,7 @@ export function readGroceryItems() {
   });
 }
 
+
 interface GroceryItem {
   name: string;
   quantity: number;
@@ -133,7 +153,6 @@ export function removeGroceryItem(name, quantity, splits=[]) {
   get(itemRef).then((snapshot) => {
     if (snapshot.exists()) {
       const items = snapshot.val() as Record<string, GroceryItem>; // Assert the type
-      console.log('val: ', items);
 
       Object.entries(items).forEach(([key, item]) => {
         // Check if the name matches and quantity matches one removed
@@ -145,7 +164,7 @@ export function removeGroceryItem(name, quantity, splits=[]) {
         }
       });
     } else {
-      console.log('No matching items found');
+      console.error('No matching items found');
     }
   })
 }
@@ -157,7 +176,6 @@ export function removeGroceryItemGroceryList(grocerylist, name, quantity, splits
   get(itemRef).then((snapshot) => {
     if (snapshot.exists()) {
       const items = snapshot.val() as Record<string, GroceryItem>; // Assert the type
-      console.log('val: ', items);
 
       Object.entries(items).forEach(([key, item]) => {
         // Check if the name matches and quantity matches one removed
@@ -169,7 +187,7 @@ export function removeGroceryItemGroceryList(grocerylist, name, quantity, splits
         }
       });
     } else {
-      console.log('No matching items found');
+      console.error('No matching items found');
     }
   })
 }
@@ -197,24 +215,21 @@ export function writeGroceryList(grocerylist, name) {
   return postListRef;
 }
 
-export function writeMatches(receiptId, houseCode, receiptItems) {
-  const db = getDatabase();
-  const postReceiptRef = ref(db, 'receipts/' + receiptId);
-  set(postReceiptRef, {
-    receiptitems: receiptItems
-  });
-  return postReceiptRef;
-  // const updates = {};
-  // updates['/receipts/' + receiptId] = { receiptitems: receiptItems};
-  // updates['/houses/' + houseCode + '/receipts/' + receiptId] = Date.now();
-  // return update(ref(db), updates);
-}
-
 export function matchReceiptItem(receiptId, receiptItemId, groceryItemName, splits) {
   const db = getDatabase();
   const updates = {};
   updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/groceryItem'] = groceryItemName;
   updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/splits'] = splits;
+  return update(ref(db), updates);
+}
+
+export function updateReceiptItem(receiptId, receiptItemId, receiptItemName, groceryItemName, splits, price) {
+  const db = getDatabase();
+  const updates = {};
+  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/groceryItem'] = groceryItemName;
+  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/splits'] = splits;
+  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/receiptItem'] = receiptItemName;
+  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/price'] = price;
   return update(ref(db), updates);
 }
 
@@ -228,9 +243,7 @@ export function updateItemPrice(receiptId, receiptItemId, price) {
 export function deleteReceiptItem(receiptId, receiptItemId) {
   const db = getDatabase();
   const itemRef = ref(db, `receipts/${receiptId}/receiptitems/${receiptItemId}`);
-  remove(itemRef) // Remove the item
-    .then(() => console.log(`Removed item: ${name}`))
-    .catch((error) => console.error('Error removing item:', error));
+  remove(itemRef).catch((error) => console.error('Error removing item:', error));
 }
 
 export async function createUser(
@@ -239,9 +252,7 @@ export async function createUser(
   email: string,
   password: string,
 ) {
-  console.log("Here1");
   return createUserWithEmailAndPassword(auth, email, password).then(() => {
-    console.log("Here2");
     writeUserData(name, email, phone_number);
   });
 }

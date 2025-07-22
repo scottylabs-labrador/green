@@ -1,15 +1,15 @@
 import { Text, View, Button, TextInput, TouchableOpacity } from "react-native";
 import { Link } from "expo-router";
 
-import CustomButton from "../components/CustomButton";
+import CustomButton from "../../components/CustomButton";
 
 import React, { useState, useCallback } from 'react';
 import { router } from "expo-router"
 import * as crypto from "crypto";
 
-import "../main.css";
-import { writeHouseData } from "../api/firebase";
-import { writeGroceryList } from "../api/firebase";
+import "../../main.css";
+import { writeHouseData } from "../../api/firebase";
+import { writeGroceryList } from "../../api/firebase";
 
 export default function Page() {
 

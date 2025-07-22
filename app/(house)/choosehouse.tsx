@@ -1,8 +1,8 @@
 import { Text, View, TouchableOpacity, TextInput } from "react-native";
 import React, { useState, useCallback } from "react";
-import LinkButton from "../components/LinkButton";
+import LinkButton from "../../components/LinkButton";
 
-import "../main.css";
+import "../../main.css";
 
 export default function House() {
   // TODO: Home page

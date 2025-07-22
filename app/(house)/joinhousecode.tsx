@@ -4,12 +4,12 @@ import { Link } from "expo-router";
 import React, { useState, useCallback , useEffect } from 'react';
 import { getDatabase, ref, set, push, onValue, get } from "firebase/database";
 import { router, useRouter } from "expo-router";
-import CustomButton from "../components/CustomButton";
+import CustomButton from "../../components/CustomButton";
 
 
-import "../main.css";
-import { writeGroceryItem } from "../api/firebase";
-import { House } from "../api/classes";
+import "../../main.css";
+import { writeGroceryItem } from "../../api/firebase";
+import { House } from "../../api/classes";
 
 export default function Page() {
     // TODO: Implement the list page

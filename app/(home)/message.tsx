@@ -3,11 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { getDatabase, ref, set, push, onValue, get } from "firebase/database";
 import { Link, useLocalSearchParams } from "expo-router"; 
 import { Ionicons, FontAwesome } from '@expo/vector-icons';
-import NavBar from '../components/NavBar';
-import MatchedItem from '../components/MatchedItem';
-import CustomButton from "../components/CustomButton";
+import MatchedItem from '../../components/MatchedItem';
+import CustomButton from "../../components/CustomButton";
 import Feather from '@expo/vector-icons/Feather';
-import { calculateSplits } from '../api/splits';
+import { calculateSplits } from '../../api/splits';
 
 export default function Message() {
     // TODO: Implement the bill page
@@ -82,13 +81,13 @@ export default function Message() {
 
     return (
         <View className="flex-1 items-center">
-        <View className="flex-1 items-center w-full h-full bg-[#6d0846]">
+        <View className="flex-1 items-center w-full h-full">
             <View className="mt-8 mb-6 w-fit gap-2 self-center">
                 <Text className="text-1xl text-center text-white font-medium">Scanned Receipt</Text>
             </View>
             <View className="flex-col items-center justify-center w-full flex-grow mb-20 justify-self-center">
                 <View className="flex-col gap-4 w-64 h-fit bg-white rounded-3xl p-6">
-                  <Link href="/" asChild>
+                  <Link href={{pathname: "/bill", params: { receiptId: receiptId }}} asChild>
                       <Pressable 
                           className="absolute w-fit h-fit items-center justify-center right-5 top-4"
                       >
@@ -108,7 +107,6 @@ export default function Message() {
                   {/* <CustomButton buttonLabel="Create House" onPress={() => copyMessage()}></CustomButton> */}
                 </View>
             </View>
-            <NavBar location="message"/>
         </View>
         </View>
     );
