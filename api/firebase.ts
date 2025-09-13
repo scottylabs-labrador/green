@@ -1,14 +1,29 @@
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, push, onValue, remove, update, orderByChild, query, equalTo, get } from "firebase/database";
+import { Platform } from 'react-native';
+import { initializeApp } from 'firebase/app';
+import {
+  getDatabase,
+  ref,
+  set,
+  push,
+  onValue,
+  remove,
+  update,
+  orderByChild,
+  query,
+  equalTo,
+  get,
+} from 'firebase/database';
 import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-} from "firebase/auth";
-import { setPersistence, browserLocalPersistence } from "firebase/auth";
-import * as schema from "./classes";
+} from 'firebase/auth';
+import * as schema from './classes';
+//@ts-ignore
+import { initializeAuth, getReactNativePersistence, browserLocalPersistence } from '@firebase/auth';
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 
 // TODO: Replace the following with your app's Firebase project configuration
 // See: https://firebase.google.com/docs/web/learn-more#config-object
@@ -32,10 +47,27 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Initialize Realtime Database and get a reference to the service
-const database = getDatabase(app);
+export const db = getDatabase(app);
 
 // Initialize Firebase Auth
-const auth = getAuth(app);
+// export const auth = initializeAuth(app, {
+//   persistence: getReactNativePersistence(ReactNativeAsyncStorage),
+// })
+let auth;
+
+if (Platform.OS === 'web') {
+  // Web persistence
+  auth = initializeAuth(app, {
+    persistence: browserLocalPersistence,
+  });
+} else {
+  // React Native persistence using AsyncStorage
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(ReactNativeAsyncStorage),
+  });
+}
+
+export { auth };
 
 // Set Auth Persistence
 
@@ -47,17 +79,11 @@ const auth = getAuth(app);
 //     console.error("Error setting persistence:", error);
 //   });
 
-export { database, auth };
-
-export function writeUserData(
-  name: string,
-  email: string,
-  phone_number: string,
-) {
+export function writeUserData(name: string, email: string, phone_number: string) {
   const db = getDatabase();
-  const emailparts = email.split(".");
-  const filteredemail = emailparts[0]+":"+emailparts[1];
-  const postListRef = ref(db, "housemates/"+filteredemail);
+  const emailparts = email.split('.');
+  const filteredemail = emailparts[0] + ':' + emailparts[1];
+  const postListRef = ref(db, 'housemates/' + filteredemail);
   const user = new schema.Housemate(email, name, email, phone_number);
   set(postListRef, {
     name: user.name,
@@ -70,7 +96,7 @@ export function writeUserData(
 export function writeGroceryItem(name: string, quantity = 1, splits = []) {
   const db = getDatabase();
   const item = new schema.GroceryItem(name, quantity, splits);
-  const postListRef = ref(db, "groceryitems/");
+  const postListRef = ref(db, 'groceryitems/');
   const newPostRef = push(postListRef);
   set(newPostRef, {
     name: item.name,
@@ -79,9 +105,14 @@ export function writeGroceryItem(name: string, quantity = 1, splits = []) {
   });
 }
 
-export function writeGroceryItemGrocerylist(grocerylist: string, name: string, member: string, quantity = 1) {
+export function writeGroceryItemGrocerylist(
+  grocerylist: string | string[],
+  name: string,
+  member: string,
+  quantity = 1,
+) {
   const db = getDatabase();
-  const postListRef = ref(db, "grocerylists/" +grocerylist+"/groceryitems");
+  const postListRef = ref(db, 'grocerylists/' + grocerylist + '/groceryitems');
   const item = new schema.GroceryItem(name, quantity, [member]);
   const newPostRef = push(postListRef);
   set(newPostRef, {
@@ -95,26 +126,33 @@ export function updateGroceryItem(id, name: string, quantity = 1) {
   const db = getDatabase();
   update(ref(db, 'groceryitems/' + id), {
     name: name,
-    quantity: quantity
+    quantity: quantity,
   });
 }
 
-export function updateGroceryItemGroceryList(grocerylist: string, id, name: string, quantity = 1, splits = [], member: string) {
+export function updateGroceryItemGroceryList(
+  grocerylist: string,
+  id,
+  name: string,
+  quantity = 1,
+  splits = [],
+  member: string,
+) {
   const db = getDatabase();
-  if (!splits.includes(member)){
+  if (!splits.includes(member)) {
     let num = splits.push(member);
   }
-  update(ref(db, "grocerylists/" +grocerylist+"/groceryitems/" + id), {
+  update(ref(db, 'grocerylists/' + grocerylist + '/groceryitems/' + id), {
     name: name,
     quantity: quantity,
-    splits: splits
+    splits: splits,
   });
 }
 
 export function readGroceryItems() {
   const db = getDatabase();
-  const itemRef = ref(db, "groceryitems/");
-  onValue(itemRef, (snapshot) => {
+  const itemRef = ref(db, 'groceryitems/');
+  onValue(itemRef, snapshot => {
     const data = snapshot.val();
     return data;
   });
@@ -126,14 +164,13 @@ interface GroceryItem {
   splits?: string[];
 }
 
-export function removeGroceryItem(name, quantity, splits=[]) {
+export function removeGroceryItem(name, quantity, splits = []) {
   const db = getDatabase();
-  const itemRef = ref(db, 'groceryitems/'); 
+  const itemRef = ref(db, 'groceryitems/');
 
-  get(itemRef).then((snapshot) => {
+  get(itemRef).then(snapshot => {
     if (snapshot.exists()) {
       const items = snapshot.val() as Record<string, GroceryItem>; // Assert the type
-      console.log('val: ', items);
 
       Object.entries(items).forEach(([key, item]) => {
         // Check if the name matches and quantity matches one removed
@@ -141,23 +178,22 @@ export function removeGroceryItem(name, quantity, splits=[]) {
           const itemRef = ref(db, `groceryitems/${key}`);
           remove(itemRef) // Remove the item
             .then(() => console.log(`Removed item: ${name}`))
-            .catch((error) => console.error('Error removing item:', error));
+            .catch(error => console.error('Error removing item:', error));
         }
       });
     } else {
-      console.log('No matching items found');
+      console.error('No matching items found');
     }
-  })
+  });
 }
 
-export function removeGroceryItemGroceryList(grocerylist, name, quantity, splits=[]) {
+export function removeGroceryItemGroceryList(grocerylist, name, quantity, splits = []) {
   const db = getDatabase();
-  const itemRef = ref(db, "grocerylists/" +grocerylist+"/groceryitems/"); 
+  const itemRef = ref(db, 'grocerylists/' + grocerylist + '/groceryitems/');
 
-  get(itemRef).then((snapshot) => {
+  get(itemRef).then(snapshot => {
     if (snapshot.exists()) {
       const items = snapshot.val() as Record<string, GroceryItem>; // Assert the type
-      console.log('val: ', items);
 
       Object.entries(items).forEach(([key, item]) => {
         // Check if the name matches and quantity matches one removed
@@ -165,72 +201,76 @@ export function removeGroceryItemGroceryList(grocerylist, name, quantity, splits
           const itemRef = ref(db, `grocerylists/${grocerylist}/groceryitems/${key}`);
           remove(itemRef) // Remove the item
             .then(() => console.log(`Removed item: ${name}`))
-            .catch((error) => console.error('Error removing item:', error));
+            .catch(error => console.error('Error removing item:', error));
         }
       });
     } else {
-      console.log('No matching items found');
+      console.error('No matching items found');
     }
-  })
+  });
 }
-
 
 export function writeHouseData(name, housecode, gl) {
   const db = getDatabase();
   const house = new schema.House(name);
-  const postListRef = ref(db, 'houses/'+ housecode);
+  const postListRef = ref(db, 'houses/' + housecode);
   set(postListRef, {
     name: house.name,
-    members: house.members, 
-    grocerylist: gl
-  })
+    members: house.members,
+    grocerylist: gl,
+  });
   return postListRef;
 }
 
 export function writeGroceryList(grocerylist, name) {
   const db = getDatabase();
-  const postListRef = ref(db, 'grocerylists/'+ grocerylist);
+  const postListRef = ref(db, 'grocerylists/' + grocerylist);
   set(postListRef, {
     name: name,
-    groceryitems: 1
-  })
-  return postListRef;
-}
-
-export function writeMatches(receiptId, houseCode, receiptItems) {
-  const db = getDatabase();
-  const postReceiptRef = ref(db, 'receipts/' + receiptId);
-  set(postReceiptRef, {
-    receiptitems: receiptItems
+    groceryitems: 1,
   });
-  return postReceiptRef;
-  // const updates = {};
-  // updates['/receipts/' + receiptId] = { receiptitems: receiptItems};
-  // updates['/houses/' + houseCode + '/receipts/' + receiptId] = Date.now();
-  // return update(ref(db), updates);
+  return postListRef;
 }
 
 export function matchReceiptItem(receiptId, receiptItemId, groceryItemName, splits) {
   const db = getDatabase();
   const updates = {};
-  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/groceryItem'] = groceryItemName;
-  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/splits'] = splits;
+  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/groceryItem'] =
+    groceryItemName;
+  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/splits'] = splits;
+  return update(ref(db), updates);
+}
+
+export function updateReceiptItem(
+  receiptId,
+  receiptItemId,
+  receiptItemName,
+  groceryItemName,
+  splits,
+  price,
+) {
+  const db = getDatabase();
+  const updates = {};
+  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/groceryItem'] =
+    groceryItemName;
+  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/splits'] = splits;
+  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/receiptItem'] =
+    receiptItemName;
+  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/price'] = price;
   return update(ref(db), updates);
 }
 
 export function updateItemPrice(receiptId, receiptItemId, price) {
   const db = getDatabase();
   const updates = {};
-  updates['/receipts/'+receiptId+'/receiptitems/'+receiptItemId+'/price'] = price;
+  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/price'] = price;
   return update(ref(db), updates);
 }
 
 export function deleteReceiptItem(receiptId, receiptItemId) {
   const db = getDatabase();
   const itemRef = ref(db, `receipts/${receiptId}/receiptitems/${receiptItemId}`);
-  remove(itemRef) // Remove the item
-    .then(() => console.log(`Removed item: ${name}`))
-    .catch((error) => console.error('Error removing item:', error));
+  remove(itemRef).catch(error => console.error('Error removing item:', error));
 }
 
 export async function createUser(
@@ -239,9 +279,7 @@ export async function createUser(
   email: string,
   password: string,
 ) {
-  console.log("Here1");
   return createUserWithEmailAndPassword(auth, email, password).then(() => {
-    console.log("Here2");
     writeUserData(name, email, phone_number);
   });
 }
@@ -258,4 +296,3 @@ export function getCurrentUser() {
   const user = auth.currentUser;
   return user;
 }
-

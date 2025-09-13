@@ -1,18 +1,13 @@
-import { Image } from "react-native";
+import { Image } from 'react-native';
 
 export class Housemate {
   userid: string;
   name: string;
   phone_number: string;
   email: string;
-  house_ids: Array<House["housecode"]>;
+  house_ids: Array<House['housecode']>;
 
-  constructor(
-    userid: string,
-    name: string,
-    email: string,
-    phone_number: string,
-  ) {
+  constructor(userid: string, name: string, email: string, phone_number: string) {
     this.userid = userid;
     this.name = name;
     this.phone_number = phone_number;
@@ -24,7 +19,7 @@ export class Housemate {
 export class House {
   name: string;
   housecode: string;
-  members: Array<Housemate["userid"]>;
+  members: Array<Housemate['userid']>;
   grocery_list: GroceryList;
   receipts: Array<Receipt>;
 
@@ -35,10 +30,10 @@ export class House {
   //   this.grocery_list = new GroceryList();
   //   this.receipts = [];
   // }
-  
+
   constructor(name: string) {
     this.name = name;
-    this.housecode = "";
+    this.housecode = '';
     this.members = [];
     this.grocery_list = new GroceryList();
     this.receipts = [];
@@ -50,13 +45,9 @@ export class GroceryItem {
   name: string;
   quantity: number;
   price: number;
-  splits: Array<Housemate["userid"]>;
+  splits: Array<Housemate['userid']>;
 
-  constructor(
-    name: string,
-    quantity: number = 1,
-    splits: Array<Housemate["userid"]> = [],
-  ) {
+  constructor(name: string, quantity: number = 1, splits: Array<Housemate['userid']> = []) {
     this.name = name;
     this.quantity = quantity;
     this.splits = splits;
@@ -83,4 +74,3 @@ export class Receipt {
     this.items = [];
   }
 }
-

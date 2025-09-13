@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Text, View } from "react-native";
+import { Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from "expo-router"; 
+import { Link } from 'expo-router';
 
 type ReceiptItemProps = {
   id: string;
@@ -12,13 +12,13 @@ type ReceiptItemProps = {
 
 const MatchedItem = ({ id, name, price, receiptId }: ReceiptItemProps) => {
   return (
-    <View className={
-      `flex-row items-center justify-center w-[90%] h-12 self-center my-2 px-2 gap-3 border border-gray-300 rounded-lg bg-white`
-      }>
-        <Text className="text-1xl grow text-left w-1/2 self-center">{name}</Text>
-        <Text className="text-1xl w-1/8 self-center">{price}</Text>
+    <View
+      className={`my-2 h-12 w-[90%] flex-row items-center justify-center gap-3 self-center rounded-lg border border-gray-300 bg-white px-2`}
+    >
+      <Text className="text-1xl w-1/2 grow self-center text-left">{name}</Text>
+      <Text className="text-1xl w-1/8 self-center">{price}</Text>
     </View>
-  )
-}
+  );
+};
 
-export default MatchedItem
+export default MatchedItem;

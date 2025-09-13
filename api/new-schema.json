@@ -1,90 +1,90 @@
 {
-    "rules": {
-        "housemates": {
-            "$housemateid": {
-                "name": {
-                    ".read": "auth !== null",
-                    ".write": "auth.uid === $housemateid",
-                    ".validate": "newData.isString()"
-                },
-                "email": {
-                    ".read": "auth !== null",
-                    ".write": "auth.uid === $housemateid"
-                },
-                "phone_number": {
-                    ".read": "auth !== null",
-                    ".write": "auth.uid === $housemateid"
-                },
-                "houses": {
-                    ".read": "auth.uid === $housemateid",
-                    ".write": "auth.uid === $housemateid"
-                },
-                "$other": {".validate": false}
-            }
+  "rules": {
+    "housemates": {
+      "$housemateid": {
+        "name": {
+          ".read": "auth !== null",
+          ".write": "auth.uid === $housemateid",
+          ".validate": "newData.isString()"
+        },
+        "email": {
+          ".read": "auth !== null",
+          ".write": "auth.uid === $housemateid"
+        },
+        "phone_number": {
+          ".read": "auth !== null",
+          ".write": "auth.uid === $housemateid"
         },
         "houses": {
-            "$housecode": {
-                "name": {
-                    ".read": "auth !== null", 
-                    ".write": "data.parent().child('housemates').hasChild(auth.uid)"
-                },
-                "members": {
-                    ".read": "data.parent().child('housemates').hasChild(auth.uid)",
-                    ".write": "data.parent().child('housemates').hasChild(auth.uid)"
-                },
-                "grocerylist": {
-                    ".read": "data.parent().child('housemates').hasChild(auth.uid)",
-                    ".write": "data.parent().child('housemates').hasChild(auth.uid)"
-                },
-                "receipts": {
-                    ".read": "data.parent().child('housemates').hasChild(auth.uid)",
-                    ".write": "data.parent().child('housemates').hasChild(auth.uid)"
-                },
-                "$other": {".validate": false}
-            }
+          ".read": "auth.uid === $housemateid",
+          ".write": "auth.uid === $housemateid"
         },
-        "grocerylists": {
-            "$grocerylistid": {
-                "name": {
-                    ".read": "auth !== null",
-                    ".write": "data.parent().child('housemates').hasChild(auth.uid)"
-                },
-                "groceryitems": {
-                    ".read": "data.parent().child('housemates').hasChild(auth.uid)",
-                    ".write": "data.parent().child('housemates').hasChild(auth.uid)",
-                    "$groceryitemid": {
-                        ".validate": "newData.hasChildren(['name', 'quantity'])",
-                        "name": {".validate": true},
-                        "quantity": {".validate": true},
-                        "$other": {".validate": false}
-                    }
-                },
-                "$other": {".validate": false}
-            }
+        "$other": { ".validate": false }
+      }
+    },
+    "houses": {
+      "$housecode": {
+        "name": {
+          ".read": "auth !== null",
+          ".write": "data.parent().child('housemates').hasChild(auth.uid)"
+        },
+        "members": {
+          ".read": "data.parent().child('housemates').hasChild(auth.uid)",
+          ".write": "data.parent().child('housemates').hasChild(auth.uid)"
+        },
+        "grocerylist": {
+          ".read": "data.parent().child('housemates').hasChild(auth.uid)",
+          ".write": "data.parent().child('housemates').hasChild(auth.uid)"
         },
         "receipts": {
-            "$receiptid": {
-                "name": {
-                    ".read": "auth !== null",
-                    ".write": "data.parent().child('housemates').hasChild(auth.uid)"
-                },
-                "groceryitems": {
-                    ".read": "data.parent().child('housemates').hasChild(auth.uid)",
-                    ".write": "data.parent().child('housemates').hasChild(auth.uid)",
-                    "$groceryitemid": {
-                        ".validate": "newData.hasChildren(['name', 'quantity', 'price'])",
-                        "name": {".validate": true},
-                        "quantity": {".validate": true},
-                        "price": {".validate": true},
-                        "$other": {".validate": false}
-                    }
-                },
-                "image": {
-                    ".read": "data.parent().child('housemates).hasChild(auth.uid)",
-                    ".write": "data.parent().child('housemates).hasChild(auth.uid)"
-                },
-                "$other": {".validate": false}
-            }
-        }
+          ".read": "data.parent().child('housemates').hasChild(auth.uid)",
+          ".write": "data.parent().child('housemates').hasChild(auth.uid)"
+        },
+        "$other": { ".validate": false }
+      }
+    },
+    "grocerylists": {
+      "$grocerylistid": {
+        "name": {
+          ".read": "auth !== null",
+          ".write": "data.parent().child('housemates').hasChild(auth.uid)"
+        },
+        "groceryitems": {
+          ".read": "data.parent().child('housemates').hasChild(auth.uid)",
+          ".write": "data.parent().child('housemates').hasChild(auth.uid)",
+          "$groceryitemid": {
+            ".validate": "newData.hasChildren(['name', 'quantity'])",
+            "name": { ".validate": true },
+            "quantity": { ".validate": true },
+            "$other": { ".validate": false }
+          }
+        },
+        "$other": { ".validate": false }
+      }
+    },
+    "receipts": {
+      "$receiptid": {
+        "name": {
+          ".read": "auth !== null",
+          ".write": "data.parent().child('housemates').hasChild(auth.uid)"
+        },
+        "groceryitems": {
+          ".read": "data.parent().child('housemates').hasChild(auth.uid)",
+          ".write": "data.parent().child('housemates').hasChild(auth.uid)",
+          "$groceryitemid": {
+            ".validate": "newData.hasChildren(['name', 'quantity', 'price'])",
+            "name": { ".validate": true },
+            "quantity": { ".validate": true },
+            "price": { ".validate": true },
+            "$other": { ".validate": false }
+          }
+        },
+        "image": {
+          ".read": "data.parent().child('housemates).hasChild(auth.uid)",
+          ".write": "data.parent().child('housemates).hasChild(auth.uid)"
+        },
+        "$other": { ".validate": false }
+      }
     }
+  }
 }

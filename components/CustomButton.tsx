@@ -1,11 +1,10 @@
-import React from "react";
+import React from 'react';
 import { Text, Pressable } from 'react-native';
 
 type ButtonProps = {
   buttonLabel: string;
   onPress?: () => void; // Optional onPress prop
 };
-
 
 const CustomButton = ({ buttonLabel, onPress }: ButtonProps) => {
   const handlePress = () => {
@@ -15,10 +14,13 @@ const CustomButton = ({ buttonLabel, onPress }: ButtonProps) => {
   };
 
   return (
-    <Pressable className="bg-emerald-900 rounded-lg py-3 px-6 self-center hover:bg-emerald-950 mb-4" onPress={handlePress}>
-        <Text className="text-white text-lg font-semibold">{buttonLabel}</Text>
+    <Pressable
+      className="mb-4 self-center rounded-lg bg-emerald-900 px-6 py-3 hover:bg-emerald-950"
+      onPress={handlePress}
+    >
+      <Text className="text-lg font-semibold text-white">{buttonLabel}</Text>
     </Pressable>
-  )
-}
+  );
+};
 
-export default CustomButton
+export default CustomButton;
