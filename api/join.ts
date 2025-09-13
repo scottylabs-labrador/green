@@ -2,26 +2,25 @@ import * as Crypto from 'expo-crypto';
 import { get, ref, set, update } from 'firebase/database';
 import { db } from './firebase';
 
-export async function createInviteLink(houseId: string): Promise<string> {
-  const randomBytes = Crypto.getRandomBytes(16);
+export async function createInviteCode(houseId: string): Promise<string> {
+  const randomBytes = Crypto.getRandomBytes(4);
   const token = Array.from(randomBytes)
-    .map(b => b.toString(16).padStart(2, '0'))
+    .map(b => b.toString(36).padStart(2, '0'))
     .join('');
 
   const now = Date.now();
-  const expiresAt = now + 1000 * 60 * 60 * 24; // expires in 24 hours
+  const expiresAt = now + 1000 * 60 * 60 * 24;
 
   await set(ref(db, `invites/${token}`), {
     houseId,
     createdAt: now,
     expiresAt,
-    usedBy: null,
   });
 
-  return `green://join?invite=${token}`;
+  return token;
 }
 
-export async function getHouseFromInvite(inviteToken: string, userId: string): Promise<string> {
+export async function getHouseIdFromInvite(inviteToken: string): Promise<string> {
   const inviteRef = ref(db, `invites/${inviteToken}`);
   const snap = await get(inviteRef);
 
@@ -29,11 +28,6 @@ export async function getHouseFromInvite(inviteToken: string, userId: string): P
   const invite = snap.val();
 
   if (invite.expiresAt < Date.now()) throw new Error('Invite expired');
-  if (invite.usedBy) throw new Error('Already used');
-
-  await update(ref(db), {
-    [`invites/${inviteToken}/usedBy`]: userId,
-  });
 
   const houseId = invite.houseId;
   return houseId;
