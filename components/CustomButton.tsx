@@ -1,24 +1,27 @@
 import React from 'react';
-import { Text, Pressable } from 'react-native';
+import { Pressable, Text } from 'react-native';
 
 type ButtonProps = {
   buttonLabel: string;
-  onPress?: () => void; // Optional onPress prop
+  color?: string;
+  hoverColor?: string;
+  fontSize?: string;
+  onPress?: () => void;
 };
 
-const CustomButton = ({ buttonLabel, onPress }: ButtonProps) => {
+const CustomButton = ({ buttonLabel, color, hoverColor, fontSize, onPress }: ButtonProps) => {
   const handlePress = () => {
     if (onPress) {
-      onPress(); // Execute custom logic if provided
+      onPress();
     }
   };
 
   return (
     <Pressable
-      className="mb-4 self-center rounded-lg bg-emerald-900 px-6 py-3 hover:bg-emerald-950"
-      onPress={handlePress}
+      className={`${color ? color : 'bg-emerald-900'} self-center rounded-lg px-6 py-3 ${hoverColor ? hoverColor : 'hover:bg-emerald-950'} mb-4`}
+      onPress={onPress}
     >
-      <Text className="text-lg font-semibold text-white">{buttonLabel}</Text>
+      <Text className={`${fontSize ? fontSize : "text-lg"} font-semibold text-white`}>{buttonLabel}</Text>
     </Pressable>
   );
 };
