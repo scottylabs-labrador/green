@@ -1,21 +1,18 @@
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ImageBackground,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
-import React, { useState } from 'react';
-import BackButton from '../../components/BackButton';
-import { writeUserData } from '../../api/firebase';
 import { createUser } from '../../api/firebase';
-import { useRouter } from 'expo-router';
-import Button from '../../components/CustomButton';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getGroceryListId } from '../../api/grocerylist';
 import background from '../../assets/home-background.png';
+import BackButton from '../../components/BackButton';
+import Button from '../../components/CustomButton';
 
 async function handleSubmit(
   email: string,
@@ -63,16 +60,6 @@ export default function SignUp({ route, navigation, ...props }) {
   const [confirmPassword, onChangeConfirmPassword] = useState('');
   const [errorText, onChangeErrorText] = useState('');
   const router = useRouter();
-
-  const auth = getAuth();
-  onAuthStateChanged(auth, async user => {
-    if (user) {
-      console.log('user signed in: ', user);
-      getGroceryListId().then(groceryListId =>
-        router.replace({ pathname: '/list', params: { grocerylist: groceryListId } }),
-      );
-    }
-  });
 
   return (
     <ImageBackground source={background} resizeMode="cover">

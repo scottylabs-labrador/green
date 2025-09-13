@@ -1,19 +1,17 @@
+import { useRouter } from 'expo-router';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import React from 'react';
 import {
-  Text,
-  View,
-  TouchableOpacity,
-  TextInput,
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
+  Text,
+  View
 } from 'react-native';
-import LinkButton from '../../components/LinkButton';
-import { useRouter } from 'expo-router';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getGroceryListId } from '../../api/grocerylist';
-import '../../main.css';
 import background from '../../assets/home-background.png';
+import LinkButton from '../../components/LinkButton';
+import '../../main.css';
 
 export default function Home() {
   // TODO: Home page

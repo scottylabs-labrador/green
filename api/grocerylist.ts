@@ -21,6 +21,9 @@ export const getGroceryListId = async () => {
     .then(snapshot => {
       if (snapshot.exists()) {
         const data = snapshot.val();
+        if (!('houses' in data) || data.houses.length < 1) {
+          throw new Error("No houses found");
+        }
         let houses = data.houses[0].toString();
         const houseRef = child(dbRef, `houses/${houses}`);
         return get(houseRef);
