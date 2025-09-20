@@ -1,28 +1,18 @@
-import { Platform } from 'react-native';
 import { initializeApp } from 'firebase/app';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut
+} from 'firebase/auth';
 import {
   getDatabase,
   ref,
-  set,
-  push,
-  onValue,
-  remove,
-  update,
-  orderByChild,
-  query,
-  equalTo,
-  get,
+  set
 } from 'firebase/database';
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-} from 'firebase/auth';
+import { Platform } from 'react-native';
 import * as schema from './classes';
 //@ts-ignore
-import { initializeAuth, getReactNativePersistence, browserLocalPersistence } from '@firebase/auth';
+import { Auth, browserLocalPersistence, getReactNativePersistence, initializeAuth } from '@firebase/auth';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 
 // TODO: Replace the following with your app's Firebase project configuration
@@ -53,7 +43,7 @@ export const db = getDatabase(app);
 // export const auth = initializeAuth(app, {
 //   persistence: getReactNativePersistence(ReactNativeAsyncStorage),
 // })
-let auth;
+let auth: Auth;
 
 if (Platform.OS === 'web') {
   // Web persistence
@@ -91,186 +81,6 @@ export function writeUserData(name: string, email: string, phone_number: string)
     phone_number: user.phone_number,
     houses: user.house_ids,
   });
-}
-
-export function writeGroceryItem(name: string, quantity = 1, splits = []) {
-  const db = getDatabase();
-  const item = new schema.GroceryItem(name, quantity, splits);
-  const postListRef = ref(db, 'groceryitems/');
-  const newPostRef = push(postListRef);
-  set(newPostRef, {
-    name: item.name,
-    quantity: item.quantity,
-    splits: item.splits,
-  });
-}
-
-export function writeGroceryItemGrocerylist(
-  grocerylist: string | string[],
-  name: string,
-  member: string,
-  quantity = 1,
-) {
-  const db = getDatabase();
-  const postListRef = ref(db, 'grocerylists/' + grocerylist + '/groceryitems');
-  const item = new schema.GroceryItem(name, quantity, [member]);
-  const newPostRef = push(postListRef);
-  set(newPostRef, {
-    name: item.name,
-    quantity: item.quantity,
-    splits: item.splits,
-  });
-}
-
-export function updateGroceryItem(id, name: string, quantity = 1) {
-  const db = getDatabase();
-  update(ref(db, 'groceryitems/' + id), {
-    name: name,
-    quantity: quantity,
-  });
-}
-
-export function updateGroceryItemGroceryList(
-  grocerylist: string,
-  id,
-  name: string,
-  quantity = 1,
-  splits = [],
-  member: string,
-) {
-  const db = getDatabase();
-  if (!splits.includes(member)) {
-    let num = splits.push(member);
-  }
-  update(ref(db, 'grocerylists/' + grocerylist + '/groceryitems/' + id), {
-    name: name,
-    quantity: quantity,
-    splits: splits,
-  });
-}
-
-export function readGroceryItems() {
-  const db = getDatabase();
-  const itemRef = ref(db, 'groceryitems/');
-  onValue(itemRef, snapshot => {
-    const data = snapshot.val();
-    return data;
-  });
-}
-
-interface GroceryItem {
-  name: string;
-  quantity: number;
-  splits?: string[];
-}
-
-export function removeGroceryItem(name, quantity, splits = []) {
-  const db = getDatabase();
-  const itemRef = ref(db, 'groceryitems/');
-
-  get(itemRef).then(snapshot => {
-    if (snapshot.exists()) {
-      const items = snapshot.val() as Record<string, GroceryItem>; // Assert the type
-
-      Object.entries(items).forEach(([key, item]) => {
-        // Check if the name matches and quantity matches one removed
-        if (item.name === name && item.quantity === quantity + 1) {
-          const itemRef = ref(db, `groceryitems/${key}`);
-          remove(itemRef) // Remove the item
-            .then(() => console.log(`Removed item: ${name}`))
-            .catch(error => console.error('Error removing item:', error));
-        }
-      });
-    } else {
-      console.error('No matching items found');
-    }
-  });
-}
-
-export function removeGroceryItemGroceryList(grocerylist, name, quantity, splits = []) {
-  const db = getDatabase();
-  const itemRef = ref(db, 'grocerylists/' + grocerylist + '/groceryitems/');
-
-  get(itemRef).then(snapshot => {
-    if (snapshot.exists()) {
-      const items = snapshot.val() as Record<string, GroceryItem>; // Assert the type
-
-      Object.entries(items).forEach(([key, item]) => {
-        // Check if the name matches and quantity matches one removed
-        if (item.name === name && item.quantity === quantity + 1) {
-          const itemRef = ref(db, `grocerylists/${grocerylist}/groceryitems/${key}`);
-          remove(itemRef) // Remove the item
-            .then(() => console.log(`Removed item: ${name}`))
-            .catch(error => console.error('Error removing item:', error));
-        }
-      });
-    } else {
-      console.error('No matching items found');
-    }
-  });
-}
-
-export function writeHouseData(name, housecode, gl) {
-  const db = getDatabase();
-  const house = new schema.House(name);
-  const postListRef = ref(db, 'houses/' + housecode);
-  set(postListRef, {
-    name: house.name,
-    members: house.members,
-    grocerylist: gl,
-  });
-  return postListRef;
-}
-
-export function writeGroceryList(grocerylist, name) {
-  const db = getDatabase();
-  const postListRef = ref(db, 'grocerylists/' + grocerylist);
-  set(postListRef, {
-    name: name,
-    groceryitems: 1,
-  });
-  return postListRef;
-}
-
-export function matchReceiptItem(receiptId, receiptItemId, groceryItemName, splits) {
-  const db = getDatabase();
-  const updates = {};
-  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/groceryItem'] =
-    groceryItemName;
-  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/splits'] = splits;
-  return update(ref(db), updates);
-}
-
-export function updateReceiptItem(
-  receiptId,
-  receiptItemId,
-  receiptItemName,
-  groceryItemName,
-  splits,
-  price,
-) {
-  const db = getDatabase();
-  const updates = {};
-  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/groceryItem'] =
-    groceryItemName;
-  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/splits'] = splits;
-  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/receiptItem'] =
-    receiptItemName;
-  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/price'] = price;
-  return update(ref(db), updates);
-}
-
-export function updateItemPrice(receiptId, receiptItemId, price) {
-  const db = getDatabase();
-  const updates = {};
-  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/price'] = price;
-  return update(ref(db), updates);
-}
-
-export function deleteReceiptItem(receiptId, receiptItemId) {
-  const db = getDatabase();
-  const itemRef = ref(db, `receipts/${receiptId}/receiptitems/${receiptItemId}`);
-  remove(itemRef).catch(error => console.error('Error removing item:', error));
 }
 
 export async function createUser(

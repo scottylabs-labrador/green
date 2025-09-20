@@ -1,23 +1,21 @@
-import {
-  View,
-  Text,
-  Pressable,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
-  FlatList,
-  TextInput,
-} from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { getDatabase, ref, set, push, onValue, get, child } from 'firebase/database';
-import { Link, useRouter, useLocalSearchParams } from 'expo-router';
 import { Octicons } from '@expo/vector-icons';
-import { onAuthChange } from '../../api/auth';
-import { getCurrentUser, deleteReceiptItem, db } from '../../api/firebase';
-import { updateReceiptItem } from '../../api/receipt';
-import SplitProfile from '../../components/SplitProfile';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
+import { child, get, onValue, ref } from 'firebase/database';
+import React, { useEffect, useState } from 'react';
+import {
+  FlatList,
+  Modal,
+  Pressable,
+  Text,
+  TextInput,
+  View
+} from 'react-native';
+import { onAuthChange } from '../../api/auth';
+import { db, getCurrentUser } from '../../api/firebase';
+import { deleteReceiptItem, updateReceiptItem } from '../../api/receipt';
+import SplitProfile from '../../components/SplitProfile';
 
 export default function UnmatchedItem() {
   var { itemId, receiptId } = useLocalSearchParams();

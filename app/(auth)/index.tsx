@@ -14,8 +14,6 @@ import LinkButton from '../../components/LinkButton';
 import '../../main.css';
 
 export default function Home() {
-  // TODO: Home page
-  // Should this exist for users who
   const router = useRouter();
   const auth = getAuth();
   onAuthStateChanged(auth, async user => {

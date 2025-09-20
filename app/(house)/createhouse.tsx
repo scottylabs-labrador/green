@@ -1,17 +1,15 @@
-import { Text, View, Button, TextInput, TouchableOpacity } from 'react-native';
-import { Link } from 'expo-router';
+import { Text, TextInput, View } from 'react-native';
 
 import CustomButton from '../../components/CustomButton';
 
-import React, { useState, useCallback } from 'react';
 import { router } from 'expo-router';
-import * as crypto from 'crypto';
+import React, { useState } from 'react';
 
+import { writeGroceryList } from '../../api/grocerylist';
+import { writeHouseData } from '../../api/house';
 import '../../main.css';
-import { writeHouseData } from '../../api/firebase';
-import { writeGroceryList } from '../../api/firebase';
 
-export default function Page() {
+export default function CreateHouse() {
   const [name, onChangeName] = useState('');
   const [code, onChangeCode] = useState('');
   const [userid, setUserId] = useState('');

@@ -1,5 +1,6 @@
 import * as Crypto from 'expo-crypto';
 import { get, ref, set, update } from 'firebase/database';
+import * as schema from './classes';
 import { db } from './firebase';
 
 export async function createInviteCode(houseId: string): Promise<string> {
@@ -63,4 +64,15 @@ export async function getHouseNameFromId(houseId: string) {
   }
 
   return ""
+}
+
+export function writeHouseData(name: string, housecode: string, groceryListId: string) {
+  const house = new schema.House(name);
+  const postListRef = ref(db, 'houses/' + housecode);
+  set(postListRef, {
+    name: house.name,
+    members: house.members,
+    grocerylist: groceryListId,
+  });
+  return postListRef;
 }

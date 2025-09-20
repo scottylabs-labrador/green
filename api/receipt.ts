@@ -1,24 +1,11 @@
 import {
   getDatabase,
   ref,
-  set,
-  push,
-  onValue,
   remove,
   update,
-  orderByChild,
-  query,
-  equalTo,
-  get,
 } from 'firebase/database';
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-} from 'firebase/auth';
 import Fuse from 'fuse.js';
+import * as types from './types';
 
 // export const matchWords = (receiptItems, groceryListItems, groceryItemObjects, threshold = 0.3) => {
 //     const fuse = new Fuse(Object.keys(receiptItems), { threshold });
@@ -50,10 +37,10 @@ import Fuse from 'fuse.js';
 // };
 
 export const matchWords = (
-  userEmail,
-  receiptItems,
-  groceryListItems,
-  groceryItemObjects,
+  userEmail: string,
+  receiptItems: Record<string, string>,
+  groceryListItems: string[],
+  groceryItemObjects: types.GroceryItem[],
   threshold = 0.3,
 ) => {
   const fuse = new Fuse(groceryListItems, { threshold });
@@ -68,7 +55,7 @@ export const matchWords = (
 
     if (bestMatch) {
       usedWords.add(bestMatch.item);
-      let splits = [];
+      let splits: types.Splits = {};
       for (let i = 0; i < groceryItemObjects.length; i++) {
         if (groceryItemObjects[i].name == bestMatch.item) {
           splits = groceryItemObjects[i].splits;
@@ -81,12 +68,12 @@ export const matchWords = (
         splits: splits,
       }; // word is from the receiptItems, bestMatch is from groceryListItems
     }
-    let splits = {};
+    let splits: types.Splits = {};
     splits[filteredEmail] = 1;
     return { receiptItem: word, groceryItem: '', price: receiptItems[word], splits: splits };
   });
 
-  return listOfItems.reduce((obj, item) => {
+  return listOfItems.reduce((obj: types.ReceiptItems, item: types.ReceiptItem) => {
     let itemId = window.crypto.randomUUID();
     obj[itemId] = item;
     return obj;
@@ -97,7 +84,7 @@ export const matchWords = (
 
 // matchWords(["apple", "banana", "cherry"], ["aple", "banana", "cherry"])
 
-export function writeMatches(receiptId, houseCode, receiptItems) {
+export function writeMatches(receiptId: string, houseCode: string, receiptItems: types.ReceiptItems) {
   const db = getDatabase();
   //   const postReceiptRef = ref(db, 'receipts/' + receiptId);
   //   set(postReceiptRef, {
@@ -117,12 +104,12 @@ export function writeMatches(receiptId, houseCode, receiptItems) {
 }
 
 export function updateReceiptItem(
-  receiptId,
-  receiptItemId,
-  receiptItemName,
-  groceryItemName,
-  splits,
-  price,
+  receiptId: string,
+  receiptItemId: string,
+  receiptItemName: string,
+  groceryItemName: string,
+  splits: types.Splits,
+  price: string,
 ) {
   const db = getDatabase();
   const updates = {};
@@ -134,4 +121,10 @@ export function updateReceiptItem(
     receiptItemName;
   updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/price'] = price;
   return update(ref(db), updates);
+}
+
+export function deleteReceiptItem(receiptId: string, receiptItemId: string) {
+  const db = getDatabase();
+  const itemRef = ref(db, `receipts/${receiptId}/receiptitems/${receiptItemId}`);
+  remove(itemRef).catch((error: any) => console.error('Error removing item:', error));
 }

@@ -7,7 +7,7 @@ import CustomButton from '../../components/CustomButton';
 import '../../main.css';
 
 import { useRouter } from 'expo-router';
-import { getHouseIdFromInvite } from '../../api/join';
+import { getHouseIdFromInvite } from '../../api/house';
 
 export default function Page() {
   // TODO: Implement the list page

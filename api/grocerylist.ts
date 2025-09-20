@@ -10,6 +10,17 @@ import {
 } from 'firebase/database';
 import { getCurrentUser } from '../api/firebase';
 import * as schema from './classes';
+import * as types from './types';
+
+export function writeGroceryList(grocerylist: string, name: string) {
+  const db = getDatabase();
+  const postListRef = ref(db, 'grocerylists/' + grocerylist);
+  set(postListRef, {
+    name: name,
+    groceryitems: 1,
+  });
+  return postListRef;
+}
 
 export const getGroceryListId = async () => {
   const db = getDatabase();
@@ -44,12 +55,6 @@ export const getGroceryListId = async () => {
     });
 };
 
-interface GroceryItem {
-  name: string;
-  quantity: number;
-  splits: Record<string, number>;
-}
-
 export function getGroceryListIdFromHouse(houseId: string) {
   const db = getDatabase();
   const dbRef = ref(db);
@@ -72,7 +77,7 @@ export function writeGroceryItem(
 ) {
   const db = getDatabase();
   const postListRef = ref(db, 'grocerylists/' + grocerylist + '/groceryitems');
-  let splits = {};
+  let splits: types.Splits = {};
   splits[member] = quantity;
   const item = new schema.GroceryItem(name, quantity, []);
   const newPostRef = push(postListRef);
@@ -82,21 +87,6 @@ export function writeGroceryItem(
     splits: splits,
   });
 }
-
-// export function updateGroceryItemGroceryList(grocerylist: string, id, name: string, totalQuantity = 1, userQuantity = 1, splits = {}, member: string) {
-//   const db = getDatabase();
-//   if (userQuantity <= 0) {
-//     delete splits[member];
-//   }
-//   else if (!(member in splits)){
-//     splits[member] = userQuantity;
-//   }
-//   update(ref(db, "grocerylists/" +grocerylist+"/groceryitems/" + id), {
-//     name: name,
-//     quantity: totalQuantity,
-//     splits: splits
-//   });
-// }
 
 export function updateGroceryItem(
   grocerylist: string,

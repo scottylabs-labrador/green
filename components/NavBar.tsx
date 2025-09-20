@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { View } from 'react-native';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Link, useSegments } from 'expo-router';
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
+import { View } from 'react-native';
 
 const NavBar = () => {
   const segments = useSegments();
   const [location, setLocation] = useState('');
 
-  const SELECTED_COLOR = 'pink';
+  const SELECTED_COLOR = '#3e5636';
+  const DESELECTED_COLOR = '#9fa3af';
 
   useEffect(() => {
     setLocation(segments[segments.length - 1]);
@@ -20,17 +21,17 @@ const NavBar = () => {
           <Ionicons
             name="home"
             size={24}
-            color={location == 'profile' || location == 'scan' ? 'gray' : SELECTED_COLOR}
+            color={location == 'profile' || location == 'scan' ? DESELECTED_COLOR : SELECTED_COLOR}
           />
         </Link>
         <Link href="/scan" asChild>
-          <Ionicons name="camera" size={24} color={location == 'scan' ? SELECTED_COLOR : 'gray'} />
+          <Ionicons name="camera" size={24} color={location == 'scan' ? SELECTED_COLOR : DESELECTED_COLOR} />
         </Link>
         <Link href="/profile" asChild>
           <FontAwesome
             name="user-circle"
             size={24}
-            color={location == 'profile' ? SELECTED_COLOR : 'gray'}
+            color={location == 'profile' ? SELECTED_COLOR : DESELECTED_COLOR}
           />
         </Link>
       </View>
