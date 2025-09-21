@@ -9,7 +9,7 @@ if (isEmulator) {
 
 admin.initializeApp({
   databaseURL: isEmulator 
-    ? "http://localhost:9000?ns=green-2c431-default-rtdb"
+    ? "http://localhost:9000?ns=green-2c431"
     : "https://green-2c431.firebaseio.com",
 });
 
