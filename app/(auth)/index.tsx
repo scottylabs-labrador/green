@@ -17,10 +17,15 @@ export default function Home() {
   const router = useRouter();
   const auth = getAuth();
   onAuthStateChanged(auth, async user => {
-    if (user) {
-      getGroceryListId().then(groceryListId =>
-        router.replace({ pathname: '/list', params: { grocerylist: groceryListId } }),
-      );
+    if (user && user.email) {
+      getGroceryListId(user.email)
+        .then(groceryListId =>
+          router.replace({ pathname: '/list', params: { grocerylist: groceryListId } }),
+        )
+        .catch(error => {
+          console.error("Error when redirecting from homepage:", error);
+          router.replace({ pathname: '/choosehouse'});
+    });
     }
   });
   return (

@@ -4,15 +4,12 @@ import {
   signInWithEmailAndPassword,
   signOut
 } from 'firebase/auth';
-import {
-  getDatabase,
-  ref,
-  set
-} from 'firebase/database';
+import { connectDatabaseEmulator, getDatabase, ref, set } from 'firebase/database';
+import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 import { Platform } from 'react-native';
 import * as schema from './classes';
 //@ts-ignore
-import { Auth, browserLocalPersistence, getReactNativePersistence, initializeAuth } from '@firebase/auth';
+import { browserLocalPersistence, connectAuthEmulator, getReactNativePersistence, initializeAuth } from '@firebase/auth';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 
 // TODO: Replace the following with your app's Firebase project configuration
@@ -33,41 +30,23 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 
-// Initialize Realtime Database and get a reference to the service
 export const db = getDatabase(app);
+export const functions = getFunctions(app);
 
-// Initialize Firebase Auth
-// export const auth = initializeAuth(app, {
-//   persistence: getReactNativePersistence(ReactNativeAsyncStorage),
-// })
-let auth: Auth;
+export const auth = initializeAuth(app, {
+  persistence:
+    Platform.OS === "web"
+      ? browserLocalPersistence
+      : getReactNativePersistence(ReactNativeAsyncStorage),
+});
 
-if (Platform.OS === 'web') {
-  // Web persistence
-  auth = initializeAuth(app, {
-    persistence: browserLocalPersistence,
-  });
-} else {
-  // React Native persistence using AsyncStorage
-  auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(ReactNativeAsyncStorage),
-  });
+if (__DEV__ && Platform.OS === "web") {
+  connectDatabaseEmulator(db, "localhost", 9000);
+  connectFunctionsEmulator(functions, "localhost", 5001);
+  connectAuthEmulator(auth, "http://localhost:9099");
 }
-
-export { auth };
-
-// Set Auth Persistence
-
-// setPersistence(auth, browserLocalPersistence)
-//   .then(() => {
-//     console.log("Auth persistence set to LOCAL");
-//   })
-//   .catch((error) => {
-//     console.error("Error setting persistence:", error);
-//   });
 
 export function writeUserData(name: string, email: string, phone_number: string) {
   const db = getDatabase();

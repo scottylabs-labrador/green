@@ -8,7 +8,6 @@ import {
   runTransaction,
   set
 } from 'firebase/database';
-import { getCurrentUser } from '../api/firebase';
 import * as schema from './classes';
 import * as types from './types';
 
@@ -22,38 +21,27 @@ export function writeGroceryList(grocerylist: string, name: string) {
   return postListRef;
 }
 
-export const getGroceryListId = async () => {
+export async function getGroceryListId(email: string): Promise<string> {
   const db = getDatabase();
-  let email = getCurrentUser().email;
-  var emailParts = email.split('.');
-  var filteredEmail = emailParts[0] + ':' + emailParts[1];
-  const dbRef = ref(db);
-  return get(child(dbRef, `housemates/${filteredEmail}`))
-    .then(snapshot => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        if (!('houses' in data) || data.houses.length < 1) {
-          throw new Error("No houses found");
-        }
-        let houses = data.houses[0].toString();
-        const houseRef = child(dbRef, `houses/${houses}`);
-        return get(houseRef);
-      } else {
-        console.error('failed to get houses');
-        return Promise.reject('no house found');
-      }
-    })
-    .then(snapshot => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        let groceryList = data.grocerylist;
-        return groceryList;
-      } else {
-        console.error('failed to get grocery list');
-        return Promise.reject('no grocery list');
-      }
-    });
-};
+  const emailKey = email.replace(/\./g, ':');
+  const houseRef = ref(db, `housemates/${emailKey}`);
+  const houseSnap = await get(houseRef);
+
+  if (!houseSnap.exists()) throw new Error('No housemate record found');
+
+  const houses = houseSnap.val().houses;
+  if (!houses || houses.length === 0) throw new Error('No houses listed');
+
+  const houseId = houses[0];
+  const houseDataSnap = await get(ref(db, `houses/${houseId}`));
+
+  if (!houseDataSnap.exists()) throw new Error('No house data found');
+
+  const grocerylist = houseDataSnap.val().grocerylist;
+  if (!grocerylist) throw new Error('No grocerylist ID found');
+
+  return grocerylist;
+}
 
 export function getGroceryListIdFromHouse(houseId: string) {
   const db = getDatabase();

@@ -1,21 +1,22 @@
+import { useRouter } from 'expo-router';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { get, getDatabase, ref } from 'firebase/database';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ImageBackground,
+  Text,
+  TextInput,
+  View,
 } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'expo-router';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getDatabase, ref, get } from 'firebase/database';
 
+import { userSignIn } from '../../api/firebase';
+import { getGroceryListId } from '../../api/grocerylist';
+import background from '../../assets/home-background.png';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/CustomButton';
-import { userSignIn } from '../../api/firebase';
-import background from '../../assets/home-background.png';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -123,27 +124,4 @@ export default function Login() {
       </KeyboardAvoidingView>
     </ImageBackground>
   );
-}
-
-// Optional: Move this logic to your api/grocerylist.ts file
-async function getGroceryListId(email: string): Promise<string> {
-  const db = getDatabase();
-  const emailKey = email.replace(/\./g, ':');
-  const houseRef = ref(db, `housemates/${emailKey}`);
-  const houseSnap = await get(houseRef);
-
-  if (!houseSnap.exists()) throw new Error('No housemate record found');
-
-  const houses = houseSnap.val().houses;
-  if (!houses || houses.length === 0) throw new Error('No houses listed');
-
-  const houseId = houses[0];
-  const houseDataSnap = await get(ref(db, `houses/${houseId}`));
-
-  if (!houseDataSnap.exists()) throw new Error('No house data found');
-
-  const grocerylist = houseDataSnap.val().grocerylist;
-  if (!grocerylist) throw new Error('No grocerylist ID found');
-
-  return grocerylist;
 }

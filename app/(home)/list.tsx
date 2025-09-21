@@ -19,7 +19,7 @@ export default function List() {
     const auth = getAuth();
     onAuthStateChanged(auth, async user => {
       if (user) {
-        const groceryListId = await getGroceryListId();
+        const groceryListId = await getGroceryListId(email);
         router.replace({ pathname: '/list', params: { grocerylist: groceryListId } });
       }
     });
