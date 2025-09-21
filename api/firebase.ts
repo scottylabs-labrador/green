@@ -42,7 +42,7 @@ export const auth = initializeAuth(app, {
       : getReactNativePersistence(ReactNativeAsyncStorage),
 });
 
-if (__DEV__ && Platform.OS === "web") {
+if (__DEV__) {
   connectDatabaseEmulator(db, "localhost", 9000);
   connectFunctionsEmulator(functions, "localhost", 5001);
   connectAuthEmulator(auth, "http://localhost:9099");

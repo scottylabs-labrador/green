@@ -1,40 +1,16 @@
 import { get, ref, set, update } from 'firebase/database';
 import { httpsCallable } from "firebase/functions";
-import { Platform } from "react-native";
 import * as schema from './classes';
-import { auth, db, functions } from "./firebase";
+import { db, functions } from "./firebase";
 
 export async function createInviteCode(houseId: string) {
-  if (Platform.OS === "web") {
-    const user = auth.currentUser;
-    if (!user) throw new Error("Not logged in");
+  const fn = httpsCallable<{ houseId: string }, { token: string }>(
+    functions,
+    "createInviteCode"
+  );
 
-    const idToken = await user.getIdToken(true);
-
-    const res = await fetch(
-      "http://localhost:5001/green-2c431/us-central1/createInviteCode",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify({ houseId }),
-      }
-    );
-
-    if (!res.ok) throw new Error(`Failed: ${res.statusText}`);
-    const data = await res.json();
-    return data.token as string;
-  } else {
-    // Mobile: call emulator via onCall
-    const fn = httpsCallable<{ houseId: string }, { token: string }>(
-      functions,
-      "createInviteCodeCallable"
-    );
-    const result = await fn({ houseId });
-    return result.data.token;
-  }
+  const result = await fn({ houseId });
+  return result.data.token;
 }
 
 export async function getHouseIdFromInvite(inviteToken: string): Promise<string> {
