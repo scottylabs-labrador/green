@@ -58,10 +58,10 @@ export async function getHouseNameFromId(houseId: string) {
   return ""
 }
 
-export function writeHouseData(name: string, housecode: string, groceryListId: string) {
+export async function writeHouseData(name: string, housecode: string, groceryListId: string) {
   const house = new schema.House(name);
   const postListRef = ref(db, 'houses/' + housecode);
-  set(postListRef, {
+  await set(postListRef, {
     name: house.name,
     members: house.members,
     grocerylist: groceryListId,

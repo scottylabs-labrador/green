@@ -1,28 +1,19 @@
-import { Text, TextInput, View } from 'react-native';
-
-import { get, getDatabase, ref } from 'firebase/database';
+import { useRouter } from 'expo-router';
+import { get, ref } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
+import { Text, TextInput, View } from 'react-native';
+import { db } from '../../api/firebase';
+import { getHouseIdFromInvite } from '../../api/house';
 import CustomButton from '../../components/CustomButton';
 
-import '../../main.css';
-
-import { useRouter } from 'expo-router';
-import { getHouseIdFromInvite } from '../../api/house';
-
-export default function Page() {
-  // TODO: Implement the list page
-  // Display a list of grocery items
-  // Allow users to add, remove, and update items
+export default function JoinHouseCode() {
   const [code, onChangeCode] = useState('');
   const [houses, setHousesItem] = useState([]);
   const [error, setError] = useState('');
-  const db = getDatabase();
-  const itemRef = ref(db, 'houses/');
   const router = useRouter();
 
   useEffect(() => {
     const fetchData = () => {
-      const db = getDatabase();
       const itemRef = ref(db, 'houses/');
       get(itemRef).then(snapshot => {
         const data = snapshot.val();
@@ -35,23 +26,18 @@ export default function Page() {
   async function redirectToHouse() {
     try {
       const houseId = await getHouseIdFromInvite(code);
-      window.location.href = '/joinhouse?key=' + houseId;
+      if (houseId) {
+        router.push({
+          pathname: '/joinhouse',
+          params: { key: houseId },
+        });
+      }
     } catch (err) {
       console.error("Error while validing code: ", err);
       if (err instanceof Error) {
         setError(err.message);
       }
     }
-  }
-
-  function stuff(code: string) {
-    onChangeCode(code);
-    console.log(code);
-    return false;
-  }
-
-  function test() {
-    console.log(code);
   }
 
   return (

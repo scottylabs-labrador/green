@@ -8,9 +8,8 @@ if (isEmulator) {
 }
 
 admin.initializeApp({
-  databaseURL: isEmulator 
-    ? "http://localhost:9000?ns=green-2c431"
-    : "https://green-2c431.firebaseio.com",
+  projectId: process.env.PROJECT_ID,
+  databaseURL: process.env.DATABASE_URL,
 });
 
 import { createInviteCode } from "./handlers/house";

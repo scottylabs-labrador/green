@@ -20,7 +20,6 @@ import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 // databaseURL: process.env.EXPO_PUBLIC_FIREBASE_DB_URL,
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
   databaseURL: process.env.EXPO_PUBLIC_FIREBASE_DB_URL,
   projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
@@ -30,12 +29,12 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-export const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 
-export const db = getDatabase(app);
-export const functions = getFunctions(app);
+const db = getDatabase(app);
+const functions = getFunctions(app);
 
-export const auth = initializeAuth(app, {
+const auth = initializeAuth(app, {
   persistence:
     Platform.OS === "web"
       ? browserLocalPersistence
@@ -47,6 +46,8 @@ if (__DEV__) {
   connectFunctionsEmulator(functions, "localhost", 5001);
   connectAuthEmulator(auth, "http://localhost:9099");
 }
+
+export { app, auth, db, functions };
 
 export function writeUserData(name: string, email: string, phone_number: string) {
   const db = getDatabase();

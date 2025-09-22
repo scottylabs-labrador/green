@@ -1,31 +1,27 @@
-import { Text, View, TextInput, TouchableOpacity } from 'react-native';
-import { Link } from 'expo-router';
-import React, { useState, useCallback, useEffect } from 'react';
-import { getDatabase, ref, set, push, onValue, get, update } from 'firebase/database';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { getDatabase, onValue, ref, set, update } from 'firebase/database';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { getCurrentUser } from '../../api/firebase';
-import { router, useRouter } from 'expo-router';
 
-import '../../main.css';
-import { writeGroceryItem } from '../../api/firebase';
-import CustomButton from '../../components/CustomButton';
-import LinkButton from '../../components/LinkButton';
 import { onAuthChange } from '../../api/auth';
+import CustomButton from '../../components/CustomButton';
 
-export default function Page() {
+export default function JoinHouse() {
   // TODO: Implement the list page
   // Display a list of grocery items
   // Allow users to add, remove, and update items
+  const { key } = useLocalSearchParams<{ key: string }>();
+
   const db = getDatabase();
-  const [code, onChangeCode] = useState('');
-  const [housecode, onHouseCodeChange] = useState('');
   const [members, setMembersHouse] = useState([]);
   const [chosencolor, setColor] = useState('');
-  const [name, setNameHouse] = useState([]);
-  const [datahousecode, setData] = useState([]);
+  const [houseName, setHouseName] = useState([]);
   const [userid, setuserid] = useState('tempuser');
   const [username, setusername] = useState('username');
   const [email, setemail] = useState('email');
   const [grocerylistid, setgrocerylistid] = useState('');
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   const activeColor = 'outline outline-emerald-900 outline-offset-1';
@@ -36,7 +32,6 @@ export default function Page() {
   const BLUE = '3662E3';
   const PURPLE = '883AE1';
 
-  let user;
   useEffect(() => {
     const getuser = onAuthChange(user => {
       if (user) {
@@ -57,36 +52,27 @@ export default function Page() {
     return () => getuser();
   }, []);
 
+  // Get house information using house ID (key)
   useEffect(() => {
-    const fetchData = () => {
-      const queryString = window.location.search;
-      const urlParams = new URLSearchParams(queryString);
-      const code = urlParams.get('key');
-      if (code) {
-        const itemRef = ref(db, 'houses/' + code);
-        onValue(itemRef, snapshot => {
-          try {
-            const data = snapshot.val();
-            if (data) {
-              setNameHouse(data.name);
-              setMembersHouse(data.members);
-              setgrocerylistid(data.grocerylist);
-            }
-          } catch {}
-        });
+    if (!key) return;
+
+    const houseRef = ref(db, "houses/" + key);
+    const unsubscribe = onValue(houseRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data?.name) {
+        setHouseName(data.name);
       }
-    };
+      if (data?.members) {
+        setMembersHouse(data.members);
+      }
+      if (data?.grocerylist) {
+        setgrocerylistid(data.grocerylist);
+      }
+      setLoading(false);
+    });
 
-    fetchData();
-  }, [housecode]);
-
-  // Scuffed
-  useEffect(() => {
-    console.log('reached');
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    onHouseCodeChange(urlParams.get('key'));
-  }, []);
+    return () => unsubscribe();
+  }, [key]);
 
   useEffect(() => {
     const fetchData = () => {
@@ -104,10 +90,6 @@ export default function Page() {
     };
     fetchData();
   }, [email]);
-
-  function setcolor(color) {
-    setColor(prev => color);
-  }
 
   function addMember() {
     const db = getDatabase();
@@ -129,10 +111,27 @@ export default function Page() {
     router.push({ pathname: '/list', params: { grocerylist: grocerylistid } });
   }
 
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" />
+        <Text>Loading house...</Text>
+      </View>
+    );
+  }
+
+  if (!houseName) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Text>No house found for this code.</Text>
+      </View>
+    );
+  }
+
   return (
     <View className="padding-24 flex-1 items-center">
       <View className="mx-auto mb-20 w-9/12 max-w-6xl flex-1 justify-center">
-        <Text className="justify-left mb-9 text-center text-4xl font-semibold">{name}</Text>
+        <Text className="justify-left mb-9 text-center text-4xl font-semibold">{houseName}</Text>
         <View className="padding-24 mb-6 flex-row items-center justify-evenly">
           <TouchableOpacity
             className={`h-8 w-8 bg-red-600 ${chosencolor == RED ? activeColor : ''}`}
@@ -178,21 +177,7 @@ export default function Page() {
           </TouchableOpacity>
         </View>
         <View className="padding-24 flex-row items-center justify-evenly">
-          {/* <Link href="/joinhousecode" asChild>
-                <TouchableOpacity 
-                    className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
-                    >
-                    <Text className="text-white text-center self-center">Back</Text>
-                </TouchableOpacity>
-                </Link> */}
-          <LinkButton buttonLabel="Back" page="/joinhousecode" />
-          {/* <TouchableOpacity 
-                    className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
-                    onPress = {()=>addMember()}
-                    >
-                    <Text className="text-white text-center self-center">Join House</Text>
-
-                </TouchableOpacity> */}
+          <CustomButton buttonLabel="Back" onPress={() => router.back()} />
           <CustomButton buttonLabel="Join House" onPress={() => addMember()}></CustomButton>
         </View>
       </View>

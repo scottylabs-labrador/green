@@ -5,6 +5,9 @@ import CustomButton from '../../components/CustomButton';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 
+import { get, ref } from 'firebase/database';
+import { db } from '../../api/firebase';
+
 import { writeGroceryList } from '../../api/grocerylist';
 import { writeHouseData } from '../../api/house';
 import '../../main.css';
@@ -15,15 +18,25 @@ export default function CreateHouse() {
   const [userid, setUserId] = useState('');
   const [username, setUserName] = useState('');
 
-  async function changetojoin(name) {
+  async function changetojoin(name: string) {
     const housecode = window.crypto.randomUUID();
     const grocerylist = window.crypto.randomUUID();
     // const id: {"name":string, "color": string, "userid": string} = {"name": username, "color": "N/A", "userid": userid};
-    writeHouseData(name, housecode, grocerylist);
-    writeGroceryList(grocerylist, name);
+    await writeHouseData(name, housecode, grocerylist);
+    await writeGroceryList(grocerylist, name);
+
+    const houseRef = ref(db, 'houses/' + housecode);
+    const snapshot = await get(houseRef);
+    if (!snapshot.exists()) {
+      console.warn("House write didn't finish yet!");
+    }
     // window.location.href ='/joinhouse?key='+housecode;
     // Slight problem where user needs to reload themself, needs to be fixed
-    router.replace('/joinhouse?key=' + housecode);
+    // router.replace('/joinhouse?key=' + housecode);
+    router.push({
+      pathname: '/joinhouse',
+      params: { key: housecode },
+    });
   }
 
   return (
