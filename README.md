@@ -25,6 +25,12 @@ Install dependencies: `npm install`
 
 Start Expo App: `npx expo start --tunnel`
 
+### Firebase Functions (Backend)
+
+Install dependencies: `cd backend/functions; npm install`
+
+Build and start emulator: `npm run serve`
+
 ### Python OCR Server (Backend)
 
 Create virtual environment in the `ocr` folder: `cd ocr; virtualenv venv; source venv/bin/activate`
@@ -46,4 +52,4 @@ You can clear the OCR images and debug output with `./scripts/clear_images.sh`
 
 [Expo Docs](https://docs.expo.dev/tutorial/create-your-first-app/)
 [NativeWind/Tailwind with Expo](https://www.nativewind.dev/quick-starts/expo)
-[Clerk with Expo](https://clerk.com/docs/references/expo/overview)
+[Cloud Functions for Firebase](https://firebase.google.com/docs/functions)
