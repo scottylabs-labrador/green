@@ -1,9 +1,11 @@
+import React, { useEffect, useState } from 'react';
+
 import { Ionicons } from '@expo/vector-icons';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getDatabase, onValue, ref } from 'firebase/database';
-import React, { useEffect, useState } from 'react';
 import { FlatList, Image, Modal, Pressable, Text, TextInput, View } from 'react-native';
+
 import { onAuthChange } from '../../api/auth';
 import { getCurrentUser } from '../../api/firebase';
 import { getGroceryListId, writeGroceryItem } from '../../api/grocerylist';

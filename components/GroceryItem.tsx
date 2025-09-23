@@ -1,9 +1,10 @@
 import React from 'react';
-import { Text, View, Pressable, FlatList } from 'react-native';
-import { updateGroceryItemGroceryList, removeGroceryItemGroceryList } from '../api/firebase';
-import { updateGroceryItem, removeGroceryItem } from '../api/grocerylist';
+
 import { Ionicons } from '@expo/vector-icons';
+import { FlatList, Pressable, Text, View } from 'react-native';
+
 import SplitProfile from './SplitProfile';
+import { updateGroceryItem } from '../api/grocerylist';
 
 type GroceryItemProps = {
   grocerylist: string | string[];

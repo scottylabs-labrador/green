@@ -1,6 +1,7 @@
+import React, { useEffect, useState } from 'react';
+
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Link, useSegments } from 'expo-router';
-import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 const NavBar = () => {
@@ -25,7 +26,11 @@ const NavBar = () => {
           />
         </Link>
         <Link href="/scan" asChild>
-          <Ionicons name="camera" size={24} color={location == 'scan' ? SELECTED_COLOR : DESELECTED_COLOR} />
+          <Ionicons
+            name="camera"
+            size={24}
+            color={location == 'scan' ? SELECTED_COLOR : DESELECTED_COLOR}
+          />
         </Link>
         <Link href="/profile" asChild>
           <FontAwesome

@@ -1,14 +1,15 @@
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
+import { useRouter } from 'expo-router';
+import { child, get, getDatabase, ref } from 'firebase/database';
+import { Button, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
 import { onAuthChange } from '../../api/auth';
 import { getCurrentUser } from '../../api/firebase';
 import { writeMatches } from '../../api/receipt';
-import { getDatabase, ref, set, push, onValue, get, remove, child } from 'firebase/database';
-import { Button, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { matchWords } from '../../api/receipt';
-import { useRouter } from 'expo-router';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function Page() {
   const [email, setEmail] = useState('');

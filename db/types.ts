@@ -6,7 +6,7 @@ export interface GroceryItem {
   splits: Splits;
 }
 
-export type GroceryItems = Record<string, GroceryItem>
+export type GroceryItems = Record<string, GroceryItem>;
 
 export interface ReceiptItem {
   receiptItem: string;
@@ -15,10 +15,10 @@ export interface ReceiptItem {
   splits: Splits;
 }
 
-export type ReceiptItems = Record<string, ReceiptItem>
+export type ReceiptItems = Record<string, ReceiptItem>;
 
 export interface Invite {
-  houseId: string; 
+  houseId: string;
   createdAt: number;
   expiresAt: number;
 }

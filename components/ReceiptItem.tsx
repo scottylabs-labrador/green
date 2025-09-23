@@ -67,9 +67,11 @@
 // export default ReceiptItem
 
 import React from 'react';
-import { Text, View, FlatList } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
+import { FlatList, Text, View } from 'react-native';
+
 import SplitProfile from './SplitProfile';
 
 type ReceiptItemProps = {

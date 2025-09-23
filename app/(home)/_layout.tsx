@@ -1,8 +1,10 @@
-import { View, ImageBackground } from 'react-native';
-import { Slot, Stack, useSegments } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import NavBar from '../../components/NavBar';
+
+import { Slot, useSegments } from 'expo-router';
+import { ImageBackground, View } from 'react-native';
+
 import background from '../../assets/background.png';
+import NavBar from '../../components/NavBar';
 
 export default function HomeLayout() {
   const segments = useSegments();

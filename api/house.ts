@@ -1,13 +1,11 @@
 import { get, ref, set, update } from 'firebase/database';
-import { httpsCallable } from "firebase/functions";
+import { httpsCallable } from 'firebase/functions';
+
 import * as schema from './classes';
-import { db, functions } from "./firebase";
+import { db, functions } from './firebase';
 
 export async function createInviteCode(houseId: string) {
-  const fn = httpsCallable<{ houseId: string }, { token: string }>(
-    functions,
-    "createInviteCode"
-  );
+  const fn = httpsCallable<{ houseId: string }, { token: string }>(functions, 'createInviteCode');
 
   const result = await fn({ houseId });
   return result.data.token;
@@ -29,21 +27,21 @@ export async function getHouseIdFromInvite(inviteToken: string): Promise<string>
 export async function joinHouseWithInvite(houseId: string, userId: string, color: string) {
   const nameSnap = await get(ref(db, `housemates/${userId}/name`));
   const name = nameSnap.exists() ? nameSnap.val() : 'Unknown';
-  
+
   const housesRef = ref(db, `housemates/${userId}/houses`);
   const housesSnap = await get(housesRef);
   let houses = housesSnap.exists() ? housesSnap.val() : [];
-  
+
   if (!houses.includes(houseId)) {
     houses.push(houseId);
   }
-  
+
   await update(ref(db), {
     [`houses/${houseId}/members/${userId}`]: {
       name,
       color,
     },
-    [`housemates/${userId}/houses`]: houses
+    [`housemates/${userId}/houses`]: houses,
   });
 }
 
@@ -52,10 +50,10 @@ export async function getHouseNameFromId(houseId: string) {
   const snap = await get(houseRef);
 
   if (snap.exists()) {
-    return snap.val()
+    return snap.val();
   }
 
-  return ""
+  return '';
 }
 
 export async function writeHouseData(name: string, housecode: string, groceryListId: string) {

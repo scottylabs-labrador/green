@@ -1,8 +1,4 @@
-import {
-  get as fbGet,
-  getDatabase,
-  ref
-} from "firebase/database";
+import { get as fbGet, getDatabase, ref } from 'firebase/database';
 
 export async function getTyped<T>(path: string): Promise<T | null> {
   const db = getDatabase();

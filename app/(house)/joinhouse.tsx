@@ -1,10 +1,11 @@
+import React, { useEffect, useState } from 'react';
+
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getDatabase, onValue, ref, set, update } from 'firebase/database';
-import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
-import { getCurrentUser } from '../../api/firebase';
 
 import { onAuthChange } from '../../api/auth';
+import { getCurrentUser } from '../../api/firebase';
 import CustomButton from '../../components/CustomButton';
 
 export default function JoinHouse() {
@@ -53,8 +54,8 @@ export default function JoinHouse() {
   useEffect(() => {
     if (!key) return;
 
-    const houseRef = ref(db, "houses/" + key);
-    const unsubscribe = onValue(houseRef, (snapshot) => {
+    const houseRef = ref(db, 'houses/' + key);
+    const unsubscribe = onValue(houseRef, snapshot => {
       const data = snapshot.val();
       if (data?.name) {
         setHouseName(data.name);

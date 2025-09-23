@@ -9,7 +9,8 @@
 // }
 
 import React from 'react';
-import { Stack, Slot } from 'expo-router';
+
+import { Slot, Stack } from 'expo-router';
 
 export default function AuthLayout() {
   return (

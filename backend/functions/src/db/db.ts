@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import * as admin from 'firebase-admin';
 
 export function setTyped<T>(path: string, value: T): Promise<void> {
   const db = admin.database();

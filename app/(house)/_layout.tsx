@@ -1,5 +1,7 @@
-import { Slot, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
+
+import { Slot, useRouter } from 'expo-router';
+
 import { useAuth } from '../../context/AuthContext';
 
 export default function ProtectedLayout() {

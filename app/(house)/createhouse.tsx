@@ -1,12 +1,11 @@
-import { Text, TextInput, View } from 'react-native';
-
-import CustomButton from '../../components/CustomButton';
+import React, { useState } from 'react';
 
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { Text, TextInput, View } from 'react-native';
 
 import { writeGroceryList } from '../../api/grocerylist';
 import { writeHouseData } from '../../api/house';
+import CustomButton from '../../components/CustomButton';
 
 export default function CreateHouse() {
   const [name, onChangeName] = useState('');

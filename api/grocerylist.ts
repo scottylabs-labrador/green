@@ -1,15 +1,7 @@
-import {
-  child,
-  get,
-  getDatabase,
-  push,
-  ref,
-  remove,
-  runTransaction,
-  set
-} from 'firebase/database';
-import * as types from '../db/types';
+import { child, get, getDatabase, push, ref, remove, runTransaction, set } from 'firebase/database';
+
 import * as schema from './classes';
+import * as types from '../db/types';
 
 export async function writeGroceryList(grocerylist: string, name: string) {
   const db = getDatabase();
@@ -46,7 +38,7 @@ export async function getGroceryListId(email: string): Promise<string> {
 export function getGroceryListIdFromHouse(houseId: string) {
   const db = getDatabase();
   const dbRef = ref(db);
-  return get(child(dbRef, "houses/" + houseId + "/grocerylist")).then((snapshot) => {
+  return get(child(dbRef, 'houses/' + houseId + '/grocerylist')).then(snapshot => {
     if (snapshot.exists()) {
       const groceryListId = snapshot.val();
       return groceryListId;
@@ -54,7 +46,7 @@ export function getGroceryListIdFromHouse(houseId: string) {
       console.error('failed to get grocery list id from house id');
       return Promise.reject('no grocery list');
     }
-  })
+  });
 }
 
 export function writeGroceryItem(

@@ -1,9 +1,11 @@
+import React, { useState } from 'react';
+
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Clipboard from 'expo-clipboard';
 import { getAuth } from 'firebase/auth';
-import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Modal, Text, TextInput, View } from 'react-native';
+
 import { createInviteCode } from '../api/house';
 
 type EditHouseProps = {
@@ -58,7 +60,7 @@ const EditHouse = ({ houseId, visible, onClose }: EditHouseProps) => {
       <View className="flex-1 items-center justify-center bg-black/50">
         <View className="relative w-[85%] rounded-2xl bg-white p-5 shadow-md">
           <Ionicons name="close" size={24} onPress={onClose} className="absolute right-3 top-3" />
-          <Text className="text-center font-medium text-lg">Edit House</Text>
+          <Text className="text-center text-lg font-medium">Edit House</Text>
           <View className="px-2">
             <Text className="mb-2">Name</Text>
             <TextInput
@@ -67,34 +69,28 @@ const EditHouse = ({ houseId, visible, onClose }: EditHouseProps) => {
               value={houseName}
               autoCapitalize="none"
             />
-            <View className="flex-row justify-between items-center mb-2">
+            <View className="mb-2 flex-row items-center justify-between">
               <Text className="">Members</Text>
-              <Ionicons name="add" size={20} color="gray" onPress={handleCreateCode}/>
+              <Ionicons name="add" size={20} color="gray" onPress={handleCreateCode} />
             </View>
-            {link 
-              ? (
-                <View className="flex-row mt-4 gap-3">
-                  <Text className="w-full text-left font-medium">Join Code</Text>
-                  <Text className="flex-shrink text-gray-500">
-                    {link}
-                  </Text>
-                  <FontAwesome6
-                    className="ml-2"
-                    name="copy"
-                    size={20}
-                    color="gray"
-                    onPress={handleCopy}
-                  />
-                </View>
-                ) 
-              : (loading 
-                  ? <View className="flex-row justify-center items-center mt-4 gap-3">
-                      <Text className="w-full text-left">Generating Invite Code</Text>
-                      <ActivityIndicator size="small" />
-                    </View>
-                  : null 
-                )
-            }
+            {link ? (
+              <View className="mt-4 flex-row gap-3">
+                <Text className="w-full text-left font-medium">Join Code</Text>
+                <Text className="flex-shrink text-gray-500">{link}</Text>
+                <FontAwesome6
+                  className="ml-2"
+                  name="copy"
+                  size={20}
+                  color="gray"
+                  onPress={handleCopy}
+                />
+              </View>
+            ) : loading ? (
+              <View className="mt-4 flex-row items-center justify-center gap-3">
+                <Text className="w-full text-left">Generating Invite Code</Text>
+                <ActivityIndicator size="small" />
+              </View>
+            ) : null}
             {error ? <Text className="mt-4 text-red-500">Error: {error}</Text> : null}
           </View>
         </View>

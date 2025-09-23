@@ -1,7 +1,9 @@
+import React, { useEffect, useState } from 'react';
+
 import { useRouter } from 'expo-router';
 import { get, ref } from 'firebase/database';
-import React, { useEffect, useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
+
 import { db } from '../../api/firebase';
 import { getHouseIdFromInvite } from '../../api/house';
 import CustomButton from '../../components/CustomButton';
@@ -33,7 +35,7 @@ export default function JoinHouseCode() {
         });
       }
     } catch (err) {
-      console.error("Error while validing code: ", err);
+      console.error('Error while validing code: ', err);
       if (err instanceof Error) {
         setError(err.message);
       }
@@ -50,9 +52,7 @@ export default function JoinHouseCode() {
           onChangeText={onChangeCode}
           value={code}
         />
-        {error ? 
-         <Text className="text-red-500 mb-4">Error: {error}</Text> 
-        : <View></View>}
+        {error ? <Text className="mb-4 text-red-500">Error: {error}</Text> : <View></View>}
         <CustomButton buttonLabel="Join House" onPress={redirectToHouse}></CustomButton>
       </View>
     </View>

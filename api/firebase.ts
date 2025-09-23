@@ -1,16 +1,18 @@
-import { initializeApp } from 'firebase/app';
 import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut
-} from 'firebase/auth';
-import { connectDatabaseEmulator, getDatabase, ref, set } from 'firebase/database';
-import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
-import { Platform } from 'react-native';
-import * as schema from './classes';
+  browserLocalPersistence,
+  connectAuthEmulator,
+  getReactNativePersistence,
+  initializeAuth,
+} from '@firebase/auth';
 //@ts-ignore
-import { browserLocalPersistence, connectAuthEmulator, getReactNativePersistence, initializeAuth } from '@firebase/auth';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import { initializeApp } from 'firebase/app';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { connectDatabaseEmulator, getDatabase, ref, set } from 'firebase/database';
+import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
+import { Platform } from 'react-native';
+
+import * as schema from './classes';
 
 // TODO: Replace the following with your app's Firebase project configuration
 // See: https://firebase.google.com/docs/web/learn-more#config-object
@@ -36,15 +38,15 @@ const functions = getFunctions(app);
 
 const auth = initializeAuth(app, {
   persistence:
-    Platform.OS === "web"
+    Platform.OS === 'web'
       ? browserLocalPersistence
       : getReactNativePersistence(ReactNativeAsyncStorage),
 });
 
 if (__DEV__) {
-  connectDatabaseEmulator(db, "127.0.0.1", 9000);
-  connectFunctionsEmulator(functions, "localhost", 5001);
-  connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
+  connectDatabaseEmulator(db, '127.0.0.1', 9000);
+  connectFunctionsEmulator(functions, 'localhost', 5001);
+  connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
 }
 
 export { app, auth, db, functions };

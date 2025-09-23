@@ -1,8 +1,10 @@
+import React, { useEffect, useState } from 'react';
+
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { get, getDatabase, onValue, ref } from 'firebase/database';
-import React, { useEffect, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
+
 import { getCurrentUser } from '../../api/firebase';
 import ReceiptItem from '../../components/ReceiptItem';
 
@@ -128,7 +130,7 @@ export default function Bill() {
           pathname: '/unmatched/',
           params: { itemId: null, receiptId: receiptId },
         }}
-        className="h-12 w-[85%] flex items-center justify-center self-center rounded-lg border border-gray-300"
+        className="flex h-12 w-[85%] items-center justify-center self-center rounded-lg border border-gray-300"
       >
         <View className="w-full flex-row items-center justify-center gap-3 px-2">
           <Text className="text-1xl grow text-left text-gray-500">Add Item</Text>

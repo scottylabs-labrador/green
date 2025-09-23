@@ -1,17 +1,12 @@
+import React, { useEffect, useState } from 'react';
+
 import { Octicons } from '@expo/vector-icons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { child, get, onValue, ref } from 'firebase/database';
-import React, { useEffect, useState } from 'react';
-import {
-  FlatList,
-  Modal,
-  Pressable,
-  Text,
-  TextInput,
-  View
-} from 'react-native';
+import { FlatList, Modal, Pressable, Text, TextInput, View } from 'react-native';
+
 import { onAuthChange } from '../../api/auth';
 import { db, getCurrentUser } from '../../api/firebase';
 import { deleteReceiptItem, updateReceiptItem } from '../../api/receipt';

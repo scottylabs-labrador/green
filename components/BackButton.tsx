@@ -1,8 +1,8 @@
-import { Pressable } from 'react-native';
-import { useRouter, Link } from 'expo-router';
-import AntDesign from '@expo/vector-icons/AntDesign';
-
 import React from 'react';
+
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { Link, useRouter } from 'expo-router';
+import { Pressable } from 'react-native';
 
 const BackButton = () => {
   const router = useRouter();

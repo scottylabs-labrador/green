@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { FlatList, Pressable, Text, View, Modal, TextInput } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
+import { FlatList, Pressable, Text, View } from 'react-native';
+
 import EditHouse from './EditHouse';
 
 type HouseInfoProps = {

@@ -1,7 +1,8 @@
+import React, { useEffect, useState } from 'react';
+
 import { useRouter } from 'expo-router';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { get, getDatabase, ref } from 'firebase/database';
-import React, { useEffect, useState } from 'react';
 import {
   ImageBackground,
   KeyboardAvoidingView,

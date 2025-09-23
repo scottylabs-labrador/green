@@ -1,7 +1,9 @@
+import React, { useEffect, useState } from 'react';
+
 import { useRouter } from 'expo-router';
 import { get, ref } from 'firebase/database';
-import React, { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
+
 import { onAuthChange } from '../../api/auth';
 import { db, getCurrentUser, userSignOut } from '../../api/firebase';
 import Button from '../../components/CustomButton';
@@ -42,8 +44,8 @@ export default function Profile() {
       const housemateSnap = await get(ref(db, `housemates/${filteredEmail}`));
       const houseId = housemateSnap.val()?.houses?.[0];
 
-      console.log("house id: ", houseId);
-      
+      console.log('house id: ', houseId);
+
       if (!houseId) return;
 
       setHouseId(houseId);
@@ -51,7 +53,7 @@ export default function Profile() {
       const houseSnap = await get(ref(db, `houses/${houseId}`));
       const houseData = houseSnap.val();
 
-      console.log("house data:", houseData);
+      console.log('house data:', houseData);
 
       if (!houseData) return;
 
@@ -60,7 +62,7 @@ export default function Profile() {
 
       const userData = houseData.members[filteredEmail];
       if (userData) {
-        console.log("user data:", userData);
+        console.log('user data:', userData);
         setName(userData.name);
         setColor(userData.color);
       }
@@ -70,8 +72,8 @@ export default function Profile() {
   };
 
   return (
-    <View className="flex-1 items-center justify-start w-full h-full">
-      <View className="flex w-full h-full max-w-lg items-center justify-start gap-1 p-6 pt-16">
+    <View className="h-full w-full flex-1 items-center justify-start">
+      <View className="flex h-full w-full max-w-lg items-center justify-start gap-1 p-6 pt-16">
         <View
           className="ml-1 flex h-32 w-32 items-center justify-center self-center rounded-full"
           style={{ backgroundColor: `#${color}` }}

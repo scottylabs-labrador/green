@@ -1,11 +1,9 @@
-import { View, Text, Pressable, ScrollView, Modal, FlatList, TextInput } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { getDatabase, ref, set, push, onValue, get } from 'firebase/database';
-import { Link } from 'expo-router';
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
-import NavBar from '../../components/NavBar';
+import React, { useEffect, useState } from 'react';
+
+import { get, getDatabase, ref } from 'firebase/database';
+import { FlatList, Pressable, Text, View } from 'react-native';
+
 import MatchedItem from '../../components/MatchedItem';
-import CustomButton from '../../components/CustomButton';
 
 export default function MatchedBill() {
   // TODO: Implement the bill page

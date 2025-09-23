@@ -1,8 +1,10 @@
-import React from 'react';
-import { Text, View } from 'react-native';
-import LinkButton from '../../components/LinkButton';
-
 import '../../main.css';
+
+import React from 'react';
+
+import { Text, View } from 'react-native';
+
+import LinkButton from '../../components/LinkButton';
 
 export default function House() {
   return (
