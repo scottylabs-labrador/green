@@ -1,7 +1,8 @@
 import { child, get, getDatabase, push, ref, remove, runTransaction, set } from 'firebase/database';
 
-import * as schema from './classes';
 import * as types from '../db/types';
+
+import * as schema from './classes';
 
 export async function writeGroceryList(grocerylist: string, name: string) {
   const db = getDatabase();

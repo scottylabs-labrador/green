@@ -1,25 +1,20 @@
-import {
-  browserLocalPersistence,
-  connectAuthEmulator,
-  getReactNativePersistence,
-  initializeAuth,
-} from '@firebase/auth';
 //@ts-ignore
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import { initializeApp } from 'firebase/app';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import {
+  browserLocalPersistence,
+  connectAuthEmulator,
+  createUserWithEmailAndPassword,
+  getReactNativePersistence,
+  initializeAuth,
+  signInWithEmailAndPassword, signOut,
+} from 'firebase/auth';
 import { connectDatabaseEmulator, getDatabase, ref, set } from 'firebase/database';
 import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
 import { Platform } from 'react-native';
 
 import * as schema from './classes';
 
-// TODO: Replace the following with your app's Firebase project configuration
-// See: https://firebase.google.com/docs/web/learn-more#config-object
-// const firebaseConfig = {
-// ...
-// The value of `databaseURL` depends on the location of the database
-// databaseURL: process.env.EXPO_PUBLIC_FIREBASE_DB_URL,
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,

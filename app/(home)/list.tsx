@@ -4,17 +4,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getDatabase, onValue, ref } from 'firebase/database';
-import { FlatList, Image, Modal, Pressable, Text, TextInput, View } from 'react-native';
+import { FlatList, Image, ListRenderItemInfo, Modal, NativeSyntheticEvent, Pressable, Text, TextInput, TextInputKeyPressEventData, View } from 'react-native';
 
 import { onAuthChange } from '../../api/auth';
-import { getCurrentUser } from '../../api/firebase';
 import { getGroceryListId, writeGroceryItem } from '../../api/grocerylist';
 import emptyList from '../../assets/empty-list.png';
 import GroceryItem from '../../components/GroceryItem';
+import type { GroceryItems } from '../../db/types';
 
 export default function List() {
   const router = useRouter();
-  const { grocerylist } = useLocalSearchParams();
+  const { grocerylist } = useLocalSearchParams<{ grocerylist: string }>();
 
   const isValid = typeof grocerylist === 'string' && grocerylist.trim() !== '';
   if (!isValid) {
@@ -27,7 +27,7 @@ export default function List() {
     });
   }
 
-  const [groceryItems, setGroceryItems] = useState({});
+  const [groceryItems, setGroceryItems] = useState<GroceryItems>({});
   const [modalVisible, setModalVisible] = useState(false);
   const [item, setItem] = useState('');
   const [email, setEmail] = useState('email');
@@ -41,7 +41,7 @@ export default function List() {
   useEffect(() => {
     const unsubscribeAuth = onAuthChange(user => {
       if (user) {
-        const email = getCurrentUser()?.email || '';
+        const email = user.email || '';
         const filteredEmail = email.split('.').join(':');
         setEmail(filteredEmail);
 
@@ -93,10 +93,10 @@ export default function List() {
 
   const toggleModal = () => setModalVisible(!modalVisible);
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item }: ListRenderItemInfo<string>) => (
     <GroceryItem
       key={item}
-      grocerylist={grocerylist}
+      groceryListId={grocerylist}
       id={item}
       name={groceryItems[item]?.name}
       quantity={groceryItems[item]?.quantity}
@@ -113,7 +113,7 @@ export default function List() {
     toggleModal();
   };
 
-  const handleWriteItem = e => {
+  const handleWriteItem = (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
     const key = e.nativeEvent.key;
     if (key === 'Enter') {
       writeItem();
