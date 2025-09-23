@@ -18,8 +18,8 @@ export default function List() {
   if (!isValid) {
     const auth = getAuth();
     onAuthStateChanged(auth, async user => {
-      if (user) {
-        const groceryListId = await getGroceryListId(email);
+      if (user && user.email) {
+        const groceryListId = await getGroceryListId(user.email);
         router.replace({ pathname: '/list', params: { grocerylist: groceryListId } });
       }
     });
@@ -167,7 +167,7 @@ export default function List() {
           className="absolute bottom-6 right-8 h-20 w-20 items-center justify-center"
           onPress={toggleModal}
         >
-          <Ionicons name="add-circle" size={76} color="#164e2d" />
+          <Ionicons name="add-circle" size={76} color="#064e3b" />
         </Pressable>
 
         <Modal visible={modalVisible} transparent animationType="fade">

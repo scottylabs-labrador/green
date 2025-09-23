@@ -29,13 +29,13 @@ export default function Login() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async user => {
-      if (user) {
+      if (user && user.email) {
         console.log('User signed in:', user.email);
         try {
           const groceryListId = await getGroceryListId(user.email);
           router.replace({ pathname: '/list', params: { grocerylist: groceryListId } });
         } catch (err) {
-          console.log('Error getting grocery list:', err);
+          console.error('Error when redirecting to grocery list:', err);
           router.push('/choosehouse');
         }
       }
@@ -86,7 +86,6 @@ export default function Login() {
     }
   };
 
-  console.log('Rendering login screen...');
   return (
     <ImageBackground source={background} resizeMode="cover">
       <KeyboardAvoidingView

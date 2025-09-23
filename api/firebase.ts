@@ -42,9 +42,9 @@ const auth = initializeAuth(app, {
 });
 
 if (__DEV__) {
-  connectDatabaseEmulator(db, "localhost", 9000);
+  connectDatabaseEmulator(db, "127.0.0.1", 9000);
   connectFunctionsEmulator(functions, "localhost", 5001);
-  connectAuthEmulator(auth, "http://localhost:9099");
+  connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
 }
 
 export { app, auth, db, functions };

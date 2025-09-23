@@ -36,7 +36,7 @@ export default function JoinHouse() {
     const getuser = onAuthChange(user => {
       if (user) {
         console.log('Here try get user email');
-        let email = getCurrentUser().email;
+        let email = getCurrentUser()?.email || '';
         console.log('user email: ' + email);
         var emailParts = email.split('.');
         var filteredEmail = emailParts[0] + ':' + emailParts[1];
