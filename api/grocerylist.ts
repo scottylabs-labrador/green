@@ -8,13 +8,13 @@ import {
   runTransaction,
   set
 } from 'firebase/database';
+import * as types from '../db/types';
 import * as schema from './classes';
-import * as types from './types';
 
-export function writeGroceryList(grocerylist: string, name: string) {
+export async function writeGroceryList(grocerylist: string, name: string) {
   const db = getDatabase();
   const postListRef = ref(db, 'grocerylists/' + grocerylist);
-  set(postListRef, {
+  await set(postListRef, {
     name: name,
     groceryitems: 1,
   });

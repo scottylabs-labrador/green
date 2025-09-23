@@ -8,9 +8,6 @@ import { onAuthChange } from '../../api/auth';
 import CustomButton from '../../components/CustomButton';
 
 export default function JoinHouse() {
-  // TODO: Implement the list page
-  // Display a list of grocery items
-  // Allow users to add, remove, and update items
   const { key } = useLocalSearchParams<{ key: string }>();
 
   const db = getDatabase();

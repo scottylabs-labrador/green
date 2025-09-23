@@ -3,10 +3,14 @@
     "target": "ES2020",
     "module": "CommonJS",
     "outDir": "lib",
-    "rootDir": "src",
+    "rootDir": "../..",
     "esModuleInterop": false,
     "strict": true,
-    "sourceMap": true
+    "sourceMap": true, 
+    "baseUrl": ".", 
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "../../db/**/*.ts"
+  ]
 }

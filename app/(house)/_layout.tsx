@@ -1,16 +1,6 @@
-// import { Slot, Stack } from 'expo-router';
-// import React from 'react';
-
-// export default function HouseLayout() {
-//   return (
-//     <Stack />
-//   );
-// }
-
+import { Slot, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
-import { Slot } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
-import { useRouter } from 'expo-router';
 
 export default function ProtectedLayout() {
   const { user, loading } = useAuth();
@@ -26,7 +16,6 @@ export default function ProtectedLayout() {
   }, [user, loading]);
 
   if (loading || !user) {
-    // Optionally render splash/loading while waiting for auth
     return null;
   }
 

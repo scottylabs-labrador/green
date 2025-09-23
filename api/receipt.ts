@@ -5,7 +5,7 @@ import {
   update,
 } from 'firebase/database';
 import Fuse from 'fuse.js';
-import * as types from './types';
+import * as types from '../db/types';
 
 // export const matchWords = (receiptItems, groceryListItems, groceryItemObjects, threshold = 0.3) => {
 //     const fuse = new Fuse(Object.keys(receiptItems), { threshold });

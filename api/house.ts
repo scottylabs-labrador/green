@@ -26,7 +26,7 @@ export async function getHouseIdFromInvite(inviteToken: string): Promise<string>
   return houseId;
 }
 
-export async function joinHouseWithInvite(houseId: string, userId: string, color: string) {// 1. Get current user name
+export async function joinHouseWithInvite(houseId: string, userId: string, color: string) {
   const nameSnap = await get(ref(db, `housemates/${userId}/name`));
   const name = nameSnap.exists() ? nameSnap.val() : 'Unknown';
   

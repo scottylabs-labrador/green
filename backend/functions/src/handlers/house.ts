@@ -1,6 +1,7 @@
 import * as crypto from "crypto";
-import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
+import type { Invite } from "../../../../db/types";
+import { setTyped } from "../db/db";
 
 export const createInviteCode = functions.https.onCall(
   async (request: functions.https.CallableRequest<{ houseId: string }>) => {
@@ -22,12 +23,12 @@ export const createInviteCode = functions.https.onCall(
     const now = Date.now();
     const expiresAt = now + 1000 * 60 * 60 * 24;
 
-    const db = admin.database();
-    await db.ref(`invites/${token}`).set({
-      houseId,
-      createdAt: now,
+    const invite: Invite = {
+      houseId, 
+      createdAt: now, 
       expiresAt,
-    });
+    }
+    await setTyped<Invite>(`invites/${token}`, invite);
 
     return { token };
   }
