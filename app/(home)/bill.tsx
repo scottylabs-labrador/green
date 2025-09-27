@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Link, useLocalSearchParams, useRouter } from 'expo-router';
+import { Link, useLocalSearchParams } from 'expo-router';
 import { get, getDatabase, onValue, ref } from 'firebase/database';
 import { FlatList, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
 
@@ -17,7 +17,6 @@ export default function Bill() {
   const [createDate, setCreateDate] = useState('');
   const [colors, setColors] = useState({});
   const db = getDatabase();
-  const router = useRouter();
 
   useEffect(() => {
     const fetchData = () => {
