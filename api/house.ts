@@ -1,4 +1,4 @@
-import { get, ref, set, update } from 'firebase/database';
+import { get, ref, set } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
 
 import * as schema from './classes';
@@ -36,13 +36,15 @@ export async function joinHouseWithInvite(houseId: string, userId: string, color
     houses.push(houseId);
   }
 
-  await update(ref(db), {
-    [`houses/${houseId}/members/${userId}`]: {
-      name,
-      color,
-    },
-    [`housemates/${userId}/houses`]: houses,
-  });
+  const fn = httpsCallable<{ 
+    houseId: string, 
+    userId: string, 
+    color: string, 
+    houses: string[], 
+    name: string 
+  }>(functions, 'joinHouseWithInvite');
+
+  await fn({ houseId, userId, color, houses, name });
 }
 
 export async function getHouseNameFromId(houseId: string) {
