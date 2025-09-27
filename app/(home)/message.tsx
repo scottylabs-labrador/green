@@ -1,11 +1,10 @@
-import { View, Text, Pressable, ScrollView, Modal, FlatList, TextInput } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { getDatabase, ref, set, push, onValue, get } from 'firebase/database';
-import { Link, useLocalSearchParams } from 'expo-router';
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
-import MatchedItem from '../../components/MatchedItem';
-import CustomButton from '../../components/CustomButton';
+import React, { useEffect, useState } from 'react';
+
 import Feather from '@expo/vector-icons/Feather';
+import { Link, useLocalSearchParams } from 'expo-router';
+import { get, getDatabase, ref } from 'firebase/database';
+import { Pressable, Text, View } from 'react-native';
+
 import { calculateSplits } from '../../api/splits';
 
 export default function Message() {

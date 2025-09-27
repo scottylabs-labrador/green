@@ -1,6 +1,7 @@
 import React from 'react';
-import { Text, Pressable } from 'react-native';
+
 import { Link } from 'expo-router';
+import { Pressable, Text } from 'react-native';
 
 type LinkButtonProps = {
   buttonLabel: string;

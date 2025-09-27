@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { FlatList, Pressable, Text, View, Modal, TextInput } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
+import { FlatList, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
+
+import type { Members } from '../db/types';
+
 import EditHouse from './EditHouse';
 
 type HouseInfoProps = {
   name: string;
   houseid: string;
-  members: {};
+  members: Members;
 };
 
 const HouseInfo = ({ name, houseid, members }: HouseInfoProps) => {
@@ -24,7 +27,7 @@ const HouseInfo = ({ name, houseid, members }: HouseInfoProps) => {
     setShowEdit(!showEdit);
   };
 
-  const renderMembers = ({ item }) => {
+  const renderMembers = ({ item }: ListRenderItemInfo<string>) => {
     return (
       <View className="w-full flex-row items-center justify-center self-center py-1 pl-1">
         <Text className="w-1/3 grow self-center text-left text-lg">{members[item].name}</Text>
@@ -33,12 +36,6 @@ const HouseInfo = ({ name, houseid, members }: HouseInfoProps) => {
         </Text>
       </View>
     );
-  };
-
-  const [modalVisible, setModalVisible] = useState(false);
-
-  const toggleModal = () => {
-    setModalVisible(!modalVisible);
   };
 
   return (

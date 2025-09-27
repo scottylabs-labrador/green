@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
+
 import { Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Link } from 'expo-router';
 
 type ReceiptItemProps = {
   id: string;

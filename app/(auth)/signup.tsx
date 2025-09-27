@@ -1,5 +1,6 @@
-import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
+
+import { useRouter } from 'expo-router';
 import {
   ImageBackground,
   KeyboardAvoidingView,
@@ -9,6 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+
 import { createUser } from '../../api/firebase';
 import background from '../../assets/home-background.png';
 import BackButton from '../../components/BackButton';

@@ -1,16 +1,27 @@
 import React from 'react';
-import { View, Text } from 'react-native';
 
-const SplitProfile = ({ colors, item, size, fontSize, quantity }) => {
+import { Text, View } from 'react-native';
+
+import type { HousemateId, Members } from '../db/types';
+
+type SplitProfileProps = {
+  colors: Members,
+  housemateId: HousemateId,
+  size: number,
+  fontSize: string,
+  quantity: number,
+}
+
+const SplitProfile = ({ colors, housemateId, size, fontSize, quantity }: SplitProfileProps) => {
   try {
     return (
       <View className="overflow-visible">
         <View
           className={`ml-1 w-${size} h-${size} flex items-center justify-center self-center rounded-full`}
-          style={{ backgroundColor: '#' + colors[item].color }}
+          style={{ backgroundColor: '#' + colors[housemateId].color }}
         >
           <Text className={`text-${fontSize} h-fit self-center text-center font-medium text-white`}>
-            {colors[item].name[0].toUpperCase()}
+            {colors[housemateId].name[0].toUpperCase()}
           </Text>
         </View>
         <View

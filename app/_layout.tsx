@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Stack, Slot, useRouter, useSegments } from 'expo-router';
-import { AuthProvider, useAuth } from '../context/AuthContext';
+import React from 'react';
+
+import { Stack } from 'expo-router';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+
+import { AuthProvider } from '../context/AuthContext';
 
 export default function RootLayout() {
   return (

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Text, View, FlatList } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+
 import { Link } from 'expo-router';
+import { Text, View } from 'react-native';
 
 type PastListProps = {
   receiptId: string;

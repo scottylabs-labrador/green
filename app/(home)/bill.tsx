@@ -1,32 +1,30 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { Link, useLocalSearchParams, useRouter } from 'expo-router';
-import { get, getDatabase, onValue, ref } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
-import { FlatList, Pressable, Text, View } from 'react-native';
+
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { Link, useLocalSearchParams } from 'expo-router';
+import { get, getDatabase, onValue, ref } from 'firebase/database';
+import { FlatList, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
+
 import { getCurrentUser } from '../../api/firebase';
 import ReceiptItem from '../../components/ReceiptItem';
+import type { ReceiptItems } from '../../db/types';
 
 export default function Bill() {
-  // TODO: Implement the bill page
-  // Returns an assignment of receipt items to grocery items,
-  // also might have popups to resolve any unknown items.
-  const { receiptId } = useLocalSearchParams();
+  const { receiptId } = useLocalSearchParams<{ receiptId: string }>();
 
-  const [matchedItems, setMatchedItems] = useState({});
-  const [unmatchedItems, setUnmatchedItems] = useState({});
-  const [modalVisible, setModalVisible] = useState(false);
+  const [matchedItems, setMatchedItems] = useState<ReceiptItems>({});
+  const [unmatchedItems, setUnmatchedItems] = useState<ReceiptItems>({});
   const [createDate, setCreateDate] = useState('');
   const [colors, setColors] = useState({});
   const db = getDatabase();
-  const router = useRouter();
 
   useEffect(() => {
     const fetchData = () => {
       const receiptRef = ref(db, 'receipts/' + receiptId);
       get(receiptRef).then(snapshot => {
         const data = snapshot.val();
-        let unmatched = {};
-        let matched = {};
+        let unmatched: ReceiptItems = {};
+        let matched: ReceiptItems = {};
         if (data && data.receiptitems) {
           if (data.receiptitems) {
             const receiptItems = data.receiptitems;
@@ -57,9 +55,8 @@ export default function Bill() {
         }
       });
 
-      let email = getCurrentUser()?.email;
-      var emailParts = email.split('.');
-      var filteredEmail = emailParts[0] + ':' + emailParts[1];
+      const email = getCurrentUser()?.email || '';
+      const filteredEmail = email.split('.').join(':');
       try {
         const itemRef = ref(db, 'housemates/' + filteredEmail);
         var houses;
@@ -88,11 +85,7 @@ export default function Bill() {
     fetchData();
   }, [db]);
 
-  const toggleModal = () => {
-    setModalVisible(!modalVisible);
-  };
-
-  const renderMatchedItem = ({ item }) => {
+  const renderMatchedItem = ({ item }: ListRenderItemInfo<string>) => {
     return (
       <ReceiptItem
         key={item}
@@ -107,7 +100,7 @@ export default function Bill() {
       />
     );
   };
-  const renderUnmatchedItem = ({ item }) => {
+  const renderUnmatchedItem = ({ item }: ListRenderItemInfo<string>) => {
     return (
       <ReceiptItem
         key={item}
@@ -128,7 +121,7 @@ export default function Bill() {
           pathname: '/unmatched/',
           params: { itemId: null, receiptId: receiptId },
         }}
-        className="h-12 w-[85%] flex items-center justify-center self-center rounded-lg border border-gray-300"
+        className="flex h-12 w-[85%] items-center justify-center self-center rounded-lg border border-gray-300"
       >
         <View className="w-full flex-row items-center justify-center gap-3 px-2">
           <Text className="text-1xl grow text-left text-gray-500">Add Item</Text>

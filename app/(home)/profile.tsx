@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text } from 'react-native';
-import { ref, get } from 'firebase/database';
-import { getCurrentUser, userSignOut, db } from '../../api/firebase';
-import { onAuthChange } from '../../api/auth';
-import HouseInfo from '../../components/HouseInfo';
-import Button from '../../components/CustomButton';
+import React, { useEffect, useState } from 'react';
+
 import { useRouter } from 'expo-router';
+import { get, ref } from 'firebase/database';
+import { Text, View } from 'react-native';
+
+import { onAuthChange } from '../../api/auth';
+import { db, getCurrentUser, userSignOut } from '../../api/firebase';
+import Button from '../../components/CustomButton';
+import HouseInfo from '../../components/HouseInfo';
 
 export default function Profile() {
   const [name, setName] = useState('Name');
@@ -42,12 +44,16 @@ export default function Profile() {
       const housemateSnap = await get(ref(db, `housemates/${filteredEmail}`));
       const houseId = housemateSnap.val()?.houses?.[0];
 
+      console.log('house id: ', houseId);
+
       if (!houseId) return;
 
       setHouseId(houseId);
 
       const houseSnap = await get(ref(db, `houses/${houseId}`));
       const houseData = houseSnap.val();
+
+      console.log('house data:', houseData);
 
       if (!houseData) return;
 
@@ -56,6 +62,7 @@ export default function Profile() {
 
       const userData = houseData.members[filteredEmail];
       if (userData) {
+        console.log('user data:', userData);
         setName(userData.name);
         setColor(userData.color);
       }
@@ -65,8 +72,8 @@ export default function Profile() {
   };
 
   return (
-    <View className="flex-1 items-center justify-start p-6">
-      <View className="flex w-full max-w-lg items-center justify-center gap-1 pt-10">
+    <View className="h-full w-full flex-1 items-center justify-start">
+      <View className="flex h-full w-full max-w-lg items-center justify-start gap-1 p-6 pt-16">
         <View
           className="ml-1 flex h-32 w-32 items-center justify-center self-center rounded-full"
           style={{ backgroundColor: `#${color}` }}
@@ -77,12 +84,14 @@ export default function Profile() {
         <Text className="pt-2 text-center text-3xl font-bold">{name}</Text>
         <Text className="pb-4 text-center text-lg text-gray-500">{email}</Text>
 
-        <View className="mb-32 w-full flex-col items-center justify-center">
+        <View className="w-full flex-col items-center justify-center">
           <Text className="w-full px-5 text-left text-lg font-medium text-gray-500">Houses</Text>
           <HouseInfo name={houseName} houseid={houseId} members={members} />
         </View>
 
-        <Button buttonLabel="Logout" onPress={userSignOut} />
+        <View className="absolute bottom-0">
+          <Button buttonLabel="Logout" onPress={userSignOut} />
+        </View>
       </View>
     </View>
   );

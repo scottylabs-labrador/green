@@ -1,11 +1,7 @@
-import {
-  getDatabase,
-  ref,
-  remove,
-  update,
-} from 'firebase/database';
+import { getDatabase, ref, remove, update } from 'firebase/database';
 import Fuse from 'fuse.js';
-import * as types from './types';
+
+import * as types from '../db/types';
 
 // export const matchWords = (receiptItems, groceryListItems, groceryItemObjects, threshold = 0.3) => {
 //     const fuse = new Fuse(Object.keys(receiptItems), { threshold });
@@ -84,7 +80,11 @@ export const matchWords = (
 
 // matchWords(["apple", "banana", "cherry"], ["aple", "banana", "cherry"])
 
-export function writeMatches(receiptId: string, houseCode: string, receiptItems: types.ReceiptItems) {
+export function writeMatches(
+  receiptId: string,
+  houseCode: string,
+  receiptItems: types.ReceiptItems,
+) {
   const db = getDatabase();
   //   const postReceiptRef = ref(db, 'receipts/' + receiptId);
   //   set(postReceiptRef, {

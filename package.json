@@ -7,7 +7,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "start-api": "cd ocr && venv/bin/flask run --no-debugger", 
+    "start-api": "cd ocr && venv/bin/flask run --no-debugger",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write ."
@@ -29,6 +29,7 @@
     "expo-splash-screen": "~0.30.10",
     "expo-status-bar": "~2.2.3",
     "firebase": "^11.10.0",
+    "firebase-admin": "^13.5.0",
     "fuse.js": "^7.1.0",
     "glob": "^11.0.0",
     "nativewind": "^2.0.11",

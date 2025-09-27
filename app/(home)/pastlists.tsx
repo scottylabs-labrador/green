@@ -1,22 +1,11 @@
-import { View, Text, Pressable, ScrollView, Modal, FlatList, TextInput, Image } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { getDatabase, ref, set, push, onValue, get, remove } from 'firebase/database';
-import {
-  removeGroceryItem,
-  writeGroceryItem,
-  updateGroceryItem,
-  writeGroceryItemGrocerylist,
-} from '../../api/firebase';
-import { Link, useLocalSearchParams, useRouter } from 'expo-router';
-import { getCurrentUser } from '../../api/firebase';
-import PastList from '../../components/PastList';
-import Button from '../../components/CustomButton';
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { onAuthChange } from '../../api/auth';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getGroceryListId } from '../../api/grocerylist';
+import React, { useEffect, useState } from 'react';
+
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { get, getDatabase, ref } from 'firebase/database';
+import { FlatList, Image, Text, View } from 'react-native';
+
 import emptyList from '../../assets/empty-list.png';
+import PastList from '../../components/PastList';
 
 export default function PastLists() {
   const router = useRouter();

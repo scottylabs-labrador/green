@@ -1,0 +1,68 @@
+{
+  "rules": {
+      "housemates": {
+          ".read": true, 
+          ".write": true,
+          "$housemateid": {
+              "name": {
+                  ".validate": "newData.isString()"
+              },
+              "phone_number": {},
+              "email": {},
+              "houses": {},
+              "$other": {".validate": false}
+          }
+      },
+      "houses": {
+          ".read": "auth !== null", 
+      		".write": "auth !== null",
+          "$housecode": { 
+              "name": {
+              
+              },
+              "members": {
+                ".read": "auth !== null",
+                ".write": "auth !== null"
+              },
+              "grocerylist": {
+                ".read": "auth !== null", 
+      		      ".write": "auth !== null"
+              },
+              "receipts": {
+                ".read": "auth !== null", 
+      		      ".write": "auth !== null"
+              },
+              "$other": {".validate": false}
+          }
+      },
+      "grocerylists": {
+          ".read": "auth !== null", 
+      		".write": "auth !== null",
+          "$grocerylistid": { 
+              "name": {},
+              "groceryitems": {
+                  "$groceryitemid": {
+                      ".validate": "newData.hasChildren(['name', 'quantity'])",
+                      ".indexOn": ["name"],
+                      "name": {".validate": true},
+                      "quantity": {".validate": true},
+                      "splits": {".validate": true},
+                      "$other": {".validate": false}
+                  }
+              },
+              "$other": {".validate": false}
+          }
+      },
+      "receipts": {
+          ".read": "auth !== null", 
+      		".write": "auth !== null",
+          "$receiptid": {
+
+          }
+      },
+      "invites": {
+        ".read": "auth !== null", 
+      	".write": "auth !== null"
+      }
+  }
+}
