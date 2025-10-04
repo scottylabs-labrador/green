@@ -7,10 +7,15 @@ export interface Member {
 
 export type Members = Record<HousemateId, Member>;
 
+export interface ReceiptRecordInHouse {
+  date: string;
+}
+
 export interface House {
   name: string;
   members: Members;
   grocerylist: string;
+  receipts: Record<string, ReceiptRecordInHouse>;
 }
 
 export type Houses = Record<string, House>;
@@ -42,6 +47,11 @@ export interface ReceiptItem {
 }
 
 export type ReceiptItems = Record<string, ReceiptItem>;
+
+export interface Receipt {
+  receiptitems: ReceiptItems;
+  date: string;
+}
 
 export interface Invite {
   houseId: string;

@@ -8,8 +8,7 @@ import { Button, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-n
 
 import { onAuthChange } from '../../api/auth';
 import { getCurrentUser } from '../../api/firebase';
-import { writeMatches } from '../../api/receipt';
-import { matchWords } from '../../api/receipt';
+import { matchWords, writeReceipt } from '../../api/receipt';
 
 export default function Page() {
   const [email, setEmail] = useState('');
@@ -128,7 +127,7 @@ export default function Page() {
           // receipt lines
           return response.json();
         })
-        .then(data => {
+        .then(async data => {
           console.log('data:', data);
           let receiptLines = JSON.parse(data).items;
           let receiptItems = matchWords(
@@ -139,7 +138,7 @@ export default function Page() {
           );
           console.log(receiptItems);
           const receiptId = window.crypto.randomUUID();
-          writeMatches(receiptId, houseCode, receiptItems);
+          await writeReceipt(receiptId, houseCode, receiptItems);
           router.replace({
             pathname: '/bill',
             params: { receiptId: receiptId },

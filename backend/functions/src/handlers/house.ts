@@ -93,7 +93,8 @@ export const writeHouse = functions.https.onCall(
     const house: House = {
       name: name, 
       members: {},
-      grocerylist: groceryListId
+      grocerylist: groceryListId, 
+      receipts: {}
     }
     await setTyped<House>(`houses/${houseId}`, house);
     
