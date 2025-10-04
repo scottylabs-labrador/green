@@ -12,6 +12,8 @@ admin.initializeApp({
   databaseURL: process.env.DATABASE_URL,
 });
 
-import { createInviteCode } from './handlers/house';
+import { createInviteCode, joinHouseWithInvite, writeHouse } from './handlers/house';
 
 exports.createInviteCode = createInviteCode;
+exports.joinHouseWithInvite = joinHouseWithInvite;
+exports.writeHouse = writeHouse;
