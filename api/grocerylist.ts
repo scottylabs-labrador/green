@@ -1,17 +1,15 @@
 import { child, get, getDatabase, push, ref, remove, runTransaction, set } from 'firebase/database';
+import { httpsCallable } from 'firebase/functions';
 
 import * as types from '../db/types';
 
 import * as schema from './classes';
+import { db, functions } from './firebase';
 
 export async function writeGroceryList(grocerylist: string, name: string) {
-  const db = getDatabase();
-  const postListRef = ref(db, 'grocerylists/' + grocerylist);
-  await set(postListRef, {
-    name: name,
-    groceryitems: 1,
-  });
-  return postListRef;
+  const fn = httpsCallable<{ grocerylist: string, name: string }>(functions, 'writeGroceryList');
+
+  await fn({ grocerylist, name });
 }
 
 export async function getGroceryListId(email: string): Promise<string> {
