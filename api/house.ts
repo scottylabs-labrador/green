@@ -58,14 +58,6 @@ export async function getHouseNameFromId(houseId: string) {
 }
 
 export async function writeHouse(name: string, houseId: string, groceryListId: string) {
-  // const house = new schema.House(name);
-  // const postListRef = ref(db, 'houses/' + housecode);
-  // await set(postListRef, {
-  //   name: house.name,
-  //   members: house.members,
-  //   grocerylist: groceryListId,
-  // });
-  // return postListRef;
   const fn = httpsCallable<{ 
     name: string, 
     houseId: string, 
