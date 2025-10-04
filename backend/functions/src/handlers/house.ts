@@ -2,8 +2,8 @@ import * as crypto from 'crypto';
 
 import * as functions from 'firebase-functions';
 
-import type { Invite, Member } from '../../../../db/types';
 import { setTyped, updateTyped } from '../db/db';
+import type { House, Invite, Member } from '../db/types';
 
 export const createInviteCode = functions.https.onCall(
   async (request: functions.https.CallableRequest<{ houseId: string }>) => {
@@ -67,5 +67,36 @@ export const joinHouseWithInvite = functions.https.onCall(
 
     await updateTyped<Member>(`houses/${houseId}/members/${userId}`, user);
     await updateTyped<string[]>(`housemates/${userId}/houses`, houses);
+    
+    return null;
+  },
+)
+
+export const writeHouse = functions.https.onCall(
+  async (request: functions.https.CallableRequest<{ name: string, houseId: string, groceryListId: string }>) => {
+    const { name, houseId, groceryListId } = request.data;
+
+    if (!request.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
+    }
+
+    if (!name) {
+      throw new functions.https.HttpsError('invalid-argument', 'name is required');
+    }
+    if (!houseId) {
+      throw new functions.https.HttpsError('invalid-argument', 'houseId is required');
+    }
+    if (!groceryListId) {
+      throw new functions.https.HttpsError('invalid-argument', 'groceryListId is required');
+    }
+
+    const house: House = {
+      name: name, 
+      members: {},
+      grocerylist: groceryListId
+    }
+    await setTyped<House>(`houses/${houseId}`, house);
+    
+    return null;
   },
 )

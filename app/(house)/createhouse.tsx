@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { Text, TextInput, View } from 'react-native';
 
 import { writeGroceryList } from '../../api/grocerylist';
-import { writeHouseData } from '../../api/house';
+import { writeHouse } from '../../api/house';
 import CustomButton from '../../components/CustomButton';
 
 export default function CreateHouse() {
@@ -17,7 +17,7 @@ export default function CreateHouse() {
     const housecode = window.crypto.randomUUID();
     const grocerylist = window.crypto.randomUUID();
     // const id: {"name":string, "color": string, "userid": string} = {"name": username, "color": "N/A", "userid": userid};
-    await writeHouseData(name, housecode, grocerylist);
+    await writeHouse(name, housecode, grocerylist);
     await writeGroceryList(grocerylist, name);
 
     router.push({

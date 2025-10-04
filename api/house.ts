@@ -1,7 +1,6 @@
-import { get, ref, set } from 'firebase/database';
+import { get, ref } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
 
-import * as schema from './classes';
 import { db, functions } from './firebase';
 
 export async function createInviteCode(houseId: string) {
@@ -42,7 +41,7 @@ export async function joinHouseWithInvite(houseId: string, userId: string, color
     color: string, 
     houses: string[], 
     name: string 
-  }>(functions, 'joinHouseWithInvite');
+  }, null>(functions, 'joinHouseWithInvite');
 
   await fn({ houseId, userId, color, houses, name });
 }
@@ -58,13 +57,20 @@ export async function getHouseNameFromId(houseId: string) {
   return '';
 }
 
-export async function writeHouseData(name: string, housecode: string, groceryListId: string) {
-  const house = new schema.House(name);
-  const postListRef = ref(db, 'houses/' + housecode);
-  await set(postListRef, {
-    name: house.name,
-    members: house.members,
-    grocerylist: groceryListId,
-  });
-  return postListRef;
+export async function writeHouse(name: string, houseId: string, groceryListId: string) {
+  // const house = new schema.House(name);
+  // const postListRef = ref(db, 'houses/' + housecode);
+  // await set(postListRef, {
+  //   name: house.name,
+  //   members: house.members,
+  //   grocerylist: groceryListId,
+  // });
+  // return postListRef;
+  const fn = httpsCallable<{ 
+    name: string, 
+    houseId: string, 
+    groceryListId: string,
+  }, null>(functions, 'writeHouse');
+
+  await fn({ name, houseId, groceryListId });
 }
