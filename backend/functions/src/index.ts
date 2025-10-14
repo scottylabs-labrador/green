@@ -13,7 +13,7 @@ admin.initializeApp({
 });
 
 import { createInviteCode, joinHouseWithInvite, writeHouse } from './handlers/house';
-import { updateReceiptItem, writeReceipt } from './handlers/receipt';
+import { deleteReceiptItem, updateReceiptItem, writeReceipt } from './handlers/receipt';
 
 exports.createInviteCode = createInviteCode;
 exports.joinHouseWithInvite = joinHouseWithInvite;
@@ -21,4 +21,5 @@ exports.writeHouse = writeHouse;
 
 exports.writeReceipt = writeReceipt;
 exports.updateReceiptItem = updateReceiptItem;
+exports.deleteReceiptItem = deleteReceiptItem;
 

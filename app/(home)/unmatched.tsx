@@ -15,7 +15,7 @@ import SplitProfile from '../../components/SplitProfile';
 import type { Splits } from '../../db/types';
 
 export default function UnmatchedItem() {
-  var { itemId, receiptId } = useLocalSearchParams();
+  var { itemId, receiptId } = useLocalSearchParams<{ itemId: string, receiptId: string }>();
   const [userId, setUserId] = useState('');
   const [itemName, setItemName] = useState('');
   const [groceryItems, setGroceryItems] = useState({});
@@ -299,7 +299,7 @@ export default function UnmatchedItem() {
                   pathname: '/bill',
                   params: { receiptId: receiptId },
                 }}
-                onPress={() => deleteReceiptItem(receiptId, itemId)}
+                onPress={async () => await deleteReceiptItem(receiptId, itemId)}
               >
                 <FontAwesome6 name="trash-can" size={24} color="gray" />
               </Link>

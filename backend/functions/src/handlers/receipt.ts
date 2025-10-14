@@ -1,3 +1,4 @@
+import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 
 import { updateTyped } from '../db/db';
@@ -59,6 +60,24 @@ export const updateReceiptItem = functions.https.onCall(
       splits: splits
     }
     await updateTyped<ReceiptItem>(`receipts/${receiptId}/receiptitems/${receiptItemId}`, receiptItem);
+    
+    return null;
+  },
+)
+
+export const deleteReceiptItem = functions.https.onCall(
+  async (request: functions.https.CallableRequest<{ 
+    receiptId: string, 
+    receiptItemId: string, 
+  }>) => {
+    const { receiptId, receiptItemId } = request.data;
+
+    if (!request.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
+    }
+
+    const db = admin.database();
+    await db.ref(`receipts/${receiptId}/receiptitems/${receiptItemId}`).remove();
     
     return null;
   },

@@ -1,4 +1,3 @@
-import { getDatabase, ref, remove } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
 import Fuse from 'fuse.js';
 
@@ -88,8 +87,15 @@ export async function updateReceiptItem(
   await fn({ receiptId, receiptItemId, receiptItemName, groceryItemName, splits, price });
 }
 
-export function deleteReceiptItem(receiptId: string, receiptItemId: string) {
-  const db = getDatabase();
-  const itemRef = ref(db, `receipts/${receiptId}/receiptitems/${receiptItemId}`);
-  remove(itemRef).catch((error: any) => console.error('Error removing item:', error));
+export async function deleteReceiptItem(receiptId: string, receiptItemId: string) {
+  // coasync nst db = getDatabase();
+  // const itemRef = ref(db, `receipts/${receiptId}/receiptitems/${receiptItemId}`);
+  // remove(itemRef).catch((error: any) => console.error('Error removing item:', error));
+
+  const fn = httpsCallable<{
+    receiptId: string,
+    receiptItemId: string,
+  }, null>(functions, 'deleteReceiptItem');
+
+  await fn({ receiptId, receiptItemId });
 }
