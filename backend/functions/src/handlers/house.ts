@@ -1,6 +1,8 @@
 import * as crypto from 'crypto';
 
+import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
+import { onSchedule } from 'firebase-functions/v2/scheduler';
 
 import { setTyped, updateTyped } from '../db/db';
 import type { House, Invite, Member } from '../db/types';
@@ -23,7 +25,7 @@ export const createInviteCode = functions.https.onCall(
       .join('');
 
     const now = Date.now();
-    const expiresAt = now + 1000 * 60 * 60 * 24;
+    const expiresAt = now + 1000 * 60 * 60 * 24; // expires in a day
 
     const invite: Invite = {
       houseId,
@@ -35,6 +37,26 @@ export const createInviteCode = functions.https.onCall(
     return { token };
   },
 );
+
+export const deleteExpiredInviteCodes = onSchedule('every 24 hours', async () => {
+  const now = Date.now();
+  const db = admin.database();``
+
+  const itemsRef = db.ref(`invites`);
+
+  const snapshot = await itemsRef.orderByChild('expiresAt').endAt(now).once('value');
+
+  const updates: Record<string, null> = {};
+  if (snapshot.exists()) {
+    snapshot.forEach((child) => {
+      updates[child.key] = null;
+    })
+  }
+
+  if (Object.keys(updates).length > 0) {
+    await itemsRef.update(updates);
+  }
+});
 
 export const joinHouseWithInvite = functions.https.onCall(
   async (request: functions.https.CallableRequest<{ houseId: string, userId: string, color: string, houses: string[], name: string }>) => {

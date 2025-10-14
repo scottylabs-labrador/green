@@ -12,12 +12,13 @@ admin.initializeApp({
   databaseURL: process.env.DATABASE_URL,
 });
 
-import { createInviteCode, joinHouseWithInvite, writeHouse } from './handlers/house';
+import { createInviteCode, deleteExpiredInviteCodes, joinHouseWithInvite, writeHouse } from './handlers/house';
 import { deleteReceiptItem, updateReceiptItem, writeReceipt } from './handlers/receipt';
 
 exports.createInviteCode = createInviteCode;
 exports.joinHouseWithInvite = joinHouseWithInvite;
 exports.writeHouse = writeHouse;
+exports.deleteExpiredInviteCodes = deleteExpiredInviteCodes;
 
 exports.writeReceipt = writeReceipt;
 exports.updateReceiptItem = updateReceiptItem;
