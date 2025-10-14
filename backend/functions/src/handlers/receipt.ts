@@ -5,8 +5,8 @@ import { updateTyped } from '../db/db';
 import type { Receipt, ReceiptItem, ReceiptItems, ReceiptRecordInHouse, Splits } from '../db/types';
 
 export const writeReceipt = functions.https.onCall(
-  async (request: functions.https.CallableRequest<{ receiptId: string, houseId: string, receiptItems: ReceiptItems }>) => {
-    const { receiptId, houseId, receiptItems } = request.data;
+  async (request: functions.https.CallableRequest<{ receiptId: string, houseId: string, receiptItems: ReceiptItems, groceryListId: string }>) => {
+    const { receiptId, houseId, receiptItems, groceryListId } = request.data;
 
     if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
@@ -18,15 +18,16 @@ export const writeReceipt = functions.https.onCall(
     if (!houseId) {
       throw new functions.https.HttpsError('invalid-argument', 'houseId is required');
     }
-    if (!receiptItems) {
-      throw new functions.https.HttpsError('invalid-argument', 'receiptItems is required');
+    if (!groceryListId) {
+      throw new functions.https.HttpsError('invalid-argument', 'groceryListId is required');
     }
 
     const currentDate = new Date();
 
     const receipt: Receipt = {
       date: currentDate.toLocaleDateString(),
-      receiptitems: receiptItems
+      receiptitems: receiptItems, 
+      groceryListId: groceryListId,
     }
     const receiptRecordInHouse: ReceiptRecordInHouse = {
       date: currentDate.toLocaleDateString()

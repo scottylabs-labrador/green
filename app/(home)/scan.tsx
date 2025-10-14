@@ -16,7 +16,7 @@ export default function Page() {
   const [permission, requestPermission] = useCameraPermissions();
   const [imageUri, setImageUri] = useState(null);
   const cameraRef = useRef(null);
-  const [receiptLines, setReceiptLines] = useState([]);
+  const [groceryListId, setGroceryListId] = useState('');
   const [groceryItems, setGroceryItems] = useState([]);
   const [groceryItemObjects, setGroceryItemObjects] = useState([]);
   const [houseCode, setHouseCode] = useState('');
@@ -57,6 +57,7 @@ export default function Page() {
               const data = snapshot.val();
               // console.log("data for grocery lists:" + data.grocerylist);
               let groceryList = data.grocerylist;
+              setGroceryListId(groceryList);
               const itemRef = child(dbRef, `grocerylists/${groceryList}`);
               return get(itemRef);
             } else {
@@ -138,7 +139,7 @@ export default function Page() {
           );
           console.log(receiptItems);
           const receiptId = window.crypto.randomUUID();
-          await writeReceipt(receiptId, houseCode, receiptItems);
+          await writeReceipt(receiptId, houseCode, receiptItems, groceryListId);
           router.replace({
             pathname: '/bill',
             params: { receiptId: receiptId },

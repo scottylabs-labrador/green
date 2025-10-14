@@ -57,14 +57,16 @@ export async function writeReceipt(
   receiptId: string,
   houseId: string,
   receiptItems: ReceiptItems,
+  groceryListId: string,
 ) {
   const fn = httpsCallable<{
     receiptId: String, 
     houseId: String, 
-    receiptItems: ReceiptItems
+    receiptItems: ReceiptItems, 
+    groceryListId: string,
   }, null>(functions, 'writeReceipt');
 
-  await fn({ receiptId, houseId, receiptItems });
+  await fn({ receiptId, houseId, receiptItems, groceryListId });
 }
 
 export async function updateReceiptItem(

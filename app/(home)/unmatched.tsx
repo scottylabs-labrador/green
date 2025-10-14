@@ -71,8 +71,18 @@ export default function UnmatchedItem() {
               const data = snapshot.val();
               let members = data.members;
               setColors(members);
-              let groceryList = data.grocerylist;
-              const itemRef = child(dbRef, `grocerylists/${groceryList}`);
+              const receiptRef = child(dbRef, `receipts/${receiptId}`);
+              return get(receiptRef);
+            } else {
+              console.error('failed to get members');
+              return Promise.reject('no members');
+            }
+          })
+          .then(snapshot => {
+            if (snapshot.exists()) {
+              const data = snapshot.val();
+              let groceryListId = data.groceryListId;
+              const itemRef = child(dbRef, `grocerylists/${groceryListId}`);
               return get(itemRef);
             } else {
               console.error('failed to get grocery list');

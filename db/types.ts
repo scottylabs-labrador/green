@@ -43,6 +43,12 @@ export interface ReceiptItem {
 
 export type ReceiptItems = Record<string, ReceiptItem>;
 
+export interface Receipt {
+  receiptitems: ReceiptItems;
+  date: string;
+  groceryListId: string;
+}
+
 export interface Invite {
   houseId: string;
   createdAt: number;
