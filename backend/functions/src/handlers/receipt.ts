@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 
 import { updateTyped } from '../db/db';
-import type { Receipt, ReceiptItems, ReceiptRecordInHouse } from '../db/types';
+import type { Receipt, ReceiptItem, ReceiptItems, ReceiptRecordInHouse, Splits } from '../db/types';
 
 export const writeReceipt = functions.https.onCall(
   async (request: functions.https.CallableRequest<{ receiptId: string, houseId: string, receiptItems: ReceiptItems }>) => {
@@ -32,6 +32,33 @@ export const writeReceipt = functions.https.onCall(
     }
     await updateTyped<Receipt>(`receipts/${receiptId}`, receipt);
     await updateTyped<ReceiptRecordInHouse>(`houses/${houseId}/receipts/${receiptId}`, receiptRecordInHouse);
+    
+    return null;
+  },
+)
+
+export const updateReceiptItem = functions.https.onCall(
+  async (request: functions.https.CallableRequest<{ 
+    receiptId: string, 
+    receiptItemId: string, 
+    receiptItemName: string,
+    groceryItemName: string,
+    splits: Splits,
+    price: string, 
+  }>) => {
+    const { receiptId, receiptItemId, receiptItemName, groceryItemName, splits, price } = request.data;
+
+    if (!request.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
+    }
+
+    const receiptItem: ReceiptItem = {
+      groceryItem: groceryItemName, 
+      receiptItem: receiptItemName,
+      price: price,
+      splits: splits
+    }
+    await updateTyped<ReceiptItem>(`receipts/${receiptId}/receiptitems/${receiptItemId}`, receiptItem);
     
     return null;
   },

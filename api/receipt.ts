@@ -1,4 +1,4 @@
-import { getDatabase, ref, remove, update } from 'firebase/database';
+import { getDatabase, ref, remove } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
 import Fuse from 'fuse.js';
 
@@ -68,7 +68,7 @@ export async function writeReceipt(
   await fn({ receiptId, houseId, receiptItems });
 }
 
-export function updateReceiptItem(
+export async function updateReceiptItem(
   receiptId: string,
   receiptItemId: string,
   receiptItemName: string,
@@ -76,16 +76,16 @@ export function updateReceiptItem(
   splits: Splits,
   price: string,
 ) {
-  const db = getDatabase();
-  const updates = {};
-  console.log('update receiptItemId: ', receiptItemId);
-  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/groceryItem'] =
-    groceryItemName;
-  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/splits'] = splits;
-  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/receiptItem'] =
-    receiptItemName;
-  updates['/receipts/' + receiptId + '/receiptitems/' + receiptItemId + '/price'] = price;
-  return update(ref(db), updates);
+  const fn = httpsCallable<{
+    receiptId: string,
+    receiptItemId: string,
+    receiptItemName: string,
+    groceryItemName: string,
+    splits: Splits,
+    price: string,
+  }, null>(functions, 'updateReceiptItem');
+
+  await fn({ receiptId, receiptItemId, receiptItemName, groceryItemName, splits, price });
 }
 
 export function deleteReceiptItem(receiptId: string, receiptItemId: string) {

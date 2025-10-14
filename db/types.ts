@@ -37,7 +37,7 @@ export type GroceryItems = Record<string, GroceryItem>;
 export interface ReceiptItem {
   receiptItem: string;
   groceryItem: string;
-  price: number;
+  price: string;
   splits: Splits;
 }
 

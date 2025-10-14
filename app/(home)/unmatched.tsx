@@ -5,12 +5,14 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { child, get, onValue, ref } from 'firebase/database';
-import { FlatList, Modal, Pressable, Text, TextInput, View } from 'react-native';
+import { FlatList, ListRenderItemInfo, Modal, Pressable, Text, TextInput, View } from 'react-native';
+
 
 import { onAuthChange } from '../../api/auth';
 import { db, getCurrentUser } from '../../api/firebase';
 import { deleteReceiptItem, updateReceiptItem } from '../../api/receipt';
 import SplitProfile from '../../components/SplitProfile';
+import type { Splits } from '../../db/types';
 
 export default function UnmatchedItem() {
   var { itemId, receiptId } = useLocalSearchParams();
@@ -20,7 +22,7 @@ export default function UnmatchedItem() {
   const [selectedItem, setSelectedItem] = useState('');
   const [colors, setColors] = useState({});
   const [price, setPrice] = useState('');
-  const [splits, setSplits] = useState({});
+  const [splits, setSplits] = useState<Splits>({});
   const [newItem, setNewItem] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -103,7 +105,7 @@ export default function UnmatchedItem() {
     } else if (splits) {
       // setSplits(prev => [...prev, id]);
     } else {
-      let newSplits = {};
+      let newSplits: Splits = {};
       newSplits[userId] = 1;
       setSplits(newSplits);
     }
@@ -123,40 +125,17 @@ export default function UnmatchedItem() {
     );
   };
 
-  const renderColor = ({ item }) => {
-    // return <SplitProfile
-    //   key={item}
-    //   colors={colors}
-    //   item={item}
-    //   size={10}
-    //   fontSize={"2xl"}
-    // />
+  const renderColor = ({ item }: ListRenderItemInfo<string>) => {
     return (
       <SplitProfile
         key={item}
         colors={colors}
-        item={item}
+        housemateId={item}
         size={10}
-        fontSize={'2xl'}
+        fontSize={'1xl'}
         quantity={splits[item]}
       />
     );
-    // try{
-    //   return (
-    //     // <Text className="flex-1 text-1xl text-left w-1/2 self-center">{colors[item]}</Text>
-    //     <View className="w-10 h-10 rounded-full self-center flex items-center justify-center" style={{ backgroundColor: "#"+ colors[splits[item]].color}}>
-    //         <Text className="text-2xl w-1/2 self-center text-center text-white">{colors[splits[item]].name[0].toUpperCase()}</Text>
-    //     </View>
-    //   );
-    // }
-    // catch{
-    //     return (
-    //         // <Text className="flex-1 text-1xl text-left w-1/2 self-center">{colors[item]}</Text>
-    //         <View className="w-10 h-10 rounded-full self-center flex items-center justify-center" style={{ backgroundColor: "#FFFFFF"}}>
-    //             <Text className="text-2xl w-1/2 self-center text-center text-white">U</Text>
-    //         </View>
-    //       );
-    // }
   };
 
   const AddSplit = () => {
@@ -246,14 +225,33 @@ export default function UnmatchedItem() {
           <Text className="mb-2 text-left text-black">
             Match the product to a grocery list item from this week!
           </Text>
-          {Object.keys(groceryItems).length > 0 ? (
-            <FlatList
-              className="mb-2"
-              data={Object.keys(groceryItems)}
-              renderItem={renderUnmatchedItem}
-              keyExtractor={item => item}
-              ListFooterComponent={
-                <View className="h-12 w-full flex-row items-center justify-start self-center border-y border-gray-200 px-2">
+          {groceryItems && Object.keys(groceryItems).length > 0 ? (
+            <View className="flex-grow">
+              <FlatList
+                className="mb-2"
+                data={Object.keys(groceryItems)}
+                renderItem={renderUnmatchedItem}
+                keyExtractor={item => item}
+                ListFooterComponent={
+                  <View className="h-12 w-full flex-row items-center justify-start self-center border-y border-gray-200 px-2">
+                    <TextInput
+                      className="h-fit w-1/2 grow rounded-md text-left text-gray-400 outline-none"
+                      placeholder="New Item"
+                      value={newItem}
+                      onChangeText={handleNewItem}
+                    />
+                    <Octicons
+                      name="check-circle-fill"
+                      size={20}
+                      color={selectedItem == newItem ? '#1cb022' : 'lightgray'}
+                    />
+                  </View>
+                }
+              />
+            </View>
+          ) : (
+            <View className="flex-grow">
+              <View className="h-12  w-full flex-row items-center justify-start self-center border-y border-gray-200 px-2">
                   <TextInput
                     className="h-fit w-1/2 grow rounded-md text-left text-gray-400 outline-none"
                     placeholder="New Item"
@@ -266,14 +264,6 @@ export default function UnmatchedItem() {
                     color={selectedItem == newItem ? '#1cb022' : 'lightgray'}
                   />
                 </View>
-              }
-            />
-          ) : (
-            <View>
-              <Text className="text-center text-3xl font-semibold">Your list is empty!</Text>
-              <Text className="text-1xl text-center">
-                Hit the "add" button to begin creating your shared list
-              </Text>
             </View>
           )}
           <View className="mb-2 flex-row items-center justify-between">
