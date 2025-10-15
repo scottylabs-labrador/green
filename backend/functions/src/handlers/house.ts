@@ -123,3 +123,24 @@ export const writeHouse = functions.https.onCall(
     return null;
   },
 )
+
+export const updateHouseName = functions.https.onCall(
+  async (request: functions.https.CallableRequest<{ name: string, houseId: string }>) => {
+    const { name, houseId } = request.data;
+
+    if (!request.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
+    }
+
+    if (!name) {
+      throw new functions.https.HttpsError('invalid-argument', 'name is required');
+    }
+    if (!houseId) {
+      throw new functions.https.HttpsError('invalid-argument', 'houseId is required');
+    }
+
+    await setTyped<string>(`houses/${houseId}/name`, name);
+    
+    return null;
+  },
+)

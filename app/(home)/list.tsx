@@ -9,6 +9,7 @@ import { FlatList, Image, ListRenderItemInfo, Modal, NativeSyntheticEvent, Press
 import { onAuthChange } from '../../api/auth';
 import { getGroceryListId, writeGroceryItem } from '../../api/grocerylist';
 import emptyList from '../../assets/empty-list.png';
+import Button from '../../components/CustomButton';
 import GroceryItem from '../../components/GroceryItem';
 import type { GroceryItems } from '../../db/types';
 
@@ -162,7 +163,7 @@ export default function List() {
 
         <Link href={{ pathname: '/pastlists', params: { houseId: houseId } }} asChild>
           <Pressable className="absolute bottom-8 left-10 h-fit w-fit items-center justify-center rounded-lg bg-emerald-900 px-4 py-2.5 shadow-lg hover:bg-emerald-950">
-            <Text className="self-center text-center text-white">See Past Items</Text>
+            <Text className="self-center text-center text-white font-semibold">See Past Items</Text>
           </Pressable>
         </Link>
         <Pressable
@@ -175,8 +176,8 @@ export default function List() {
         <Modal visible={modalVisible} transparent animationType="fade">
           <View className="flex-1 items-center justify-center bg-black/50">
             <View className="align-center m-auto h-fit w-2/3 rounded-lg bg-white px-7 py-5 shadow-md">
-              <Ionicons name="close" size={24} onPress={toggleModal} />
-              <Text className="self-center">Add Item</Text>
+              <Ionicons name="close" size={24} onPress={toggleModal} className="absolute right-3 top-3"/>
+              <Text className="self-center text-lg font-medium">Add Item</Text>
               <TextInput
                 className="my-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 align-middle text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                 onChangeText={setItem}
@@ -184,15 +185,8 @@ export default function List() {
                 placeholder="Add Item..."
                 onKeyPress={handleWriteItem}
               />
-              <Pressable
-                className="w-fit self-center rounded-lg bg-emerald-900 px-4 py-2.5 hover:bg-gray-600"
-                onPress={writeItem}
-              >
-                <Text className="self-center text-center text-white">Add</Text>
-              </Pressable>
-              <Pressable className="mt-6 w-fit self-center rounded-lg bg-emerald-900 px-4 py-2.5 hover:bg-gray-600">
-                <Text className="self-center text-center text-white">See All Past Items</Text>
-              </Pressable>
+              <Button buttonLabel="Add" onPress={writeItem} fontSize="text-sm"></Button>
+              <Button buttonLabel="See All Past Items" onPress={() => {}} fontSize="text-sm"></Button>
             </View>
           </View>
         </Modal>

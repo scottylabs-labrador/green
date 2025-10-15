@@ -20,35 +20,37 @@ const InviteCode = ({ houseId, visible, onClose }: InviteCodeProps) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const handleCreateCode = async () => {
-      setLoading(true);
+    if (visible) {
+      const handleCreateCode = async () => {
+        setLoading(true);
 
-      const userId = getAuth().currentUser?.uid;
-      if (!userId) {
-        setError('You must be logged in.');
-        setLoading(false);
-        return;
-      }
+        const userId = getAuth().currentUser?.uid;
+        if (!userId) {
+          setError('You must be logged in.');
+          setLoading(false);
+          return;
+        }
 
-      if (!houseId) {
-        setError('Need a valid house to generate a join link.');
-        setLoading(false);
-        return;
-      }
+        if (!houseId) {
+          setError('Need a valid house to generate a join link.');
+          setLoading(false);
+          return;
+        }
 
-      try {
-        const newLink = await createInviteCode(houseId);
-        setLink(newLink);
-        setError('');
-        setLoading(false);
-      } catch (err: any) {
-        console.error(err);
-        setError(err.message || 'Failed to generate invite link.');
-        setLoading(false);
-      }
-    };
+        try {
+          const newLink = await createInviteCode(houseId);
+          setLink(newLink);
+          setError('');
+          setLoading(false);
+        } catch (err: any) {
+          console.error(err);
+          setError(err.message || 'Failed to generate invite link.');
+          setLoading(false);
+        }
+      };
 
-    handleCreateCode();
+      handleCreateCode();
+    }
   }, []);
 
   const handleCopy = async () => {

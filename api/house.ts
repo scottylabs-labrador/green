@@ -47,7 +47,7 @@ export async function joinHouseWithInvite(houseId: string, userId: string, color
 }
 
 export async function getHouseNameFromId(houseId: string) {
-  const houseRef = ref(db, `house/${houseId}/name`);
+  const houseRef = ref(db, `houses/${houseId}/name`);
   const snap = await get(houseRef);
 
   if (snap.exists()) {
@@ -65,4 +65,13 @@ export async function writeHouse(name: string, houseId: string, groceryListId: s
   }, null>(functions, 'writeHouse');
 
   await fn({ name, houseId, groceryListId });
+}
+
+export async function updateHouseName(name: string, houseId: string) {
+  const fn = httpsCallable<{ 
+    name: string, 
+    houseId: string, 
+  }, null>(functions, 'updateHouseName');
+
+  await fn({ name, houseId });
 }

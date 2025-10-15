@@ -17,6 +17,11 @@ type HouseInfoProps = {
 };
 
 const HouseInfo = ({ name, houseid, members }: HouseInfoProps) => {
+  const [houseName, setHouseName] = useState(name);
+  const handleNameChange = (newName: string) => {
+    setHouseName(newName);
+  }
+
   const [showInfo, setShowInfo] = useState(false);
   const handlePress = () => {
     setShowInfo(!showInfo);
@@ -52,7 +57,7 @@ const HouseInfo = ({ name, houseid, members }: HouseInfoProps) => {
         onPress={handlePress}
       >
         <View className={`w-full flex-row items-center justify-center`}>
-          <Text className="w-1/2 grow self-center text-left font-medium">{name}</Text>
+          <Text className="w-1/2 grow self-center text-left font-medium">{houseName}</Text>
           {showInfo 
             ? <MaterialIcons name="keyboard-arrow-up" size={24} color="gray" />
             : <MaterialIcons name="keyboard-arrow-down" size={24} color="gray" />
@@ -97,7 +102,7 @@ const HouseInfo = ({ name, houseid, members }: HouseInfoProps) => {
           </View>
         </View>
       )}
-      <EditHouse houseId={houseid} visible={showEdit} onClose={handleEditHouse} />
+      <EditHouse houseId={houseid} visible={showEdit} onClose={handleEditHouse} onNameChange={handleNameChange} />
       <InviteCode houseId={houseid} visible={showInviteCode} onClose={handleInviteCode} />
     </View>
   );
