@@ -95,7 +95,7 @@ export default function Login() {
       >
         <ScrollView className="h-full">
           <View className="mx-auto mt-32 w-9/12 max-w-6xl flex-1 justify-center">
-            <Text className="mb-9 text-4xl font-semibold">Login</Text>
+            <Text className="mb-9 text-4xl font-semibold">Log In</Text>
 
             <Text className="mb-2">Email</Text>
             <TextInput
@@ -116,7 +116,7 @@ export default function Login() {
 
             <Text className="mb-4 text-red-500">{errorText}</Text>
 
-            <Button buttonLabel="Login" onPress={handleLogin} />
+            <Button buttonLabel="Log In" onPress={handleLogin} />
           </View>
 
           <BackButton />

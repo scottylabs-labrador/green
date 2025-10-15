@@ -49,7 +49,7 @@ export default function Home() {
                 hoverColor="hover:bg-dark-sunflower-70"
               />
               <LinkButton
-                buttonLabel="Login"
+                buttonLabel="Log In"
                 page="/login"
                 color="bg-sunflower-70"
                 hoverColor="hover:bg-dark-sunflower-70"

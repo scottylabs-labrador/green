@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { get, ref } from 'firebase/database';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { onAuthChange } from '../../api/auth';
 import { db, getCurrentUser, userSignOut } from '../../api/firebase';
-import Button from '../../components/CustomButton';
 import HouseInfo from '../../components/HouseInfo';
 
 export default function Profile() {
@@ -72,8 +71,8 @@ export default function Profile() {
   };
 
   return (
-    <View className="h-full w-full flex-1 items-center justify-start">
-      <View className="flex h-full w-full max-w-lg items-center justify-start gap-1 p-6 pt-16">
+    <View className="h-full w-full flex-1 items-center justify-start overflow-y-auto">
+      <View className="flex h-full w-full max-w-lg items-center justify-start gap-1 pb-6 pt-16 px-8">
         <View
           className="ml-1 flex h-32 w-32 items-center justify-center self-center rounded-full"
           style={{ backgroundColor: `#${color}` }}
@@ -84,13 +83,35 @@ export default function Profile() {
         <Text className="pt-2 text-center text-3xl font-bold">{name}</Text>
         <Text className="pb-4 text-center text-lg text-gray-500">{email}</Text>
 
-        <View className="w-full flex-col items-center justify-center">
-          <Text className="w-full px-5 text-left text-lg font-medium text-gray-500">Houses</Text>
+        <View className="w-full flex-col items-center justify-center gap-2">
+          <Text className="w-full px-1 text-left font-medium text-gray-500">Houses</Text>
           <HouseInfo name={houseName} houseid={houseId} members={members} />
+          <Pressable 
+            className="flex h-12 w-full items-center justify-center self-center rounded-lg bg-gray-50 border border-gray-100" 
+          >
+            <Link href={'/choosehouse'} className="w-full flex-row items-center justify-center gap-3 px-3">
+              <Text className="text-1xl grow text-left font-semibold">Join House</Text>
+            </Link>
+          </Pressable>
         </View>
 
-        <View className="absolute bottom-0">
-          <Button buttonLabel="Logout" onPress={userSignOut} />
+        <View className="w-full flex-col items-center justify-center gap-2 mt-2">
+          <Text className="w-full px-1 text-left font-medium text-gray-500">Account</Text>
+          <Pressable 
+            className="flex h-12 w-full items-center justify-center self-center rounded-lg bg-gray-50 border border-gray-100" 
+          >
+            <View className="w-full flex-row items-center justify-center gap-3 px-3">
+              <Text className="text-1xl grow text-left font-semibold">Edit Profile</Text>
+            </View>
+          </Pressable>
+          <Pressable 
+            className="flex h-12 w-full items-center justify-center self-center rounded-lg bg-gray-50 border border-gray-100" 
+            onPress={userSignOut}
+          >
+            <View className="w-full flex-row items-center justify-center gap-3 px-3">
+              <Text className="text-1xl grow text-left font-semibold text-red-500">Log Out</Text>
+            </View>
+          </Pressable>
         </View>
       </View>
     </View>
