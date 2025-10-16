@@ -51,7 +51,7 @@ const InviteCode = ({ houseId, visible, onClose }: InviteCodeProps) => {
 
       handleCreateCode();
     }
-  }, []);
+  }, [visible]);
 
   const handleCopy = async () => {
     if (link) {
@@ -85,7 +85,7 @@ const InviteCode = ({ houseId, visible, onClose }: InviteCodeProps) => {
               <Text className="w-full text-left">Generating Invite Code</Text>
               <ActivityIndicator size="small" />
             </View>
-          ) : null}
+          ) : <Text className="mt-4 text-red-500">Encountered error while generating invite code</Text>}
           {error ? <Text className="mt-4 text-red-500">Error: {error}</Text> : null}
         </View>
       </View>

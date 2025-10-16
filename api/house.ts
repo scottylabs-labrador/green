@@ -4,10 +4,28 @@ import { httpsCallable } from 'firebase/functions';
 import { db, functions } from './firebase';
 
 export async function createInviteCode(houseId: string) {
-  const fn = httpsCallable<{ houseId: string }, { token: string }>(functions, 'createInviteCode');
+  const existingInviteRef = ref(db, `houses/${houseId}/invite`);
+  const existingInviteSnap = await get(existingInviteRef);
 
-  const result = await fn({ houseId });
-  return result.data.token;
+  // Generate new invite if none has been generated
+  if (!existingInviteSnap.exists) {
+    const fn = httpsCallable<{ houseId: string }, { token: string }>(functions, 'createInviteCode');
+    const result = await fn({ houseId });
+    return result.data.token;
+  }
+
+  const existingInvite = existingInviteSnap.val();
+  const inviteRef = ref(db, `invites/${existingInvite}`);
+  const inviteSnap = await get(inviteRef);
+
+  // Generate new invite if last has expired
+  if (!inviteSnap.exists() || inviteSnap.val().expiresAt < Date.now()) {
+    const fn = httpsCallable<{ houseId: string }, { token: string }>(functions, 'createInviteCode');
+    const result = await fn({ houseId });
+    return result.data.token;
+  }
+
+  return existingInvite;
 }
 
 export async function getHouseIdFromInvite(inviteToken: string): Promise<string> {

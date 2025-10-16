@@ -33,6 +33,7 @@ export const createInviteCode = functions.https.onCall(
       expiresAt,
     };
     await setTyped<Invite>(`invites/${token}`, invite);
+    await setTyped<string>(`houses/${houseId}/invite`, token);
 
     return { token };
   },
@@ -116,7 +117,8 @@ export const writeHouse = functions.https.onCall(
       name: name, 
       members: {},
       grocerylist: groceryListId, 
-      receipts: {}
+      receipts: {}, 
+      invite: '',
     }
     await setTyped<House>(`houses/${houseId}`, house);
     

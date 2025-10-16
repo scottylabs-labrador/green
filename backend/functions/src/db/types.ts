@@ -16,6 +16,7 @@ export interface House {
   members: Members;
   grocerylist: string;
   receipts: Record<string, ReceiptRecordInHouse>;
+  invite: string;
 }
 
 export type Houses = Record<string, House>;
