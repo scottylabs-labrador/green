@@ -1,7 +1,6 @@
+import { GroceryItem, ReceiptItem, ReceiptItems, Splits } from '@db/types';
 import { httpsCallable } from 'firebase/functions';
 import Fuse from 'fuse.js';
-
-import { GroceryItem, ReceiptItems, Splits } from '../db/types';
 
 import { functions } from './firebase';
 
@@ -33,16 +32,21 @@ export const matchWords = (
       return {
         receiptItem: word,
         groceryItem: bestMatch.item,
-        price: receiptItems[word],
+        price: parseFloat(receiptItems[word]),
         splits: splits,
       }; // word is from the receiptItems, bestMatch is from groceryListItems
     }
     let splits: Splits = {};
     splits[filteredEmail] = 1;
-    return { receiptItem: word, groceryItem: '', price: receiptItems[word], splits: splits };
+    return { 
+      receiptItem: word, 
+      groceryItem: '', 
+      price: parseFloat(receiptItems[word]), 
+      splits: splits 
+    };
   });
 
-  return listOfItems.reduce((obj: ReceiptItems, item: types.ReceiptItem) => {
+  return listOfItems.reduce((obj: ReceiptItems, item: ReceiptItem) => {
     let itemId = window.crypto.randomUUID();
     obj[itemId] = item;
     return obj;
@@ -75,7 +79,7 @@ export async function updateReceiptItem(
   receiptItemName: string,
   groceryItemName: string,
   splits: Splits,
-  price: string,
+  price: number,
 ) {
   const fn = httpsCallable<{
     receiptId: string,
@@ -83,7 +87,7 @@ export async function updateReceiptItem(
     receiptItemName: string,
     groceryItemName: string,
     splits: Splits,
-    price: string,
+    price: number,
   }, null>(functions, 'updateReceiptItem');
 
   await fn({ receiptId, receiptItemId, receiptItemName, groceryItemName, splits, price });

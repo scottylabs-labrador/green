@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useLocalSearchParams } from 'expo-router';
-import { get, getDatabase, onValue, ref } from 'firebase/database';
+import { onValue, ref } from 'firebase/database';
 import { FlatList, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
 
-import { getCurrentUser } from '../../api/firebase';
+import { db, getCurrentUser } from '../../api/firebase';
 import ReceiptItem from '../../components/ReceiptItem';
 import type { ReceiptItems } from '../../db/types';
 
@@ -16,74 +16,78 @@ export default function Bill() {
   const [unmatchedItems, setUnmatchedItems] = useState<ReceiptItems>({});
   const [createDate, setCreateDate] = useState('');
   const [colors, setColors] = useState({});
-  const db = getDatabase();
 
   useEffect(() => {
-    const fetchData = () => {
-      const receiptRef = ref(db, 'receipts/' + receiptId);
-      get(receiptRef).then(snapshot => {
-        const data = snapshot.val();
-        let unmatched: ReceiptItems = {};
-        let matched: ReceiptItems = {};
-        if (data && data.receiptitems) {
-          if (data.receiptitems) {
-            const receiptItems = data.receiptitems;
-            for (const key of Object.keys(receiptItems)) {
-              if (receiptItems[key].groceryItem.length == 0) {
-                unmatched[key] = receiptItems[key];
-              } else {
-                matched[key] = receiptItems[key];
-              }
-            }
-            setUnmatchedItems(unmatched);
-            setMatchedItems(matched);
-          }
-          if (data.date) {
-            let date = data.date;
-            let parts = date.split('/');
-            let year = parts[2].slice(-2);
-            date = `${parts[0]}.${parts[1]}.${year}`;
-            setCreateDate(date);
-          } else {
-            const currentDate = new Date();
-            let date = currentDate.toLocaleDateString();
-            let parts = date.split('/');
-            let year = parts[2].slice(-2);
-            date = `${parts[0]}.${parts[1]}.${year}`;
-            setCreateDate(date);
-          }
+    if (!receiptId) return;
+    
+    // Listen for receipt + receiptitems updates
+    const receiptRef = ref(db, `receipts/${receiptId}`);
+    const unsubscribeReceipt = onValue(receiptRef, snapshot => {
+      const data = snapshot.val();
+      if (!data) return;
+
+      // Separate matched vs unmatched items
+      const matched: ReceiptItems = {};
+      const unmatched: ReceiptItems = {};
+
+      if (data.receiptitems) {
+        for (const key of Object.keys(data.receiptitems)) {
+          const item = data.receiptitems[key];
+          if (item.groceryItem?.length === 0) unmatched[key] = item;
+          else matched[key] = item;
+        }
+      }
+
+      setMatchedItems(matched);
+      setUnmatchedItems(unmatched);
+
+      // Date formatting
+      const date =
+        data.date ??
+        new Date().toLocaleDateString(undefined, {
+          month: 'numeric',
+          day: 'numeric',
+          year: '2-digit',
+        });
+
+      const [month, day, year] = date.split(/[./-]/);
+      setCreateDate(`${month}.${day}.${year}`);
+    });
+
+    // Get housemates' colors
+    const email = getCurrentUser()?.email || '';
+    if (!email) return;
+
+    const filteredEmail = email.split('.').join(':');
+    const userRef = ref(db, `housemates/${filteredEmail}`);
+
+    let unsubscribeColors: (() => void) | undefined;
+
+    const unsubscribeUser = onValue(userRef, snapshot => {
+      const userData = snapshot.val();
+      if (!userData?.houses?.length) return;
+
+      const houseId = userData.houses[0];
+      const houseRef = ref(db, `houses/${houseId}`);
+
+      // Remove old listener if we switch houses
+      if (unsubscribeColors) unsubscribeColors();
+
+      unsubscribeColors = onValue(houseRef, houseSnap => {
+        const houseData = houseSnap.val();
+        if (houseData?.members) {
+          setColors(houseData.members);
         }
       });
+    });
 
-      const email = getCurrentUser()?.email || '';
-      const filteredEmail = email.split('.').join(':');
-      try {
-        const itemRef = ref(db, 'housemates/' + filteredEmail);
-        var houses;
-        onValue(itemRef, snapshot => {
-          try {
-            const data = snapshot.val();
-            houses = data.houses[0].toString();
-          } catch {
-            console.error('failed to get houses');
-          }
-        });
-        const houseRef = ref(db, 'houses/' + houses);
-        onValue(houseRef, snapshot => {
-          try {
-            const data = snapshot.val();
-            var members = data.members;
-            setColors(members);
-          } catch {
-            console.error('failed to get members from house');
-          }
-        });
-      } catch {
-        console.error('failed to get user');
-      }
+    // Cleanup all listeners when unmounting
+    return () => {
+      unsubscribeReceipt();
+      unsubscribeUser();
+      if (unsubscribeColors) unsubscribeColors();
     };
-    fetchData();
-  }, [db]);
+  }, [db, receiptId]);
 
   const renderMatchedItem = ({ item }: ListRenderItemInfo<string>) => {
     return (
@@ -106,7 +110,6 @@ export default function Bill() {
         key={item}
         id={item}
         name={unmatchedItems[item].receiptItem}
-        // quantity={matchedItems[item].quantity}
         price={unmatchedItems[item].price}
         matched={false}
         receiptId={receiptId}

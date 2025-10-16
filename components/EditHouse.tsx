@@ -42,6 +42,7 @@ const EditHouse = ({ houseId, visible, onClose, onNameChange }: EditHouseProps) 
         console.error("Error when changing house name:", err);
       }
     }
+    onClose();
   }
 
   return (

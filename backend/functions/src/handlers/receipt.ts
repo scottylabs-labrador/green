@@ -46,7 +46,7 @@ export const updateReceiptItem = functions.https.onCall(
     receiptItemName: string,
     groceryItemName: string,
     splits: Splits,
-    price: string, 
+    price: number, 
   }>) => {
     const { receiptId, receiptItemId, receiptItemName, groceryItemName, splits, price } = request.data;
 

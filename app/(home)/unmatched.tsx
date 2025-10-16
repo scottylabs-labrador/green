@@ -5,20 +5,20 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { child, get, onValue, ref } from 'firebase/database';
-import { FlatList, ListRenderItemInfo, Modal, Pressable, Text, TextInput, View } from 'react-native';
-
+import { FlatList, ListRenderItemInfo, Pressable, Text, TextInput, View } from 'react-native';
 
 import { onAuthChange } from '../../api/auth';
 import { db, getCurrentUser } from '../../api/firebase';
 import { deleteReceiptItem, updateReceiptItem } from '../../api/receipt';
+import EditSplit from '../../components/EditSplit';
 import SplitProfile from '../../components/SplitProfile';
-import type { Splits } from '../../db/types';
+import type { GroceryItems, Splits } from '../../db/types';
 
 export default function UnmatchedItem() {
   var { itemId, receiptId } = useLocalSearchParams<{ itemId: string, receiptId: string }>();
   const [userId, setUserId] = useState('');
   const [itemName, setItemName] = useState('');
-  const [groceryItems, setGroceryItems] = useState({});
+  const [groceryItems, setGroceryItems] = useState<GroceryItems>({});
   const [selectedItem, setSelectedItem] = useState('');
   const [colors, setColors] = useState({});
   const [price, setPrice] = useState('');
@@ -27,8 +27,6 @@ export default function UnmatchedItem() {
   const [modalVisible, setModalVisible] = useState(false);
 
   const router = useRouter();
-
-  const inSplit = 'outline outline-emerald-900 outline-offset-1';
 
   useEffect(() => {
     if (itemId !== undefined) {
@@ -49,7 +47,7 @@ export default function UnmatchedItem() {
   useEffect(() => {
     const getGroceryList = onAuthChange(user => {
       if (user) {
-        let email = getCurrentUser().email;
+        let email = getCurrentUser()?.email;
         var emailParts = email.split('.');
         var filteredEmail = emailParts[0] + ':' + emailParts[1];
         setUserId(filteredEmail);
@@ -106,33 +104,7 @@ export default function UnmatchedItem() {
 
   const toggleOption = (id: string) => {
     setSelectedItem(groceryItems[id].name);
-    setSplits(groceryItems[id].splits);
-  };
-
-  const toggleSplit = (id: string) => {
-    if (splits && Object.keys(splits).includes(id)) {
-      // setSplits(prev => prev.filter(elem => elem != id));
-    } else if (splits) {
-      // setSplits(prev => [...prev, id]);
-    } else {
-      let newSplits: Splits = {};
-      newSplits[userId] = 1;
-      setSplits(newSplits);
-    }
-  };
-
-  const renderProfileButton = ({ item }) => {
-    return (
-      <Pressable
-        className={`flex h-10 w-10 items-center justify-center self-center rounded-full ${splits && Object.keys(splits).includes(item) ? inSplit : ''}`}
-        style={{ backgroundColor: '#' + colors[item].color }}
-        onPress={() => toggleSplit(item)}
-      >
-        <Text className="w-1/2 self-center text-center text-2xl text-white">
-          {colors[item].name[0].toUpperCase()}
-        </Text>
-      </Pressable>
-    );
+    setSplits({ ...groceryItems[id].splits });
   };
 
   const renderColor = ({ item }: ListRenderItemInfo<string>) => {
@@ -152,13 +124,23 @@ export default function UnmatchedItem() {
     return (
       <View>
         <Pressable className="h-10 w-10 items-center justify-center" onPress={toggleModal}>
-          <Ionicons name="add-circle" size={36} color="lightgray" />
+          {({ pressed }) => (
+            <Ionicons 
+              name="add-circle" 
+              size={36} 
+              color={pressed ? "gray" : "lightgray"} />
+          )}
         </Pressable>
       </View>
     );
   };
 
-  const UnmatchedItem = ({ id, name }) => {
+  type UnmatchedItemProps = {
+    id: string;
+    name: string;
+  }
+
+  const UnmatchedItem = ({ id, name }: UnmatchedItemProps) => {
     return (
       <Pressable
         className="h-12 w-full flex-row items-center justify-start self-center border-y border-gray-200 px-2"
@@ -174,7 +156,7 @@ export default function UnmatchedItem() {
     );
   };
 
-  const renderUnmatchedItem = ({ item }) => {
+  const renderUnmatchedItem = ({ item }: ListRenderItemInfo<string>) => {
     return <UnmatchedItem key={item} id={item} name={groceryItems[item].name} />;
   };
 
@@ -197,9 +179,9 @@ export default function UnmatchedItem() {
   const handleNewItem = (value: string) => {
     setNewItem(value);
     setSelectedItem(value);
-    let newSplits = {};
-    newSplits[userId] = 1;
-    setSplits(newSplits);
+    setSplits({
+      [userId]: 1,
+    });
   };
 
   const toggleModal = () => {
@@ -346,20 +328,8 @@ export default function UnmatchedItem() {
             )}
           </View>
 
-          <Modal visible={modalVisible} animationType="slide" transparent={true}>
-            <View className="align-center m-auto h-36 w-2/3 rounded-lg bg-white px-7 py-5 shadow-md">
-              <Ionicons name="close" size={24} onPress={toggleModal} />
-              <Text className="self-center">Add Split</Text>
-              <FlatList
-                className="v-full mt-1 h-10 p-0 px-2"
-                data={Object.keys(colors)}
-                renderItem={renderProfileButton}
-                horizontal={true}
-                keyExtractor={item => item}
-                contentContainerStyle={{ gap: 10 }}
-              />
-            </View>
-          </Modal>
+          <EditSplit colors={colors} splits={splits} visible={modalVisible} onClose={toggleModal} onSplitsChange={setSplits} />
+          
         </View>
       </View>
     </View>
