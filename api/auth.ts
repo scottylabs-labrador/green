@@ -41,6 +41,32 @@ export async function createUser(
   await fn({ userId, name, email, phoneNumber, houses });
 }
 
+export async function updateUser(
+  userId: string, 
+  name: string,
+) {
+  const fn = httpsCallable<{
+    userId: string, 
+    name: string, 
+  }, null>(functions, 'updateUser');
+
+  await fn({ userId, name });
+}
+
+export async function updateUserColor(
+  userId: string,
+  houseId: string, 
+  color: string,
+) {
+  const fn = httpsCallable<{
+    userId: string,
+    houseId: string, 
+    color: string,
+  }, null>(functions, 'updateUserColor');
+
+  await fn({ userId, houseId, color });
+}
+
 export function userSignIn(email: string, password: string) {
   return signInWithEmailAndPassword(auth, email, password);
 }
