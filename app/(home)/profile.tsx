@@ -85,7 +85,7 @@ export default function Profile() {
 
         <View className="w-full flex-col items-center justify-center gap-2">
           <Text className="w-full px-1 text-left font-medium text-gray-500">Houses</Text>
-          <HouseInfo name={houseName} houseid={houseId} members={members} />
+          <HouseInfo name={houseName} houseid={houseId} members={members} onNameChange={setHouseName} />
           <Pressable 
             className="flex h-12 w-full items-center justify-center self-center rounded-lg bg-gray-50 border border-gray-100" 
           >
