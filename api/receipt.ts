@@ -94,10 +94,6 @@ export async function updateReceiptItem(
 }
 
 export async function deleteReceiptItem(receiptId: string, receiptItemId: string) {
-  // coasync nst db = getDatabase();
-  // const itemRef = ref(db, `receipts/${receiptId}/receiptitems/${receiptItemId}`);
-  // remove(itemRef).catch((error: any) => console.error('Error removing item:', error));
-
   const fn = httpsCallable<{
     receiptId: string,
     receiptItemId: string,

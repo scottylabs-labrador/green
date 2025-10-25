@@ -24,7 +24,7 @@ export type Houses = Record<string, House>;
 export interface Housemate {
   name: string;
   email: string;
-  phone_number: string;
+  phoneNumber: string;
   houses: string[];
 }
 

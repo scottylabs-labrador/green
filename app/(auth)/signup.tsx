@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 
-import { createUser } from '../../api/firebase';
+import { createUser } from '../../api/auth';
 import background from '../../assets/home-background.png';
 import BackButton from '../../components/BackButton';
 import Button from '../../components/CustomButton';
@@ -108,7 +108,6 @@ export default function SignUp({ route, navigation, ...props }) {
             <Button
               buttonLabel="Sign Up"
               onPress={async () => {
-                // writeUserData(name, email, phoneNumber);
                 const result = await handleSubmit(
                   email,
                   password,

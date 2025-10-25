@@ -4,8 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getDatabase, onValue, ref, set, update } from 'firebase/database';
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 
-import { onAuthChange } from '../../api/auth';
-import { getCurrentUser } from '../../api/firebase';
+import { getCurrentUser, onAuthChange } from '../../api/auth';
 import CustomButton from '../../components/CustomButton';
 
 export default function JoinHouse() {

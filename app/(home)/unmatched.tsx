@@ -7,8 +7,8 @@ import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { child, get, onValue, ref } from 'firebase/database';
 import { FlatList, ListRenderItemInfo, Pressable, Text, TextInput, View } from 'react-native';
 
-import { onAuthChange } from '../../api/auth';
-import { db, getCurrentUser } from '../../api/firebase';
+import { getCurrentUser, onAuthChange } from '../../api/auth';
+import { db } from '../../api/firebase';
 import { deleteReceiptItem, updateReceiptItem } from '../../api/receipt';
 import EditSplit from '../../components/EditSplit';
 import SplitProfile from '../../components/SplitProfile';

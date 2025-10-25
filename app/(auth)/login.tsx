@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 
-import { userSignIn } from '../../api/firebase';
+import { userSignIn } from '../../api/auth';
 import { getGroceryListId } from '../../api/grocerylist';
 import background from '../../assets/home-background.png';
 import BackButton from '../../components/BackButton';

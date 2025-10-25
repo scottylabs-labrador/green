@@ -4,8 +4,8 @@ import { Link, useRouter } from 'expo-router';
 import { get, ref } from 'firebase/database';
 import { Pressable, Text, View } from 'react-native';
 
-import { onAuthChange } from '../../api/auth';
-import { db, getCurrentUser, userSignOut } from '../../api/firebase';
+import { getCurrentUser, onAuthChange, userSignOut } from '../../api/auth';
+import { db } from '../../api/firebase';
 import HouseInfo from '../../components/HouseInfo';
 
 export default function Profile() {

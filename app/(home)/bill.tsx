@@ -5,7 +5,8 @@ import { Link, useLocalSearchParams } from 'expo-router';
 import { onValue, ref } from 'firebase/database';
 import { FlatList, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
 
-import { db, getCurrentUser } from '../../api/firebase';
+import { getCurrentUser } from '../../api/auth';
+import { db } from '../../api/firebase';
 import ReceiptItem from '../../components/ReceiptItem';
 import type { ReceiptItems } from '../../db/types';
 

@@ -6,8 +6,7 @@ import { useRouter } from 'expo-router';
 import { child, get, getDatabase, ref } from 'firebase/database';
 import { Button, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { onAuthChange } from '../../api/auth';
-import { getCurrentUser } from '../../api/firebase';
+import { getCurrentUser, onAuthChange } from '../../api/auth';
 import { matchWords, writeReceipt } from '../../api/receipt';
 
 export default function Page() {
