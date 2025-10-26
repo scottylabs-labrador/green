@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { get, ref } from 'firebase/database';
 import { Pressable, Text, View } from 'react-native';
 
-import { getCurrentUser, onAuthChange, userSignOut } from '../../api/auth';
+import { getCurrentUser, getUserIdFromEmail, onAuthChange, userSignOut } from '../../api/auth';
 import { db } from '../../api/firebase';
+import EditProfile from '../../components/EditProfile';
 import HouseInfo from '../../components/HouseInfo';
 
 export default function Profile() {
@@ -15,6 +16,7 @@ export default function Profile() {
   const [houseName, setHouseName] = useState('House Name');
   const [houseId, setHouseId] = useState('House ID');
   const [members, setMembers] = useState({});
+  const [showEditProfile, setShowEditProfile] = useState(false);
 
   const router = useRouter();
 
@@ -70,12 +72,16 @@ export default function Profile() {
     }
   };
 
+  const handleEditProfile = () => {
+    setShowEditProfile(!showEditProfile);
+  };
+
   return (
     <View className="h-full w-full flex-1 items-center justify-start overflow-y-auto">
       <View className="flex h-full w-full max-w-lg items-center justify-start gap-1 pb-6 pt-16 px-8">
         <View
           className="ml-1 flex h-32 w-32 items-center justify-center self-center rounded-full"
-          style={{ backgroundColor: `#${color}` }}
+          style={{ backgroundColor: `${color}` }}
         >
           <Text className="text-center text-5xl text-white">{name[0]?.toUpperCase()}</Text>
         </View>
@@ -84,28 +90,22 @@ export default function Profile() {
         <Text className="pb-4 text-center text-lg text-gray-500">{email}</Text>
 
         <View className="w-full flex-col items-center justify-center gap-2">
-          <Text className="w-full px-1 text-left font-medium text-gray-500">Houses</Text>
+          <Text className="w-full px-1 text-left font-medium text-gray-500">House</Text>
           <HouseInfo name={houseName} houseid={houseId} members={members} onNameChange={setHouseName} />
-          <Pressable 
-            className="flex h-12 w-full items-center justify-center self-center rounded-lg bg-gray-50 border border-gray-100" 
-          >
-            <Link href={'/choosehouse'} className="w-full flex-row items-center justify-center gap-3 px-3">
-              <Text className="text-1xl grow text-left font-semibold">Join House</Text>
-            </Link>
-          </Pressable>
         </View>
 
         <View className="w-full flex-col items-center justify-center gap-2 mt-2">
           <Text className="w-full px-1 text-left font-medium text-gray-500">Account</Text>
           <Pressable 
-            className="flex h-12 w-full items-center justify-center self-center rounded-lg bg-gray-50 border border-gray-100" 
+            className="flex h-12 w-full items-center justify-center self-center rounded-lg bg-gray-50 border border-gray-100 hover:bg-gray-100" 
+            onPress={handleEditProfile}
           >
             <View className="w-full flex-row items-center justify-center gap-3 px-3">
               <Text className="text-1xl grow text-left font-semibold">Edit Profile</Text>
             </View>
           </Pressable>
           <Pressable 
-            className="flex h-12 w-full items-center justify-center self-center rounded-lg bg-gray-50 border border-gray-100" 
+            className="flex h-12 w-full items-center justify-center self-center rounded-lg bg-gray-50 border border-gray-100 hover:bg-gray-100" 
             onPress={userSignOut}
           >
             <View className="w-full flex-row items-center justify-center gap-3 px-3">
@@ -113,6 +113,16 @@ export default function Profile() {
             </View>
           </Pressable>
         </View>
+        <EditProfile 
+          userId={getUserIdFromEmail(email)} 
+          name={name} 
+          houseId={houseId} 
+          color={color}
+          visible={showEditProfile} 
+          onClose={handleEditProfile} 
+          onNameChange={setName} 
+          onColorChange={setColor}
+        />
       </View>
     </View>
   );

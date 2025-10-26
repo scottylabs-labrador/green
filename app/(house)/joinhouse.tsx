@@ -22,12 +22,12 @@ export default function JoinHouse() {
   const router = useRouter();
 
   const activeColor = 'outline outline-emerald-900 outline-offset-1';
-  const RED = 'CA3A31';
-  const ORANGE = 'D9622A';
-  const YELLOW = 'C18D2F';
-  const GREEN = '4CA154';
-  const BLUE = '3662E3';
-  const PURPLE = '883AE1';
+  const RED = '#CA3A31';
+  const ORANGE = '#D9622A';
+  const YELLOW = '#C18D2F';
+  const GREEN = '#4CA154';
+  const BLUE = '#3662E3';
+  const PURPLE = '#883AE1';
 
   useEffect(() => {
     const getuser = onAuthChange(user => {

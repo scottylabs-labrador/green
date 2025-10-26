@@ -84,7 +84,7 @@ const HouseInfo = ({ name, houseid, members, onNameChange }: HouseInfoProps) => 
             )}
           </View>
           <View className="w-full flex-col px-1 mt-2 gap-2">
-            <Pressable className="flex h-10 w-full items-center justify-center self-center rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-100" onPress={handleEditHouse}>
+            <Pressable className="flex h-10 w-full items-center justify-center self-center rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-100 " onPress={handleEditHouse}>
               <View className="w-full flex-row items-center justify-center gap-3 px-2">
                 <Text className="text-1xl grow text-left">Edit House</Text>
                 <Ionicons name="pencil" size={18} color="gray" />
