@@ -3,41 +3,30 @@ import React, { useEffect, useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Modal, Text, TextInput, View } from 'react-native';
 
-import { getHouseNameFromId, updateHouseName } from '../api/house';
+import { updateHouseName } from '../api/house';
 
 import Button from './CustomButton';
 
 type EditHouseProps = {
   houseId: string;
+  houseName: string;
   visible: boolean;
   onClose: () => void;
   onNameChange: (newName: string) => void;
 };
 
-const EditHouse = ({ houseId, visible, onClose, onNameChange }: EditHouseProps) => {
-  const [houseName, setHouseName] = useState('');
+const EditHouse = ({ houseId, houseName, visible, onClose, onNameChange }: EditHouseProps) => {
+  const [newHouseName, setNewHouseName] = useState('');
 
   useEffect(() => {
-    if (visible) {
-      const getHouseName = async () => {
-        try {
-          let name = await getHouseNameFromId(houseId);
-          console.log("houseName:", name);
-          setHouseName(name);
-        } catch (err) {
-          console.error("Error when getting house name:", err);
-        }
-      }
-
-      getHouseName();
-    }
-  }, [visible]);
+    setNewHouseName(houseName);
+  }, [houseName]);
 
   const saveChanges = async () => {
-    if (houseName && houseName.length > 0) {
+    if (newHouseName && newHouseName.length > 0) {
       try {
-        await updateHouseName(houseName, houseId);
-        onNameChange(houseName);
+        await updateHouseName(newHouseName, houseId);
+        onNameChange(newHouseName);
       } catch (err) {
         console.error("Error when changing house name:", err);
       }
@@ -55,8 +44,8 @@ const EditHouse = ({ houseId, visible, onClose, onNameChange }: EditHouseProps) 
             <Text className="mb-2">Name</Text>
             <TextInput
               className="mb-2 block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
-              onChangeText={setHouseName}
-              value={houseName}
+              onChangeText={setNewHouseName}
+              value={newHouseName}
               autoCapitalize="none"
             />
           </View>

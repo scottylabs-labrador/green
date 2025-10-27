@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Modal, Text, TextInput, View } from 'react-native';
@@ -22,6 +22,14 @@ type EditProfileProps = {
 const EditProfile = ({ userId, name, houseId, color, visible, onClose, onNameChange, onColorChange }: EditProfileProps) => {
   const [newName, setNewName] = useState(name);
   const [newColor, setNewColor] = useState(name);
+
+  useEffect(() => {
+    setNewName(name);
+  }, [name]);
+
+  useEffect(() => {
+    setNewColor(color);
+  }, [name, color]);
 
   const saveChanges = async () => {
     if (newName && newName !== name && newName.length > 0) {

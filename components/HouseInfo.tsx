@@ -99,7 +99,7 @@ const HouseInfo = ({ name, houseid, members, onNameChange }: HouseInfoProps) => 
           </View>
         </View>
       )}
-      <EditHouse houseId={houseid} visible={showEdit} onClose={handleEditHouse} onNameChange={onNameChange} />
+      <EditHouse houseId={houseid} houseName={name} visible={showEdit} onClose={handleEditHouse} onNameChange={onNameChange} />
       <InviteCode houseId={houseid} visible={showInviteCode} onClose={handleInviteCode} />
     </View>
   );
