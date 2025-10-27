@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getDatabase, onValue, ref } from 'firebase/database';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { getCurrentUser, getUserIdFromEmail, onAuthChange } from '../../api/auth';
 import { joinHouseWithInvite } from '../../api/house';
 import ColorPicker from '../../components/ColorPicker';
 import CustomButton from '../../components/CustomButton';
+import Loading from '../../components/Loading';
 
 export default function JoinHouse() {
   const { key } = useLocalSearchParams<{ key: string }>();
@@ -72,19 +73,13 @@ export default function JoinHouse() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" />
-        <Text>Loading house...</Text>
-      </View>
+      <Loading message="Loading house..." />
     );
   }
 
   if (loadingAddMember) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" />
-        <Text>Joining house...</Text>
-      </View>
+      <Loading message="Joining house..." />
     );
   }
 
@@ -92,6 +87,7 @@ export default function JoinHouse() {
     return (
       <View className="flex-1 items-center justify-center">
         <Text>No house found for this code.</Text>
+        <CustomButton buttonLabel="Back" onPress={() => router.back()} />
       </View>
     );
   }

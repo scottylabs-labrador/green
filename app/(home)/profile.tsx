@@ -8,6 +8,7 @@ import { getCurrentUser, getUserIdFromEmail, onAuthChange, userSignOut } from '.
 import { db } from '../../api/firebase';
 import EditProfile from '../../components/EditProfile';
 import HouseInfo from '../../components/HouseInfo';
+import Loading from '../../components/Loading';
 
 export default function Profile() {
   const [name, setName] = useState('Name');
@@ -17,6 +18,7 @@ export default function Profile() {
   const [houseId, setHouseId] = useState('House ID');
   const [members, setMembers] = useState({});
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const router = useRouter();
 
@@ -67,6 +69,8 @@ export default function Profile() {
         setName(userData.name);
         setColor(userData.color);
       }
+
+      setLoading(false);
     } catch (error) {
       console.error('Failed to fetch user data:', error);
     }
@@ -75,6 +79,12 @@ export default function Profile() {
   const handleEditProfile = () => {
     setShowEditProfile(!showEditProfile);
   };
+
+  if (loading) {
+    return (
+      <Loading message={"Loading user..."} />
+    )
+  }
 
   return (
     <View className="h-full w-full flex-1 items-center justify-start overflow-y-auto">
