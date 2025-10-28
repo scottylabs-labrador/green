@@ -5,9 +5,10 @@ import {
   signOut,
   User,
 } from 'firebase/auth';
+import { get, ref } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
 
-import { auth, functions } from './firebase';
+import { auth, db, functions } from './firebase';
 
 export function onAuthChange(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);
@@ -65,6 +66,16 @@ export async function updateUserColor(
   }, null>(functions, 'updateUserColor');
 
   await fn({ userId, houseId, color });
+}
+
+export async function getUserName(userId: string) {
+  const housemateRef = ref(db, `housemates/${userId}/name`);
+  const snap = await get(housemateRef);
+  if (snap.exists()) {
+    return snap.val();
+  }
+
+  throw new Error('No user found');
 }
 
 export function userSignIn(email: string, password: string) {

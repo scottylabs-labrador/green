@@ -1,4 +1,5 @@
-import { get, ref } from 'firebase/database';
+import { House } from '@db/types';
+import { get, onValue, ref } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
 
 import { db, functions } from './firebase';
@@ -64,6 +65,18 @@ export async function joinHouseWithInvite(houseId: string, userId: string, color
   await fn({ houseId, userId, color, houses, name });
 }
 
+export async function getHouseId(userId: string) {
+  const housemateRef = ref(db, `housemates/${userId}/houses`);
+  const snap = await get(housemateRef);
+
+  if (snap.exists()) {
+    const houses: string[] = snap.val();
+    if (houses.length > 0) return houses[0]; // Return the first house ID
+  }
+
+  throw new Error('No house found');
+}
+
 export async function getHouseNameFromId(houseId: string) {
   const houseRef = ref(db, `houses/${houseId}/name`);
   const snap = await get(houseRef);
@@ -72,7 +85,22 @@ export async function getHouseNameFromId(houseId: string) {
     return snap.val();
   }
 
-  return '';
+  throw new Error('No house found');
+}
+
+export function listenForHouseInfo(houseId: string, callback: (house: House) => void) {
+  const houseRef = ref(db, `houses/${houseId}`);
+
+  const unsubscribe = onValue(houseRef, snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      callback(data);
+    } else {
+      throw new Error('No house found');
+    }
+  });
+
+  return unsubscribe;
 }
 
 export async function writeHouse(name: string, houseId: string, groceryListId: string) {

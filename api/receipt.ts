@@ -1,21 +1,27 @@
-import { GroceryItem, ReceiptItem, ReceiptItems, Splits } from '@db/types';
+import { GroceryItems, Receipt, ReceiptItem, ReceiptItems, Splits } from '@db/types';
+import { onValue, ref } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
 import Fuse from 'fuse.js';
 
-import { functions } from './firebase';
+import { db, functions } from './firebase';
 
 export const matchWords = (
-  userEmail: string,
+  userId: string,
   receiptItems: Record<string, string>,
-  groceryListItems: string[],
-  groceryItemObjects: GroceryItem[],
+  groceryItems: GroceryItems,
   threshold = 0.3,
 ) => {
-  const fuse = new Fuse(groceryListItems, { threshold });
+  let groceryItemNames = [];
+  let groceryItemsArray = [];
+
+  for (const itemId in groceryItems) {
+    const item = groceryItems[itemId];
+    groceryItemNames.push(item.name);
+    groceryItemsArray.push(item);
+  }
+
+  const fuse = new Fuse(groceryItemNames, { threshold });
   const usedWords = new Set();
-  console.log('userEmail:', userEmail);
-  var emailParts = userEmail.split('.');
-  var filteredEmail = emailParts[0] + ':' + emailParts[1];
 
   let listOfItems = Object.keys(receiptItems).map(word => {
     const results = fuse.search(word);
@@ -24,9 +30,9 @@ export const matchWords = (
     if (bestMatch) {
       usedWords.add(bestMatch.item);
       let splits: Splits = {};
-      for (let i = 0; i < groceryItemObjects.length; i++) {
-        if (groceryItemObjects[i].name == bestMatch.item) {
-          splits = groceryItemObjects[i].splits;
+      for (let i = 0; i < groceryItemsArray.length; i++) {
+        if (groceryItemsArray[i].name == bestMatch.item) {
+          splits = groceryItemsArray[i].splits;
         }
       }
       return {
@@ -37,7 +43,7 @@ export const matchWords = (
       }; // word is from the receiptItems, bestMatch is from groceryListItems
     }
     let splits: Splits = {};
-    splits[filteredEmail] = 1;
+    splits[userId] = 1;
     return { 
       receiptItem: word, 
       groceryItem: '', 
@@ -100,4 +106,19 @@ export async function deleteReceiptItem(receiptId: string, receiptItemId: string
   }, null>(functions, 'deleteReceiptItem');
 
   await fn({ receiptId, receiptItemId });
+}
+
+export function listenForReceipt(receiptId: string, callback: (receipt: Receipt) => void) {
+  const receiptRef = ref(db, `receipts/${receiptId}`);
+
+  const unsubscribe = onValue(receiptRef, snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      callback(data);
+    } else {
+      throw new Error('No receipt found');
+    }
+  });
+
+  return unsubscribe;
 }
