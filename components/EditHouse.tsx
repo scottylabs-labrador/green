@@ -6,6 +6,7 @@ import { Modal, Text, TextInput, View } from 'react-native';
 import { updateHouseName } from '../api/house';
 
 import Button from './CustomButton';
+import Loading from './Loading';
 
 type EditHouseProps = {
   houseId: string;
@@ -17,20 +18,29 @@ type EditHouseProps = {
 
 const EditHouse = ({ houseId, houseName, visible, onClose, onNameChange }: EditHouseProps) => {
   const [newHouseName, setNewHouseName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     setNewHouseName(houseName);
   }, [houseName]);
 
   const saveChanges = async () => {
+    setLoading(true);
+
     if (newHouseName && newHouseName.length > 0) {
       try {
         await updateHouseName(newHouseName, houseId);
         onNameChange(newHouseName);
       } catch (err) {
         console.error("Error when changing house name:", err);
+        setLoading(false);
+        setError("Failed to update house name.");
+        return;
       }
     }
+
+    setLoading(false);
     onClose();
   }
 
@@ -49,7 +59,17 @@ const EditHouse = ({ houseId, houseName, visible, onClose, onNameChange }: EditH
               autoCapitalize="none"
             />
           </View>
+          {error.length > 0 && (
+            <Text className="text-red-500 mb-2 px-2">
+              Error: {error}
+            </Text>
+          )}
           <Button buttonLabel="Save Changes" onPress={saveChanges} fontSize="text-sm"></Button>
+          {loading && (
+            <View className="absolute inset-0 bg-white/70 justify-center items-center rounded-2xl">
+              <Loading message="Updating profile..." />
+            </View>
+          )}        
         </View>
       </View>
     </Modal>

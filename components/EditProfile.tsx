@@ -7,6 +7,7 @@ import { updateUser, updateUserColor } from '../api/auth';
 
 import ColorPicker from './ColorPicker';
 import Button from './CustomButton';
+import Loading from './Loading';
 
 type EditProfileProps = {
   userId: string;
@@ -22,6 +23,8 @@ type EditProfileProps = {
 const EditProfile = ({ userId, name, houseId, color, visible, onClose, onNameChange, onColorChange }: EditProfileProps) => {
   const [newName, setNewName] = useState(name);
   const [newColor, setNewColor] = useState(name);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     setNewName(name);
@@ -32,22 +35,32 @@ const EditProfile = ({ userId, name, houseId, color, visible, onClose, onNameCha
   }, [name, color]);
 
   const saveChanges = async () => {
+    setLoading(true);
+
     if (newName && newName !== name && newName.length > 0) {
       try {
         await updateUser(userId, newName);
         onNameChange(newName);
       } catch (err) {
         console.error("Error when changing user name:", err);
+        setError("Failed to update name.");
+        setLoading(false);
+        return;
       }
     }
     if (newColor && newColor !== color) {
       try {
-        await updateUserColor(userId, houseId, color);
+        await updateUserColor(userId, houseId, newColor);
         onColorChange(newColor);
       } catch (err) {
         console.error("Error when changing user color:", err);
+        setError("Failed to update color.");
+        setLoading(false);
+        return;
       }
     }
+
+    setLoading(false);
     onClose();
   }
 
@@ -70,7 +83,17 @@ const EditProfile = ({ userId, name, houseId, color, visible, onClose, onNameCha
             <Text className="mb-2">Color</Text>
             <ColorPicker color={color} onColorPick={setNewColor} />
           </View>
+          {error.length > 0 && (
+            <Text className="text-red-500 mb-2 px-2">
+              Error: {error}
+            </Text>
+          )}
           <Button buttonLabel="Save Changes" onPress={saveChanges} fontSize="text-sm"></Button>
+          {loading && (
+            <View className="absolute inset-0 bg-white/70 justify-center items-center rounded-2xl">
+              <Loading message="Updating profile..." />
+            </View>
+          )}
         </View>
       </View>
     </Modal>
