@@ -6,6 +6,8 @@ import { useRouter } from 'expo-router';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { ImageBackground, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 
+import { getUserIdFromEmail } from '@/api/auth';
+
 import { getGroceryListId } from '../../api/grocerylist';
 import background from '../../assets/home-background.png';
 import LinkButton from '../../components/LinkButton';
@@ -15,7 +17,7 @@ export default function Home() {
   const auth = getAuth();
   onAuthStateChanged(auth, async user => {
     if (user && user.email) {
-      getGroceryListId(user.email)
+      getGroceryListId(getUserIdFromEmail(user.email))
         .then(groceryListId =>
           router.replace({ pathname: '/list', params: { grocerylist: groceryListId } }),
         )

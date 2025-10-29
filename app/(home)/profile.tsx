@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react';
 
 import { useRouter } from 'expo-router';
-import { get, ref } from 'firebase/database';
 import { Pressable, Text, View } from 'react-native';
 
-import { getCurrentUser, getUserIdFromEmail, onAuthChange, userSignOut } from '../../api/auth';
-import { db } from '../../api/firebase';
+import { getHouseId, listenForHouseInfo } from '@/api/house';
+import { useAuth } from '@/context/AuthContext';
+
+import { getUserIdFromEmail, userSignOut } from '../../api/auth';
 import EditProfile from '../../components/EditProfile';
 import HouseInfo from '../../components/HouseInfo';
 import Loading from '../../components/Loading';
 
 export default function Profile() {
+  const router = useRouter();
+  const { user } = useAuth();
+
   const [name, setName] = useState('Name');
   const [color, setColor] = useState('000000');
   const [email, setEmail] = useState('');
@@ -20,61 +24,52 @@ export default function Profile() {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const router = useRouter();
+  useEffect(() => {
+    const fetchHouseId = async () => {
+      if (user && user.email) {
+        setEmail(user.email);
+
+        const userId = getUserIdFromEmail(user.email);
+        try {
+          const id = await getHouseId(userId);
+          setHouseId(id);
+        } catch (err) {
+          console.error("Error fetching house ID:", err);
+        }
+      } else {
+        router.replace('/login');
+      }
+    }
+
+    fetchHouseId();
+  }, [user]);
 
   useEffect(() => {
-    const unsubscribe = onAuthChange(user => {
-      if (!user) {
-        router.replace('/login');
-        return;
-      }
+    if (!houseId || !email) return;
 
-      const email = getCurrentUser()?.email;
-      if (!email) return;
-
-      setEmail(email);
-      const [emailUser, domain] = email.split('.');
-      const filteredEmail = `${emailUser}:${domain}`;
-
-      fetchUserData(filteredEmail);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const fetchUserData = async (filteredEmail: string) => {
     try {
-      const housemateSnap = await get(ref(db, `housemates/${filteredEmail}`));
-      const houseId = housemateSnap.val()?.houses?.[0];
+      const unsubscribe = listenForHouseInfo(houseId, (house) => {
+        const members = house.members || {};
 
-      console.log('house id: ', houseId);
+        setHouseName(house.name);
+        setMembers(members);
 
-      if (!houseId) return;
+        const userId = getUserIdFromEmail(email);
 
-      setHouseId(houseId);
+        const userData = members[userId];
+        if (userData) {
+          setName(userData.name);
+          setColor(userData.color);
+        }
 
-      const houseSnap = await get(ref(db, `houses/${houseId}`));
-      const houseData = houseSnap.val();
+        setLoading(false);
+      });
 
-      console.log('house data:', houseData);
-
-      if (!houseData) return;
-
-      setHouseName(houseData.name);
-      setMembers(houseData.members);
-
-      const userData = houseData.members[filteredEmail];
-      if (userData) {
-        console.log('user data:', userData);
-        setName(userData.name);
-        setColor(userData.color);
-      }
-
-      setLoading(false);
-    } catch (error) {
-      console.error('Failed to fetch user data:', error);
+      return () => unsubscribe();
+    } catch (err) {
+      console.error("Error listening for house info:", err);
     }
-  };
+  }, [houseId]);
 
   const handleEditProfile = () => {
     setShowEditProfile(!showEditProfile);

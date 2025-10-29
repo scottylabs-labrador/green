@@ -4,20 +4,28 @@ import { Octicons } from '@expo/vector-icons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
-import { child, get, onValue, ref } from 'firebase/database';
 import { FlatList, ListRenderItemInfo, Pressable, Text, TextInput, View } from 'react-native';
 
-import { getCurrentUser, onAuthChange } from '../../api/auth';
-import { db } from '../../api/firebase';
-import { deleteReceiptItem, updateReceiptItem } from '../../api/receipt';
+import { listenForGroceryItems } from '@/api/grocerylist';
+import { getHouseId, listenForHouseInfo } from '@/api/house';
+import { useAuth } from '@/context/AuthContext';
+
+import { getUserIdFromEmail } from '../../api/auth';
+import { deleteReceiptItem, listenForReceipt, updateReceiptItem } from '../../api/receipt';
 import EditSplit from '../../components/EditSplit';
 import SplitProfile from '../../components/SplitProfile';
 import type { GroceryItems, Splits } from '../../db/types';
 
 export default function UnmatchedItem() {
+  const router = useRouter();
+  const { user } = useAuth();
+
   var { itemId, receiptId } = useLocalSearchParams<{ itemId: string, receiptId: string }>();
+  
   const [userId, setUserId] = useState('');
   const [itemName, setItemName] = useState('');
+  const [houseId, setHouseId] = useState('');
+  const [groceryListId, setGroceryListId] = useState('');
   const [groceryItems, setGroceryItems] = useState<GroceryItems>({});
   const [selectedItem, setSelectedItem] = useState('');
   const [colors, setColors] = useState({});
@@ -26,81 +34,85 @@ export default function UnmatchedItem() {
   const [newItem, setNewItem] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
 
-  const router = useRouter();
-
   useEffect(() => {
-    if (itemId !== undefined) {
-      onValue(ref(db, 'receipts/' + receiptId + '/receiptitems/' + itemId), snapshot => {
-        const data = snapshot.val();
-        if (data) {
-          setItemName(data.receiptItem);
-          setSelectedItem(data.groceryItem);
-          setPrice(data?.price.toFixed(2).toString());
-          setSplits(data.splits);
+    const fetchHouseId = async () => {
+      if (user && user.email) {
+        const userId = getUserIdFromEmail(user.email);
+        setUserId(userId);
+
+        if (!splits) {
+          setSplits({ [userId]: 1 });
         }
-      });
-    } else {
-      itemId = window.crypto.randomUUID();
+
+        try {
+          const id = await getHouseId(userId);
+          setHouseId(id);
+        } catch (err) {
+          console.error("Error fetching house ID:", err);
+        }
+      } else {
+        router.replace('/login');
+      }
     }
-  }, []);
+
+    fetchHouseId();
+  }, [user]);
 
   useEffect(() => {
-    const getGroceryList = onAuthChange(user => {
-      if (user) {
-        let email = getCurrentUser()?.email;
-        var emailParts = email.split('.');
-        var filteredEmail = emailParts[0] + ':' + emailParts[1];
-        setUserId(filteredEmail);
-        const dbRef = ref(db);
-        get(child(dbRef, `housemates/${filteredEmail}`))
-          .then(snapshot => {
-            if (snapshot.exists()) {
-              const data = snapshot.val();
-              let houses = data.houses[0].toString();
-              const houseRef = child(dbRef, `houses/${houses}`);
-              return get(houseRef);
-            } else {
-              console.error('failed to get houses');
-              return Promise.reject('no house found');
-            }
-          })
-          .then(snapshot => {
-            if (snapshot.exists()) {
-              const data = snapshot.val();
-              let members = data.members;
-              setColors(members);
-              const receiptRef = child(dbRef, `receipts/${receiptId}`);
-              return get(receiptRef);
-            } else {
-              console.error('failed to get members');
-              return Promise.reject('no members');
-            }
-          })
-          .then(snapshot => {
-            if (snapshot.exists()) {
-              const data = snapshot.val();
-              let groceryListId = data.groceryListId;
-              const itemRef = child(dbRef, `grocerylists/${groceryListId}`);
-              return get(itemRef);
-            } else {
-              console.error('failed to get grocery list');
-              return Promise.reject('no grocery list');
-            }
-          })
-          .then(snapshot => {
-            if (snapshot.exists()) {
-              const data = snapshot.val();
-              setGroceryItems(data.groceryitems);
-            } else {
-              console.error('failed to get grocery items');
-            }
-          });
-      } else {
-        console.error('no user');
-        router.replace('/login'); // Redirect if not logged in
+      if (!houseId) return;
+  
+      try {
+        const unsubscribe = listenForHouseInfo(houseId, (house) => {
+          setColors(house.members || {});
+        });
+  
+        return () => unsubscribe();
+      } catch (err) {
+        console.error("Error listening for house info:", err);
       }
+    }, [houseId]);
+
+  useEffect(() => {
+    if (!receiptId) return;
+
+    try {
+      const unsubscribeReceipt = listenForReceipt(receiptId, (receipt) => {
+        const receiptItems = receipt.receiptitems || {};
+        const groceryListId = receipt.groceryListId || '';
+        
+        if (itemId === undefined) {
+          itemId = window.crypto.randomUUID();
+          return;
+        }
+
+        const item = receiptItems[itemId];
+        if (item) {
+          setItemName(item.receiptItem);
+          setSelectedItem(item.groceryItem);
+          setPrice(item.price.toFixed(2).toString());
+          setSplits(item.splits);
+        } else {
+          console.error('Item not found in receipt');
+        }
+
+        setGroceryListId(groceryListId);
+      });
+
+      return () => unsubscribeReceipt();
+    } catch (err) {
+      console.error("Error listening for receipt:", err);
+    }
+  }, [receiptId, itemId]);
+
+  useEffect(() => {
+    if (!groceryListId) return;
+
+    const unsubscribeItems = listenForGroceryItems(groceryListId, (items) => {
+      setGroceryItems(items);
     });
-  }, []);
+
+    return () => unsubscribeItems();
+  }, [groceryListId]);
 
   const toggleOption = (id: string) => {
     setSelectedItem(groceryItems[id].name);

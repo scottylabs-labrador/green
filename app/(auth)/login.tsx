@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
 import { useRouter } from 'expo-router';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { get, getDatabase, ref } from 'firebase/database';
 import {
   ImageBackground,
   KeyboardAvoidingView,
@@ -13,77 +11,67 @@ import {
   View,
 } from 'react-native';
 
-import { userSignIn } from '../../api/auth';
-import { getGroceryListId } from '../../api/grocerylist';
-import background from '../../assets/home-background.png';
-import BackButton from '../../components/BackButton';
-import Button from '../../components/CustomButton';
+import { getUserIdFromEmail, userSignIn } from '@/api/auth';
+import { getGroceryListId, getGroceryListIdFromHouse } from '@/api/grocerylist';
+import { getHouseId } from '@/api/house';
+import background from '@/assets/home-background.png';
+import BackButton from '@/components/BackButton';
+import Button from '@/components/CustomButton';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Login() {
+  const router = useRouter();
+  const { user } = useAuth();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorText, setErrorText] = useState('');
 
-  const router = useRouter();
-  const auth = getAuth();
-  const db = getDatabase();
-
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async user => {
+    const checkUser = async () => {
       if (user && user.email) {
-        console.log('User signed in:', user.email);
         try {
-          const groceryListId = await getGroceryListId(user.email);
+          const userId = getUserIdFromEmail(user.email);
+          const groceryListId = await getGroceryListId(userId);
           router.replace({ pathname: '/list', params: { grocerylist: groceryListId } });
         } catch (err) {
-          console.error('Error when redirecting to grocery list:', err);
-          router.push('/choosehouse');
+          console.error('Error checking user grocery list:', err);
+          router.replace('/choosehouse');
         }
       }
-    });
+    }
 
-    return () => unsubscribe();
-  }, []);
+    checkUser();
+  }, [user]);
 
   const handleLogin = async () => {
     try {
       await userSignIn(email, password);
+    } catch (err) {
+      console.log('Login error:', err);
+      setErrorText('Invalid email or password.');
+      return;
+    }
 
-      const emailKey = email.replace(/\./g, ':'); // Replace dots with colons
-      const houseRef = ref(db, `housemates/${emailKey}`);
-      const houseSnap = await get(houseRef);
+    try {
+      const userId = getUserIdFromEmail(email);
+      const houseId = await getHouseId(userId);
 
-      if (!houseSnap.exists()) {
-        console.log('No house data found, redirecting...');
+      if (!houseId) {
         router.push('/choosehouse');
         return;
       }
 
-      const houses = houseSnap.val().houses;
-      if (!houses || houses.length === 0) {
-        console.log('No houses array in data');
-        router.push('/choosehouse');
-        return;
-      }
-
-      const houseId = houses[0];
-      const houseDataSnap = await get(ref(db, `houses/${houseId}`));
-
-      if (!houseDataSnap.exists()) {
-        console.log('House data not found');
-        router.push('/choosehouse');
-        return;
-      }
-
-      const grocerylist = houseDataSnap.val().grocerylist;
-      if (grocerylist) {
-        router.push({ pathname: '/list', params: { grocerylist } });
+      const groceryListId = await getGroceryListIdFromHouse(houseId);
+      if (groceryListId) {
+        router.push({ pathname: '/list', params: { grocerylist: groceryListId } });
       } else {
         router.push('/choosehouse');
       }
     } catch (err) {
-      console.log('Login error:', err);
-      setErrorText('Invalid email or password.');
+      console.log('Error while redirecting:', err);
+      router.push('/choosehouse');
+      return;
     }
   };
 

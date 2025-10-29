@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from 'react';
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { getDatabase, onValue, ref } from 'firebase/database';
 import { Text, View } from 'react-native';
 
-import { getCurrentUser, getUserIdFromEmail, onAuthChange } from '../../api/auth';
-import { joinHouseWithInvite } from '../../api/house';
-import ColorPicker from '../../components/ColorPicker';
-import CustomButton from '../../components/CustomButton';
-import Loading from '../../components/Loading';
+import { getUserIdFromEmail } from '@/api/auth';
+import { joinHouseWithInvite, listenForHouseInfo } from '@/api/house';
+import ColorPicker from '@/components/ColorPicker';
+import CustomButton from '@/components/CustomButton';
+import Loading from '@/components/Loading';
+import { useAuth } from '@/context/AuthContext';
 
 export default function JoinHouse() {
+  const router = useRouter();
+  const { user } = useAuth();
+
   const { key } = useLocalSearchParams<{ key: string }>();
 
-  const db = getDatabase();
   const [color, setColor] = useState('#ca3a31');
   const [houseName, setHouseName] = useState('');
   const [userId, setUserId] = useState('');
@@ -21,40 +23,43 @@ export default function JoinHouse() {
   const [loading, setLoading] = useState(true);
   const [loadingAddMember, setLoadingAddMember] = useState(false);
   const [error, setError] = useState('');
-  const router = useRouter();
 
   useEffect(() => {
-    const getuser = onAuthChange(user => {
-      if (user) {
-        let email = getCurrentUser()?.email || '';
-        let userId = getUserIdFromEmail(email);
-        setUserId(userId);
-      } else {
-        console.log('no user');
-        router.replace('/login'); // Redirect if not logged in
+    const fetchUserId = async () => {
+      try {
+        if (user && user.email) {
+          setUserId(getUserIdFromEmail(user.email));
+        } else {
+          router.replace('/login');
+        }
+      } catch (err) {
+        console.error("Error while fetching user id:", err);
       }
-    });
+    }
 
-    return () => getuser();
-  }, []);
+    fetchUserId();
+  }, [user]);
 
   // Get house information using house ID (key)
   useEffect(() => {
     if (!key) return;
 
-    const houseRef = ref(db, 'houses/' + key);
-    const unsubscribe = onValue(houseRef, snapshot => {
-      const data = snapshot.val();
-      if (data?.name) {
-        setHouseName(data.name);
-      }
-      if (data?.grocerylist) {
-        setGroceryListId(data.grocerylist);
-      }
-      setLoading(false);
-    });
+    try {
+      const unsubscribe = listenForHouseInfo(key, (house) => {
+        if (house.name) {
+          setHouseName(house.name);
+        }
+        if (house.grocerylist) {
+          setGroceryListId(house.grocerylist);
+        }
 
-    return () => unsubscribe();
+        setLoading(false);
+      });
+
+      return () => unsubscribe();
+    } catch (err) {
+      console.error("Error listening for house info:", err);
+    }
   }, [key]);
 
   async function addMember() {

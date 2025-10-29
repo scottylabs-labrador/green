@@ -11,11 +11,13 @@ export interface ReceiptRecordInHouse {
   date: string;
 }
 
+export type ReceiptRecordsInHouse = Record<string, ReceiptRecordInHouse>;
+
 export interface House {
   name: string;
   members: Members;
   grocerylist: string;
-  receipts: Record<string, ReceiptRecordInHouse>;
+  receipts: ReceiptRecordsInHouse;
   invite: string;
 }
 

@@ -1,96 +1,101 @@
 import React, { useEffect, useState } from 'react';
 
+import type { GroceryItems } from '@db/types';
 import { Ionicons } from '@expo/vector-icons';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getDatabase, onValue, ref } from 'firebase/database';
 import { FlatList, Image, ListRenderItemInfo, Modal, NativeSyntheticEvent, Pressable, Text, TextInput, TextInputKeyPressEventData, View } from 'react-native';
 
-import { onAuthChange } from '../../api/auth';
-import { getGroceryListId, writeGroceryItem } from '../../api/grocerylist';
+import { getUserIdFromEmail } from '@/api/auth';
+import { getGroceryListId, listenForGroceryItems, writeGroceryItem } from '@/api/grocerylist';
+import { getHouseId, listenForHouseInfo } from '@/api/house';
+import Button from '@/components/CustomButton';
+import GroceryItem from '@/components/GroceryItem';
+import { useAuth } from '@/context/AuthContext';
+
 import emptyList from '../../assets/empty-list.png';
-import Button from '../../components/CustomButton';
-import GroceryItem from '../../components/GroceryItem';
-import type { GroceryItems } from '../../db/types';
 
 export default function List() {
   const router = useRouter();
+  const { user } = useAuth();
   const { grocerylist } = useLocalSearchParams<{ grocerylist: string }>();
-
-  const isValid = typeof grocerylist === 'string' && grocerylist.trim() !== '';
-  if (!isValid) {
-    const auth = getAuth();
-    onAuthStateChanged(auth, async user => {
-      if (user && user.email) {
-        const groceryListId = await getGroceryListId(user.email);
-        router.replace({ pathname: '/list', params: { grocerylist: groceryListId } });
-      }
-    });
-  }
 
   const [groceryItems, setGroceryItems] = useState<GroceryItems>({});
   const [modalVisible, setModalVisible] = useState(false);
   const [item, setItem] = useState('');
-  const [email, setEmail] = useState('email');
+  const [userId, setUserId] = useState('');
   const [colors, setColors] = useState({});
   const [houseId, setHouseId] = useState('');
   const [houseName, setHouseName] = useState('');
-  const [date, setDate] = useState('');
 
-  const db = getDatabase();
+  const currentDate = new Date();
+  const month = String(currentDate.getMonth() + 1);
+  const day = String(currentDate.getDate());
+  const year = String(currentDate.getFullYear()).slice(-2);
+  const date = `${month}.${day}.${year}`;
 
   useEffect(() => {
-    const unsubscribeAuth = onAuthChange(user => {
-      if (user) {
-        const email = user.email || '';
-        const filteredEmail = email.split('.').join(':');
-        setEmail(filteredEmail);
+    const getGroceryList = async () => {
+      const isValid = typeof grocerylist === 'string' && grocerylist.trim() !== '';
 
-        const itemRef = ref(db, 'housemates/' + filteredEmail);
-        onValue(itemRef, snapshot => {
-          const data = snapshot.val();
-          if (data?.houses?.[0]) {
-            const houses = data.houses[0].toString();
-            setHouseId(houses);
-
-            const houseRef = ref(db, 'houses/' + houses);
-            onValue(houseRef, snapshot => {
-              const data = snapshot.val();
-              if (data) {
-                setColors(data.members || {});
-                setHouseName(data.name || '');
-              }
-            });
-          }
-        });
-      } else {
-        // Redirect to login if no user found
+      if (!isValid && user && user.email) {
+        try {
+          const groceryListId = await getGroceryListId(getUserIdFromEmail(user.email));
+          router.replace({ pathname: '/list', params: { grocerylist: groceryListId } });
+        } catch (err) {
+          console.error("Error fetching grocery list ID:", err);
+        }
+      } else if (!user || !user.email) {
         router.replace('/login');
       }
-    });
+    };
 
-    return () => unsubscribeAuth();
-  }, [db, router]);
+    getGroceryList();
+  }, [grocerylist, router, user]);
+
+  useEffect(() => {
+    const fetchHouseId = async () => {
+      if (user && user.email) {
+        const userId = getUserIdFromEmail(user.email);
+        setUserId(userId);
+
+        try {
+          const id = await getHouseId(userId);
+          setHouseId(id);
+        } catch (err) {
+          console.error("Error fetching house ID:", err);
+        }
+      } else {
+        router.replace('/login');
+      }
+    }
+
+    fetchHouseId();
+  }, [user]);
+
+  useEffect(() => {
+    if (!houseId) return;
+
+    try {
+      const unsubscribe = listenForHouseInfo(houseId, (house) => {
+        setHouseName(house.name || '');
+        setColors(house.members || {});
+      });
+
+      return () => unsubscribe();
+    } catch (err) {
+      console.error("Error listening for house info:", err);
+    }
+  }, [houseId]);
 
   useEffect(() => {
     if (!grocerylist) return;
 
-    const itemRef = ref(db, `grocerylists/${grocerylist}/groceryitems`);
-    const unsubscribeItems = onValue(itemRef, snapshot => {
-      const data = snapshot.val();
-      setGroceryItems(data || {});
+    const unsubscribeItems = listenForGroceryItems(grocerylist, (items) => {
+      setGroceryItems(items);
     });
 
     return () => unsubscribeItems();
-  }, [db, grocerylist]);
-
-  useEffect(() => {
-    const currentDate = new Date();
-    const month = String(currentDate.getMonth() + 1);
-    const day = String(currentDate.getDate());
-    const year = String(currentDate.getFullYear()).slice(-2);
-    setDate(`${month}.${day}.${year}`);
-  }, []);
+  }, [grocerylist]);
 
   const toggleModal = () => setModalVisible(!modalVisible);
 
@@ -102,14 +107,14 @@ export default function List() {
       name={groceryItems[item]?.name}
       quantity={groceryItems[item]?.quantity}
       splits={groceryItems[item]?.splits}
-      member={email}
+      member={userId}
       colors={colors}
     />
   );
 
   const writeItem = () => {
     if (!item.trim()) return;
-    writeGroceryItem(grocerylist, item, email);
+    writeGroceryItem(grocerylist, item, userId);
     setItem('');
     toggleModal();
   };

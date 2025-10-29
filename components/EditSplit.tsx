@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 
+import type { Members, Splits } from '@db/types';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { FlatList, ListRenderItemInfo, Modal, Pressable, Text, View } from 'react-native';
-
-import type { Members, Splits } from '../backend/functions/src/db/types';
 
 import Button from './CustomButton';
 

@@ -1,10 +1,10 @@
 import React from 'react';
 
+import type { Members, Splits } from '@db/types';
 import { Ionicons } from '@expo/vector-icons';
 import { FlatList, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
 
 import { updateGroceryItem } from '../api/grocerylist';
-import type { Members, Splits } from '../db/types';
 
 import SplitProfile from './SplitProfile';
 

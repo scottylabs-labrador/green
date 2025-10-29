@@ -1,40 +1,36 @@
 import React, { useEffect, useState } from 'react';
 
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { get, getDatabase, ref } from 'firebase/database';
-import { FlatList, Image, Text, View } from 'react-native';
+import { ReceiptRecordsInHouse } from '@db/types';
+import { useLocalSearchParams } from 'expo-router';
+import { FlatList, Image, ListRenderItemInfo, Text, View } from 'react-native';
+
+import { listenForHouseInfo } from '@/api/house';
 
 import emptyList from '../../assets/empty-list.png';
 import PastList from '../../components/PastList';
 
 export default function PastLists() {
-  const router = useRouter();
+  const { houseId } = useLocalSearchParams<{ houseId: string }>();
 
-  const { houseId } = useLocalSearchParams();
-
-  const [pastLists, setPastLists] = useState({});
-  const [houseName, setHouseName] = useState('Your House');
-  const db = getDatabase();
+  const [pastLists, setPastLists] = useState<ReceiptRecordsInHouse>({});
+  const [houseName, setHouseName] = useState("");
 
   useEffect(() => {
-    const fetchData = () => {
-      const receiptRef = ref(db, 'houses/' + houseId);
-      get(receiptRef).then(snapshot => {
-        const data = snapshot.val();
-        if (data) {
-          if (data.receipts) {
-            setPastLists(data.receipts);
-          }
-          if (data.name) {
-            setHouseName(data.name);
-          }
-        }
+    if (!houseId) return;
+    
+    try {
+      const unsubscribe = listenForHouseInfo(houseId, (house) => {
+        setPastLists(house.receipts || {});
+        setHouseName(house.name || "");
       });
-    };
-    fetchData();
-  }, [db]);
 
-  const renderItem = ({ item }) => {
+      return () => unsubscribe();
+    } catch (err) {
+      console.error("Error listening for house info:", err);
+    }
+  }, [houseId]);
+
+  const renderItem = ({ item }: ListRenderItemInfo<string>) => {
     return <PastList key={item} receiptId={item} date={pastLists[item].date} />;
   };
 

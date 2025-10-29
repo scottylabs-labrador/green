@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 
+import type { Members } from '@db/types';
 import { Ionicons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { FlatList, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
 
-import type { Members } from '../db/types';
+import { getEmailFromUserId } from '@/api/auth';
 
 import EditHouse from './EditHouse';
 import InviteCode from './InviteCode';
@@ -18,7 +19,6 @@ type HouseInfoProps = {
 };
 
 const HouseInfo = ({ name, houseid, members, onNameChange }: HouseInfoProps) => {
-
   const [showInfo, setShowInfo] = useState(false);
   const handlePress = () => {
     setShowInfo(!showInfo);
@@ -41,7 +41,7 @@ const HouseInfo = ({ name, houseid, members, onNameChange }: HouseInfoProps) => 
       <View className="w-full flex-row items-center justify-center self-center py-1">
         <Text className="w-1/3 grow self-center text-left">{members[item].name}</Text>
         <Text className="w-2/3 grow self-center text-right text-xs text-gray-500">
-          {item.replaceAll(':', '.')}
+          {getEmailFromUserId(item)}
         </Text>
       </View>
     );

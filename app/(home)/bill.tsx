@@ -1,94 +1,92 @@
 import React, { useEffect, useState } from 'react';
 
+import type { ReceiptItems } from '@db/types';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Link, useLocalSearchParams } from 'expo-router';
-import { onValue, ref } from 'firebase/database';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { FlatList, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
 
-import { getCurrentUser } from '../../api/auth';
-import { db } from '../../api/firebase';
+import { getHouseId, listenForHouseInfo } from '@/api/house';
+import { listenForReceipt } from '@/api/receipt';
+import { useAuth } from '@/context/AuthContext';
+
+import { getUserIdFromEmail } from '../../api/auth';
 import ReceiptItem from '../../components/ReceiptItem';
-import type { ReceiptItems } from '../../db/types';
 
 export default function Bill() {
+  const router = useRouter();
+  const { user } = useAuth();
+
   const { receiptId } = useLocalSearchParams<{ receiptId: string }>();
 
+  const [houseId, setHouseId] = useState('');
   const [matchedItems, setMatchedItems] = useState<ReceiptItems>({});
   const [unmatchedItems, setUnmatchedItems] = useState<ReceiptItems>({});
   const [createDate, setCreateDate] = useState('');
   const [colors, setColors] = useState({});
 
   useEffect(() => {
+    const fetchHouseId = async () => {
+      try {
+        if (user && user.email) {
+          const userId = getUserIdFromEmail(user.email);
+          setHouseId(await getHouseId(userId)); 
+        } else {
+          router.replace('/login');
+        }
+      } catch (err) {
+        console.error("Error while fetching house id:", err);
+      }
+    };
+
+    fetchHouseId();
+  }, [user, router]);
+
+  useEffect(() => {
+    if (!houseId) {
+      return;
+    }
+
+    try {
+      const unsubscribeColors = listenForHouseInfo(houseId, (house) => {
+        setColors(house.members || {});
+      });
+
+      return () => unsubscribeColors();
+    } catch (err) {
+      console.error("Error listening for house info:", err);
+    }
+
+  }, [houseId]);
+
+  useEffect(() => {
     if (!receiptId) return;
-    
-    // Listen for receipt + receiptitems updates
-    const receiptRef = ref(db, `receipts/${receiptId}`);
-    const unsubscribeReceipt = onValue(receiptRef, snapshot => {
-      const data = snapshot.val();
-      if (!data) return;
 
-      // Separate matched vs unmatched items
-      const matched: ReceiptItems = {};
-      const unmatched: ReceiptItems = {};
+    try {
+      const unsubscribeReceipt = listenForReceipt(receiptId, (receipt) => {
+        const receiptItems = receipt.receiptitems || {};
+        const date = receipt.date || new Date().toLocaleDateString();
 
-      if (data.receiptitems) {
-        for (const key of Object.keys(data.receiptitems)) {
-          const item = data.receiptitems[key];
+        const matched: ReceiptItems = {};
+        const unmatched: ReceiptItems = {};
+
+        for (const key of Object.keys(receiptItems)) {
+          const item = receiptItems[key];
           if (item.groceryItem?.length === 0) unmatched[key] = item;
           else matched[key] = item;
         }
-      }
 
-      setMatchedItems(matched);
-      setUnmatchedItems(unmatched);
+        setMatchedItems(matched);
+        setUnmatchedItems(unmatched);
 
-      // Date formatting
-      const date =
-        data.date ??
-        new Date().toLocaleDateString(undefined, {
-          month: 'numeric',
-          day: 'numeric',
-          year: '2-digit',
-        });
-
-      const [month, day, year] = date.split(/[./-]/);
-      setCreateDate(`${month}.${day}.${year}`);
-    });
-
-    // Get housemates' colors
-    const email = getCurrentUser()?.email || '';
-    if (!email) return;
-
-    const filteredEmail = email.split('.').join(':');
-    const userRef = ref(db, `housemates/${filteredEmail}`);
-
-    let unsubscribeColors: (() => void) | undefined;
-
-    const unsubscribeUser = onValue(userRef, snapshot => {
-      const userData = snapshot.val();
-      if (!userData?.houses?.length) return;
-
-      const houseId = userData.houses[0];
-      const houseRef = ref(db, `houses/${houseId}`);
-
-      // Remove old listener if we switch houses
-      if (unsubscribeColors) unsubscribeColors();
-
-      unsubscribeColors = onValue(houseRef, houseSnap => {
-        const houseData = houseSnap.val();
-        if (houseData?.members) {
-          setColors(houseData.members);
-        }
+        const [month, day, year] = date.split(/[./-]/);
+        setCreateDate(`${month}.${day}.${year}`);
       });
-    });
 
-    // Cleanup all listeners when unmounting
-    return () => {
-      unsubscribeReceipt();
-      unsubscribeUser();
-      if (unsubscribeColors) unsubscribeColors();
-    };
-  }, [db, receiptId]);
+      return () => unsubscribeReceipt();
+    } catch (err) {
+      console.error("Error listening for receipt:", err);
+    }
+  }, [receiptId]);
 
   const renderMatchedItem = ({ item }: ListRenderItemInfo<string>) => {
     return (
@@ -145,7 +143,9 @@ export default function Bill() {
             <Text className="text-1xl grow text-left font-light text-white">
               Cross-referenced with list {createDate}
             </Text>
-            <Text className="text-1xl text-right font-light text-white">Change</Text>
+            <Link href={{ pathname: '/pastlists', params: { houseId: houseId } }} asChild>
+              <Text className="text-1xl text-right font-light text-white underline">Change</Text>
+            </Link>
           </View>
         </View>
         <View className="h-[200px] w-full flex-grow self-end overflow-hidden rounded-t-[40px] bg-white pt-6">
