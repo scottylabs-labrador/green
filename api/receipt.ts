@@ -1,4 +1,4 @@
-import { GroceryItems, Receipt, ReceiptItem, ReceiptItems, Splits } from '@db/types';
+import { GroceryItem, GroceryItems, Receipt, ReceiptItems, Splits } from '@db/types';
 import { onValue, ref } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
 import Fuse from 'fuse.js';
@@ -10,58 +10,49 @@ export const matchWords = (
   receiptItems: Record<string, string>,
   groceryItems: GroceryItems,
   threshold = 0.3,
-) => {
-  let groceryItemNames = [];
-  let groceryItemsArray = [];
+): ReceiptItems => {
+  console.log("match words");
+  const groceryItemsArray = Object.values(groceryItems);
+  const fuse = new Fuse<GroceryItem>(groceryItemsArray, {
+    keys: ['name'],
+    threshold,
+  });
 
-  for (const itemId in groceryItems) {
-    const item = groceryItems[itemId];
-    groceryItemNames.push(item.name);
-    groceryItemsArray.push(item);
-  }
+  const usedWords = new Set<string>();
 
-  const fuse = new Fuse(groceryItemNames, { threshold });
-  const usedWords = new Set();
-
-  let listOfItems = Object.keys(receiptItems).map(word => {
+  // Match receipt items to grocery items
+  const matchedList = Object.keys(receiptItems).map((word) => {
     const results = fuse.search(word);
-    const bestMatch = results.find(r => !usedWords.has(r.item));
+    const bestMatch = results.find(r => !usedWords.has(r.item.name));
 
     if (bestMatch) {
-      usedWords.add(bestMatch.item);
-      let splits: Splits = {};
-      for (let i = 0; i < groceryItemsArray.length; i++) {
-        if (groceryItemsArray[i].name == bestMatch.item) {
-          splits = groceryItemsArray[i].splits;
-        }
-      }
+      usedWords.add(bestMatch.item.name);
       return {
         receiptItem: word,
-        groceryItem: bestMatch.item,
+        groceryItem: bestMatch.item.name,
         price: parseFloat(receiptItems[word]),
-        splits: splits,
-      }; // word is from the receiptItems, bestMatch is from groceryListItems
+        splits: bestMatch.item.splits,
+      };
     }
-    let splits: Splits = {};
-    splits[userId] = 1;
-    return { 
-      receiptItem: word, 
-      groceryItem: '', 
-      price: parseFloat(receiptItems[word]), 
-      splits: splits 
+
+    // Handle unmatched items
+    const splits: Splits = { [userId]: 1 };
+    return {
+      receiptItem: word,
+      groceryItem: '',
+      price: parseFloat(receiptItems[word]),
+      splits,
     };
   });
 
-  return listOfItems.reduce((obj: ReceiptItems, item: ReceiptItem) => {
-    let itemId = window.crypto.randomUUID();
-    obj[itemId] = item;
-    return obj;
-  }, {});
+  const finalReceiptItems: ReceiptItems = {};
+  for (const item of matchedList) {
+    const itemId = crypto.randomUUID();
+    finalReceiptItems[itemId] = item;
+  }
+
+  return finalReceiptItems;
 };
-
-// https://chatgpt.com/c/67b11891-1e2c-8009-86bf-ee0c7c6b02a8
-
-// matchWords(["apple", "banana", "cherry"], ["aple", "banana", "cherry"])
 
 export async function writeReceipt(
   receiptId: string,
