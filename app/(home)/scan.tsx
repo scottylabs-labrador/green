@@ -1,105 +1,89 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { GroceryItems } from '@db/types';
+import { FontAwesome6 } from '@expo/vector-icons';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
-import { child, get, getDatabase, ref } from 'firebase/database';
-import { Button, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 
-import { onAuthChange } from '../../api/auth';
-import { getCurrentUser } from '../../api/firebase';
-import { writeMatches } from '../../api/receipt';
-import { matchWords } from '../../api/receipt';
+import { getGroceryListIdFromHouse, listenForGroceryItems } from '@/api/grocerylist';
+import { getHouseId } from '@/api/house';
+import { matchWords, writeReceipt } from '@/api/receipt';
+import Button from '@/components/CustomButton';
+import Loading from '@/components/Loading';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Page() {
-  const [email, setEmail] = useState('');
+  const router = useRouter();
+  const { user } = useAuth();
+  
+  const [userId, setUserId] = useState('');
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
-  const [imageUri, setImageUri] = useState(null);
-  const cameraRef = useRef(null);
-  const [receiptLines, setReceiptLines] = useState([]);
-  const [groceryItems, setGroceryItems] = useState([]);
-  const [groceryItemObjects, setGroceryItemObjects] = useState([]);
-  const [houseCode, setHouseCode] = useState('');
-  const db = getDatabase();
-  const router = useRouter();
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const cameraRef = useRef<CameraView>(null);
+  const [groceryListId, setGroceryListId] = useState('');
+  const [groceryItems, setGroceryItems] = useState<GroceryItems>({});
+  const [houseId, setHouseId] = useState('');
 
   let RECEIPT_API_URL = 'http://127.0.0.1:8000/receiptLines';
 
-  type groceryListType = {
-    name: String;
-    quantity: number;
-    splits: String[];
-  };
+  useEffect(() => {
+    const fetchHouseId = async () => {
+      try {
+        if (user && user.uid) {
+          setUserId(user.uid);
+          setHouseId(await getHouseId(user.uid));
+        } else {
+          router.replace('/login');
+        }
+      } catch (err) {
+        console.error("Error while fetching user ID:", err);
+      }
+    }
+
+    fetchHouseId();
+  }, [user, router]);
 
   useEffect(() => {
-    const getGroceryList = onAuthChange(user => {
-      if (user) {
-        let email = getCurrentUser().email;
-        var emailParts = email.split('.');
-        var filteredEmail = emailParts[0] + ':' + emailParts[1];
-        const dbRef = ref(db);
-        get(child(dbRef, `housemates/${filteredEmail}`))
-          .then(snapshot => {
-            if (snapshot.exists()) {
-              const data = snapshot.val();
-              // console.log("data for house:" + data.houses[0].toString());
-              let houses = data.houses[0].toString();
-              setHouseCode(houses);
-              const houseRef = child(dbRef, `houses/${houses}`);
-              return get(houseRef);
-            } else {
-              console.log('failed to get houses');
-              return Promise.reject('no house found');
-            }
-          })
-          .then(snapshot => {
-            if (snapshot.exists()) {
-              const data = snapshot.val();
-              // console.log("data for grocery lists:" + data.grocerylist);
-              let groceryList = data.grocerylist;
-              const itemRef = child(dbRef, `grocerylists/${groceryList}`);
-              return get(itemRef);
-            } else {
-              console.log('failed to get grocery list');
-              return Promise.reject('no grocery list');
-            }
-          })
-          .then(snapshot => {
-            if (snapshot.exists()) {
-              const data = snapshot.val();
-              // console.log("data for list items:" + JSON.stringify(data.groceryitems));
-              let items = [];
-              let itemObjects = [];
-              for (const [_, value] of Object.entries(data.groceryitems)) {
-                items.push((value as groceryListType).name);
-                itemObjects.push(value as groceryListType);
-              }
-              console.log('grocery items:', items);
-              setGroceryItems(items);
-              setGroceryItemObjects(itemObjects);
-            } else {
-              console.log('failed to get grocery items');
-            }
-          });
-      } else {
-        console.log('no user');
-        window.location.href = '/login'; // Redirect if not logged in
+    if (!houseId) {
+      return;
+    }
+
+    const fetchGroceryListId = async () => {
+      try {
+        setGroceryListId(await getGroceryListIdFromHouse(houseId));
+      } catch (err) {
+        console.error("Error fetching grocery list ID from house:", err);
       }
+    }
+
+    fetchGroceryListId();
+  }, [houseId]);
+
+  useEffect(() => {
+    if (!groceryListId) {
+      return;
+    }
+
+    const unsubscribeGroceryItems = listenForGroceryItems(groceryListId, (items) => {
+      setGroceryItems(items);
     });
-  }, []);
+
+    return () => unsubscribeGroceryItems();
+  }, [groceryListId])
 
   if (!permission) {
     // Camera permissions are still loading.
-    return <View />;
+    return <Loading message="Loading camera permissions..." />;
   }
 
   if (!permission.granted) {
     // Camera permissions are not granted yet.
     return (
-      <View style={styles.container}>
-        <Text style={styles.message}>We need your permission to show the camera</Text>
-        <Button onPress={requestPermission} title="grant permission" />
+      <View className="h-full w-full flex-1 justify-center items-center px-4 bg-gray-50">
+        <Text className="text-center pb-6">We need your permission to show the camera</Text>
+        <Button onPress={requestPermission} buttonLabel="Grant Permission" fontSize="text-sm" />
       </View>
     );
   }
@@ -128,26 +112,27 @@ export default function Page() {
           // receipt lines
           return response.json();
         })
-        .then(data => {
+        .then(async data => {
           console.log('data:', data);
           let receiptLines = JSON.parse(data).items;
           let receiptItems = matchWords(
-            getCurrentUser().email,
+            userId,
             receiptLines,
             groceryItems,
-            groceryItemObjects,
           );
           console.log(receiptItems);
-          const receiptId = window.crypto.randomUUID();
-          writeMatches(receiptId, houseCode, receiptItems);
-          router.replace({
-            pathname: '/bill',
-            params: { receiptId: receiptId },
-          });
-        });
-      // .then((receipt) => {
 
-      // })
+          try {
+            const receiptId = window.crypto.randomUUID();
+            await writeReceipt(receiptId, houseId, receiptItems, groceryListId);
+            router.replace({
+              pathname: '/bill',
+              params: { receiptId: receiptId },
+            });
+          } catch (err) {
+            console.error("Error while writing receipt:", err);
+          }
+        });
     }
   }
 
@@ -159,7 +144,7 @@ export default function Page() {
         <View className="h-full w-full">
           <CameraView ref={cameraRef} className="flex-1" facing={facing}>
             <View className="m-6 flex-1 flex-row justify-center">
-              <Text className="font-medium text-white">
+              <Text className="h-fit font-medium text-white">
                 Make sure receipt is flat and lighting is good
               </Text>
             </View>
@@ -186,35 +171,3 @@ export default function Page() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  message: {
-    textAlign: 'center',
-    paddingBottom: 10,
-  },
-  camera: {
-    flex: 1,
-  },
-  buttonContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: 'transparent',
-    margin: 64,
-  },
-  button: {
-    flex: 1,
-    alignSelf: 'flex-end',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    // borderRadius: '50%'
-  },
-  text: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-});

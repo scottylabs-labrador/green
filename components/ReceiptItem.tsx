@@ -1,10 +1,9 @@
 import React from 'react';
 
+import type { Members, Splits } from '@db/types';
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { FlatList, ListRenderItemInfo, Text, View } from 'react-native';
-
-import type { Members, Splits } from '../db/types';
 
 import SplitProfile from './SplitProfile';
 

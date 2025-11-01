@@ -1,13 +1,32 @@
-import { get, ref } from 'firebase/database';
+import { House } from '@db/types';
+import { get, onValue, ref } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
 
 import { db, functions } from './firebase';
 
 export async function createInviteCode(houseId: string) {
-  const fn = httpsCallable<{ houseId: string }, { token: string }>(functions, 'createInviteCode');
+  const existingInviteRef = ref(db, `houses/${houseId}/invite`);
+  const existingInviteSnap = await get(existingInviteRef);
 
-  const result = await fn({ houseId });
-  return result.data.token;
+  // Generate new invite if none has been generated
+  if (!existingInviteSnap.exists) {
+    const fn = httpsCallable<{ houseId: string }, { token: string }>(functions, 'createInviteCode');
+    const result = await fn({ houseId });
+    return result.data.token;
+  }
+
+  const existingInvite = existingInviteSnap.val();
+  const inviteRef = ref(db, `invites/${existingInvite}`);
+  const inviteSnap = await get(inviteRef);
+
+  // Generate new invite if last has expired
+  if (!inviteSnap.exists() || inviteSnap.val().expiresAt < Date.now()) {
+    const fn = httpsCallable<{ houseId: string }, { token: string }>(functions, 'createInviteCode');
+    const result = await fn({ houseId });
+    return result.data.token;
+  }
+
+  return existingInvite;
 }
 
 export async function getHouseIdFromInvite(inviteToken: string): Promise<string> {
@@ -46,15 +65,43 @@ export async function joinHouseWithInvite(houseId: string, userId: string, color
   await fn({ houseId, userId, color, houses, name });
 }
 
+export async function getHouseId(userId: string) {
+  const housemateRef = ref(db, `housemates/${userId}/houses`);
+  const snap = await get(housemateRef);
+
+  if (snap.exists()) {
+    const houses: string[] = snap.val();
+    if (houses.length > 0) return houses[0]; // Return the first house ID
+  }
+
+  throw new Error('No house found');
+}
+
 export async function getHouseNameFromId(houseId: string) {
-  const houseRef = ref(db, `house/${houseId}/name`);
+  const houseRef = ref(db, `houses/${houseId}/name`);
   const snap = await get(houseRef);
 
   if (snap.exists()) {
     return snap.val();
   }
 
-  return '';
+  throw new Error('No house found');
+}
+
+export function listenForHouseInfo(houseId: string, callback: (house: House) => void) {
+  const houseRef = ref(db, `houses/${houseId}`);
+
+  const unsubscribe = onValue(houseRef, snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      callback(data);
+    } else {
+      console.log("no house found for id:", houseId);
+      throw new Error('No house found');
+    }
+  });
+
+  return unsubscribe;
 }
 
 export async function writeHouse(name: string, houseId: string, groceryListId: string) {
@@ -65,4 +112,13 @@ export async function writeHouse(name: string, houseId: string, groceryListId: s
   }, null>(functions, 'writeHouse');
 
   await fn({ name, houseId, groceryListId });
+}
+
+export async function updateHouseName(name: string, houseId: string) {
+  const fn = httpsCallable<{ 
+    name: string, 
+    houseId: string, 
+  }, null>(functions, 'updateHouseName');
+
+  await fn({ name, houseId });
 }

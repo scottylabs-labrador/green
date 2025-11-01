@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useRouter } from 'expo-router';
 import {
@@ -11,121 +11,152 @@ import {
   View,
 } from 'react-native';
 
-import { createUser } from '../../api/firebase';
-import background from '../../assets/home-background.png';
-import BackButton from '../../components/BackButton';
-import Button from '../../components/CustomButton';
+import { createUser } from '@/api/auth';
+import { getGroceryListIdFromHouse } from '@/api/grocerylist';
+import { getHouseId } from '@/api/house';
+import background from '@/assets/home-background.png';
+import Button from '@/components/CustomButton';
+import { useAuth } from '@/context/AuthContext';
 
-async function handleSubmit(
-  email: string,
-  password: string,
-  confirmPassword: string,
-  name: string,
-  phoneNumber: string,
-) {
-  // check that all fields are filled
-  if (!email || !password || !confirmPassword || !name) {
-    return 'Please fill missing fields.';
-  }
+export default function SignUp() {
+  const router = useRouter();
+  const { user } = useAuth();
 
-  if (phoneNumber.length != 10) {
-    return 'Invalid phone number.';
-  }
-
-  // check password is minimum length
-  if (password.length < 6) {
-    return 'Password must be at least 6 characters.';
-  }
-
-  // check that passwords match on register
-  if (password !== confirmPassword) {
-    return 'Passwords do not match.';
-  }
-
-  // handle signup/login
-  if (password === confirmPassword) {
-    try {
-      await createUser(name, phoneNumber, email, password);
-
-      return '';
-    } catch (err) {
-      return 'Unable to create user. Please try again.';
-    }
-  }
-}
-
-export default function SignUp({ route, navigation, ...props }) {
   const [name, onChangeName] = useState('');
   const [phoneNumber, onChangePhoneNumber] = useState('');
   const [email, onChangeEmail] = useState('');
   const [password, onChangePassword] = useState('');
   const [confirmPassword, onChangeConfirmPassword] = useState('');
-  const [errorText, onChangeErrorText] = useState('');
-  const router = useRouter();
+  const [errorText, setErrorText] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        if (!user?.uid) {
+          return;
+        }
+  
+        const houseId = await getHouseId(user.uid);
+  
+        if (!houseId) {
+          router.push('/choosehouse');
+          return;
+        }
+  
+        const groceryListId = await getGroceryListIdFromHouse(houseId);
+        if (groceryListId) {
+          router.push({ pathname: '/list', params: { grocerylist: groceryListId } });
+        } else {
+          router.push('/choosehouse');
+        }
+      } catch (err) {
+        console.log('Error while redirecting:', err);
+        router.push('/choosehouse');
+      }
+    }
+
+    checkUser();
+  }, [user]);
+
+  const handleSubmit = async () => {
+    setLoading(true);
+  
+    // check that passwords match on register
+    if (password !== confirmPassword) {
+      setErrorText('Passwords do not match.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await createUser(name, phoneNumber, email, password);
+      router.push('/choosehouse');
+    } catch (err) {
+      if (err instanceof Error) {
+        setErrorText(err.message);
+      }
+      setLoading(false);
+    }
+  }
 
   return (
-    <ImageBackground source={background} resizeMode="cover">
+    <ImageBackground 
+      source={background}
+      className={`flex-1 bg-white h-screen w-screen overflow-hidden`}
+      imageStyle={{ opacity: 0.5 }}
+      resizeMode="stretch"
+    >
       <KeyboardAvoidingView
-        className="padding-24 w-full flex-1"
+        className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView>
-          <View className="mx-auto mt-20 w-9/12 max-w-6xl flex-1 justify-center">
-            <Text className="justify-left mb-9 text-4xl font-semibold">Registration</Text>
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: 'center',
+            paddingVertical: 64,
+          }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View className="mx-auto w-9/12 max-w-6xl">
+            <Text className="mb-7 text-4xl font-semibold">Registration</Text>
+
             <Text className="mb-2">Name</Text>
             <TextInput
-              className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 align-middle text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+              className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
               onChangeText={onChangeName}
               value={name}
             />
+
             <Text className="mb-2">Phone Number</Text>
             <TextInput
-              className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 align-middle text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+              className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
               onChangeText={onChangePhoneNumber}
               value={phoneNumber}
             />
+
             <Text className="mb-2">Email</Text>
             <TextInput
-              className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 align-middle text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+              className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
               onChangeText={onChangeEmail}
               value={email}
             />
+
             <Text className="mb-2">Password</Text>
             <TextInput
-              className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 align-middle text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+              className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
               onChangeText={onChangePassword}
-              secureTextEntry={true}
+              secureTextEntry
               value={password}
             />
+
             <Text className="mb-2">Confirm Password</Text>
             <TextInput
-              className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 align-middle text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+              className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
               onChangeText={onChangeConfirmPassword}
-              secureTextEntry={true}
+              secureTextEntry
               value={confirmPassword}
             />
-            <Text className="text-red-500">{errorText}</Text>
+
+            <Text className="text-red-500 mb-4">{errorText}</Text>
+
             <Button
               buttonLabel="Sign Up"
-              onPress={async () => {
-                // writeUserData(name, email, phoneNumber);
-                const result = await handleSubmit(
-                  email,
-                  password,
-                  confirmPassword,
-                  name,
-                  phoneNumber,
-                );
+              onPress={() => handleSubmit()}
+              isLoading={loading}
+            />
 
-                if (result === '') {
-                  router.push('/choosehouse');
-                } else {
-                  onChangeErrorText(result);
-                }
-              }}
-            ></Button>
+            <Text className="text-center">
+              Already have an account?{' '}
+              <Text
+                className="text-blue-500 font-medium"
+                onPress={() => router.push('/login')}
+              >
+                Log in
+              </Text>
+            </Text>
           </View>
-          <BackButton />
         </ScrollView>
       </KeyboardAvoidingView>
     </ImageBackground>

@@ -9,21 +9,29 @@ import CustomButton from '../../components/CustomButton';
 
 export default function CreateHouse() {
   const [name, onChangeName] = useState('');
-  const [code, onChangeCode] = useState('');
-  const [userid, setUserId] = useState('');
-  const [username, setUserName] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  async function changetojoin(name: string) {
+  async function redirectToJoin(name: string) {
     const housecode = window.crypto.randomUUID();
     const grocerylist = window.crypto.randomUUID();
-    // const id: {"name":string, "color": string, "userid": string} = {"name": username, "color": "N/A", "userid": userid};
-    await writeHouse(name, housecode, grocerylist);
-    await writeGroceryList(grocerylist, name);
 
-    router.push({
-      pathname: '/joinhouse',
-      params: { key: housecode },
-    });
+    setLoading(true);
+
+    try {
+      await writeHouse(name, housecode, grocerylist);
+      await writeGroceryList(grocerylist, name);
+      router.push({
+        pathname: '/joinhouse',
+        params: { key: housecode },
+      });
+    } catch (err) {
+      setLoading(false);
+      if (err instanceof Error) {
+        setError(err.message);
+      }
+      console.error("Error while creating house:", err);
+    }
   }
 
   return (
@@ -36,13 +44,12 @@ export default function CreateHouse() {
           onChangeText={onChangeName}
           value={name}
         />
-        {/* <TouchableOpacity 
-                className="bg-gray-500 hover:bg-gray-600 mt-10 py-2.5 px-4 w-fit self-center rounded-lg"
-                onPress = {() => changetojoin(name)}
-                >
-                <Text className="text-white text-center self-center">Create House</Text>
-            </TouchableOpacity> */}
-        <CustomButton buttonLabel="Create House" onPress={() => changetojoin(name)}></CustomButton>
+        {error && 
+          <Text className="text-red-500 mb-4">
+            Error: {error}
+          </Text>
+        }
+        <CustomButton buttonLabel="Create House" onPress={() => redirectToJoin(name)} isLoading={loading}></CustomButton>
       </View>
     </View>
   );

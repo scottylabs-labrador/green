@@ -4,16 +4,12 @@ import { initializeApp } from 'firebase/app';
 import {
   browserLocalPersistence,
   connectAuthEmulator,
-  createUserWithEmailAndPassword,
   getReactNativePersistence,
   initializeAuth,
-  signInWithEmailAndPassword, signOut,
 } from 'firebase/auth';
-import { connectDatabaseEmulator, getDatabase, ref, set } from 'firebase/database';
+import { connectDatabaseEmulator, getDatabase } from 'firebase/database';
 import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
 import { Platform } from 'react-native';
-
-import * as schema from './classes';
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -46,40 +42,3 @@ if (__DEV__) {
 
 export { app, auth, db, functions };
 
-export function writeUserData(name: string, email: string, phone_number: string) {
-  const db = getDatabase();
-  const emailparts = email.split('.');
-  const filteredemail = emailparts[0] + ':' + emailparts[1];
-  const postListRef = ref(db, 'housemates/' + filteredemail);
-  const user = new schema.Housemate(email, name, email, phone_number);
-  set(postListRef, {
-    name: user.name,
-    email: user.email,
-    phone_number: user.phone_number,
-    houses: user.house_ids,
-  });
-}
-
-export async function createUser(
-  name: string,
-  phone_number: string,
-  email: string,
-  password: string,
-) {
-  return createUserWithEmailAndPassword(auth, email, password).then(() => {
-    writeUserData(name, email, phone_number);
-  });
-}
-
-export function userSignIn(email: string, password: string) {
-  return signInWithEmailAndPassword(auth, email, password);
-}
-
-export function userSignOut() {
-  return signOut(auth);
-}
-
-export function getCurrentUser() {
-  const user = auth.currentUser;
-  return user;
-}

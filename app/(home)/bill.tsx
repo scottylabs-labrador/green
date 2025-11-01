@@ -1,89 +1,90 @@
 import React, { useEffect, useState } from 'react';
 
+import type { ReceiptItems } from '@db/types';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Link, useLocalSearchParams } from 'expo-router';
-import { get, getDatabase, onValue, ref } from 'firebase/database';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { FlatList, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
 
-import { getCurrentUser } from '../../api/firebase';
+import { getHouseId, listenForHouseInfo } from '@/api/house';
+import { listenForReceipt } from '@/api/receipt';
+import { useAuth } from '@/context/AuthContext';
+
 import ReceiptItem from '../../components/ReceiptItem';
-import type { ReceiptItems } from '../../db/types';
 
 export default function Bill() {
+  const router = useRouter();
+  const { user } = useAuth();
+
   const { receiptId } = useLocalSearchParams<{ receiptId: string }>();
 
+  const [houseId, setHouseId] = useState('');
   const [matchedItems, setMatchedItems] = useState<ReceiptItems>({});
   const [unmatchedItems, setUnmatchedItems] = useState<ReceiptItems>({});
   const [createDate, setCreateDate] = useState('');
   const [colors, setColors] = useState({});
-  const db = getDatabase();
 
   useEffect(() => {
-    const fetchData = () => {
-      const receiptRef = ref(db, 'receipts/' + receiptId);
-      get(receiptRef).then(snapshot => {
-        const data = snapshot.val();
-        let unmatched: ReceiptItems = {};
-        let matched: ReceiptItems = {};
-        if (data && data.receiptitems) {
-          if (data.receiptitems) {
-            const receiptItems = data.receiptitems;
-            for (const key of Object.keys(receiptItems)) {
-              if (receiptItems[key].groceryItem.length == 0) {
-                unmatched[key] = receiptItems[key];
-              } else {
-                matched[key] = receiptItems[key];
-              }
-            }
-            setUnmatchedItems(unmatched);
-            setMatchedItems(matched);
-          }
-          if (data.date) {
-            let date = data.date;
-            let parts = date.split('/');
-            let year = parts[2].slice(-2);
-            date = `${parts[0]}.${parts[1]}.${year}`;
-            setCreateDate(date);
-          } else {
-            const currentDate = new Date();
-            let date = currentDate.toLocaleDateString();
-            let parts = date.split('/');
-            let year = parts[2].slice(-2);
-            date = `${parts[0]}.${parts[1]}.${year}`;
-            setCreateDate(date);
-          }
-        }
-      });
-
-      const email = getCurrentUser()?.email || '';
-      const filteredEmail = email.split('.').join(':');
+    const fetchHouseId = async () => {
       try {
-        const itemRef = ref(db, 'housemates/' + filteredEmail);
-        var houses;
-        onValue(itemRef, snapshot => {
-          try {
-            const data = snapshot.val();
-            houses = data.houses[0].toString();
-          } catch {
-            console.error('failed to get houses');
-          }
-        });
-        const houseRef = ref(db, 'houses/' + houses);
-        onValue(houseRef, snapshot => {
-          try {
-            const data = snapshot.val();
-            var members = data.members;
-            setColors(members);
-          } catch {
-            console.error('failed to get members from house');
-          }
-        });
-      } catch {
-        console.error('failed to get user');
+        if (user && user.uid) {
+          setHouseId(await getHouseId(user.uid)); 
+        } else {
+          router.replace('/login');
+        }
+      } catch (err) {
+        console.error("Error while fetching house id:", err);
       }
     };
-    fetchData();
-  }, [db]);
+
+    fetchHouseId();
+  }, [user, router]);
+
+  useEffect(() => {
+    if (!houseId) {
+      return;
+    }
+
+    try {
+      const unsubscribeColors = listenForHouseInfo(houseId, (house) => {
+        setColors(house.members || {});
+      });
+
+      return () => unsubscribeColors();
+    } catch (err) {
+      console.error("Error listening for house info:", err);
+    }
+
+  }, [houseId]);
+
+  useEffect(() => {
+    if (!receiptId) return;
+
+    try {
+      const unsubscribeReceipt = listenForReceipt(receiptId, (receipt) => {
+        const receiptItems = receipt.receiptitems || {};
+        const date = receipt.date || new Date().toLocaleDateString();
+
+        const matched: ReceiptItems = {};
+        const unmatched: ReceiptItems = {};
+
+        for (const key of Object.keys(receiptItems)) {
+          const item = receiptItems[key];
+          if (item.groceryItem?.length === 0) unmatched[key] = item;
+          else matched[key] = item;
+        }
+
+        setMatchedItems(matched);
+        setUnmatchedItems(unmatched);
+
+        const [month, day, year] = date.split(/[./-]/);
+        setCreateDate(`${month}.${day}.${year}`);
+      });
+
+      return () => unsubscribeReceipt();
+    } catch (err) {
+      console.error("Error listening for receipt:", err);
+    }
+  }, [receiptId]);
 
   const renderMatchedItem = ({ item }: ListRenderItemInfo<string>) => {
     return (
@@ -106,7 +107,6 @@ export default function Bill() {
         key={item}
         id={item}
         name={unmatchedItems[item].receiptItem}
-        // quantity={matchedItems[item].quantity}
         price={unmatchedItems[item].price}
         matched={false}
         receiptId={receiptId}
@@ -141,7 +141,9 @@ export default function Bill() {
             <Text className="text-1xl grow text-left font-light text-white">
               Cross-referenced with list {createDate}
             </Text>
-            <Text className="text-1xl text-right font-light text-white">Change</Text>
+            <Link href={{ pathname: '/pastlists', params: { houseId: houseId } }} asChild>
+              <Text className="text-1xl text-right font-light text-white underline">Change</Text>
+            </Link>
           </View>
         </View>
         <View className="h-[200px] w-full flex-grow self-end overflow-hidden rounded-t-[40px] bg-white pt-6">

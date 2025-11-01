@@ -1,95 +1,99 @@
 import React, { useEffect, useState } from 'react';
 
+import type { GroceryItems } from '@db/types';
 import { Ionicons } from '@expo/vector-icons';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getDatabase, onValue, ref } from 'firebase/database';
 import { FlatList, Image, ListRenderItemInfo, Modal, NativeSyntheticEvent, Pressable, Text, TextInput, TextInputKeyPressEventData, View } from 'react-native';
 
-import { onAuthChange } from '../../api/auth';
-import { getGroceryListId, writeGroceryItem } from '../../api/grocerylist';
+import { getGroceryListId, listenForGroceryItems, writeGroceryItem } from '@/api/grocerylist';
+import { getHouseId, listenForHouseInfo } from '@/api/house';
+import Button from '@/components/CustomButton';
+import GroceryItem from '@/components/GroceryItem';
+import { useAuth } from '@/context/AuthContext';
+
 import emptyList from '../../assets/empty-list.png';
-import GroceryItem from '../../components/GroceryItem';
-import type { GroceryItems } from '../../db/types';
 
 export default function List() {
   const router = useRouter();
+  const { user } = useAuth();
   const { grocerylist } = useLocalSearchParams<{ grocerylist: string }>();
-
-  const isValid = typeof grocerylist === 'string' && grocerylist.trim() !== '';
-  if (!isValid) {
-    const auth = getAuth();
-    onAuthStateChanged(auth, async user => {
-      if (user && user.email) {
-        const groceryListId = await getGroceryListId(user.email);
-        router.replace({ pathname: '/list', params: { grocerylist: groceryListId } });
-      }
-    });
-  }
 
   const [groceryItems, setGroceryItems] = useState<GroceryItems>({});
   const [modalVisible, setModalVisible] = useState(false);
   const [item, setItem] = useState('');
-  const [email, setEmail] = useState('email');
+  const [userId, setUserId] = useState('');
   const [colors, setColors] = useState({});
   const [houseId, setHouseId] = useState('');
   const [houseName, setHouseName] = useState('');
-  const [date, setDate] = useState('');
 
-  const db = getDatabase();
+  const currentDate = new Date();
+  const month = String(currentDate.getMonth() + 1);
+  const day = String(currentDate.getDate());
+  const year = String(currentDate.getFullYear()).slice(-2);
+  const date = `${month}.${day}.${year}`;
 
   useEffect(() => {
-    const unsubscribeAuth = onAuthChange(user => {
-      if (user) {
-        const email = user.email || '';
-        const filteredEmail = email.split('.').join(':');
-        setEmail(filteredEmail);
+    const getGroceryList = async () => {
+      const isValid = typeof grocerylist === 'string' && grocerylist.trim() !== '';
 
-        const itemRef = ref(db, 'housemates/' + filteredEmail);
-        onValue(itemRef, snapshot => {
-          const data = snapshot.val();
-          if (data?.houses?.[0]) {
-            const houses = data.houses[0].toString();
-            setHouseId(houses);
-
-            const houseRef = ref(db, 'houses/' + houses);
-            onValue(houseRef, snapshot => {
-              const data = snapshot.val();
-              if (data) {
-                setColors(data.members || {});
-                setHouseName(data.name || '');
-              }
-            });
-          }
-        });
-      } else {
-        // Redirect to login if no user found
+      if (!isValid && user && user.uid) {
+        try {
+          const groceryListId = await getGroceryListId(user.uid);
+          router.replace({ pathname: '/list', params: { grocerylist: groceryListId } });
+        } catch (err) {
+          console.error("Error fetching grocery list ID:", err);
+        }
+      } else if (!user || !user.uid) {
         router.replace('/login');
       }
-    });
+    };
 
-    return () => unsubscribeAuth();
-  }, [db, router]);
+    getGroceryList();
+  }, [grocerylist, router, user]);
+
+  useEffect(() => {
+    const fetchHouseId = async () => {
+      if (user && user.uid) {
+        setUserId(user.uid);
+
+        try {
+          const id = await getHouseId(user.uid);
+          setHouseId(id);
+        } catch (err) {
+          console.error("Error fetching house ID:", err);
+        }
+      } else {
+        router.replace('/login');
+      }
+    }
+
+    fetchHouseId();
+  }, [user]);
+
+  useEffect(() => {
+    if (!houseId) return;
+
+    try {
+      const unsubscribe = listenForHouseInfo(houseId, (house) => {
+        setHouseName(house.name || '');
+        setColors(house.members || {});
+      });
+
+      return () => unsubscribe();
+    } catch (err) {
+      console.error("Error listening for house info:", err);
+    }
+  }, [houseId]);
 
   useEffect(() => {
     if (!grocerylist) return;
 
-    const itemRef = ref(db, `grocerylists/${grocerylist}/groceryitems`);
-    const unsubscribeItems = onValue(itemRef, snapshot => {
-      const data = snapshot.val();
-      setGroceryItems(data || {});
+    const unsubscribeItems = listenForGroceryItems(grocerylist, (items) => {
+      setGroceryItems(items);
     });
 
     return () => unsubscribeItems();
-  }, [db, grocerylist]);
-
-  useEffect(() => {
-    const currentDate = new Date();
-    const month = String(currentDate.getMonth() + 1);
-    const day = String(currentDate.getDate());
-    const year = String(currentDate.getFullYear()).slice(-2);
-    setDate(`${month}.${day}.${year}`);
-  }, []);
+  }, [grocerylist]);
 
   const toggleModal = () => setModalVisible(!modalVisible);
 
@@ -101,14 +105,14 @@ export default function List() {
       name={groceryItems[item]?.name}
       quantity={groceryItems[item]?.quantity}
       splits={groceryItems[item]?.splits}
-      member={email}
+      member={userId}
       colors={colors}
     />
   );
 
   const writeItem = () => {
     if (!item.trim()) return;
-    writeGroceryItem(grocerylist, item, email);
+    writeGroceryItem(grocerylist, item, userId);
     setItem('');
     toggleModal();
   };
@@ -162,7 +166,7 @@ export default function List() {
 
         <Link href={{ pathname: '/pastlists', params: { houseId: houseId } }} asChild>
           <Pressable className="absolute bottom-8 left-10 h-fit w-fit items-center justify-center rounded-lg bg-emerald-900 px-4 py-2.5 shadow-lg hover:bg-emerald-950">
-            <Text className="self-center text-center text-white">See Past Items</Text>
+            <Text className="self-center text-center text-white font-semibold">See Past Lists</Text>
           </Pressable>
         </Link>
         <Pressable
@@ -174,25 +178,19 @@ export default function List() {
 
         <Modal visible={modalVisible} transparent animationType="fade">
           <View className="flex-1 items-center justify-center bg-black/50">
-            <View className="align-center m-auto h-fit w-2/3 rounded-lg bg-white px-7 py-5 shadow-md">
-              <Ionicons name="close" size={24} onPress={toggleModal} />
-              <Text className="self-center">Add Item</Text>
-              <TextInput
-                className="my-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 align-middle text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-                onChangeText={setItem}
-                value={item}
-                placeholder="Add Item..."
-                onKeyPress={handleWriteItem}
-              />
-              <Pressable
-                className="w-fit self-center rounded-lg bg-emerald-900 px-4 py-2.5 hover:bg-gray-600"
-                onPress={writeItem}
-              >
-                <Text className="self-center text-center text-white">Add</Text>
-              </Pressable>
-              <Pressable className="mt-6 w-fit self-center rounded-lg bg-emerald-900 px-4 py-2.5 hover:bg-gray-600">
-                <Text className="self-center text-center text-white">See All Past Items</Text>
-              </Pressable>
+            <View className="relative w-[85%] rounded-2xl bg-white p-5 shadow-md">
+              <Ionicons name="close" size={24} onPress={toggleModal} className="absolute right-3 top-3"/>
+              <Text className="self-center text-lg font-medium">Add Item</Text>
+              <View className="px-2 my-4">
+                <TextInput
+                  className={`block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 align-middle text-sm ${item ? 'text-gray-900' : 'text-gray-500'} focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500`}
+                  onChangeText={setItem}
+                  value={item}
+                  placeholder="Item..."
+                  onKeyPress={handleWriteItem}
+                />
+              </View>
+              <Button buttonLabel="Add Item" onPress={writeItem} fontSize="text-sm"></Button>
             </View>
           </View>
         </Modal>

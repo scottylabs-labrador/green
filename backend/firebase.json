@@ -28,6 +28,9 @@
     },
     "database": {
       "port": 9000
+    }, 
+    "pubsub": {
+      "port": 8085
     }
   }
 }

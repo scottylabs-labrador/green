@@ -12,12 +12,27 @@ admin.initializeApp({
   databaseURL: process.env.DATABASE_URL,
 });
 
-import { createInviteCode, joinHouseWithInvite, writeHouse } from './handlers/house';
+import { createInviteCode, deleteExpiredInviteCodes, joinHouseWithInvite, updateHouseName, writeHouse } from './handlers/house';
+import { deleteReceiptItem, updateReceiptItem, writeReceipt } from './handlers/receipt';
+import { getUserEmail, syncUserName, updateUser, updateUserColor, writeUser } from './handlers/user';
 import { writeGroceryList, writeGroceryItem, updateGroceryItem } from './handlers/grocerylist';
 
 exports.writeGroceryList = writeGroceryList;
 exports.writeGroceryItem = writeGroceryItem;
 exports.updateGroceryItem = updateGroceryItem;
+
 exports.createInviteCode = createInviteCode;
 exports.joinHouseWithInvite = joinHouseWithInvite;
 exports.writeHouse = writeHouse;
+exports.deleteExpiredInviteCodes = deleteExpiredInviteCodes;
+exports.updateHouseName = updateHouseName;
+
+exports.writeReceipt = writeReceipt;
+exports.updateReceiptItem = updateReceiptItem;
+exports.deleteReceiptItem = deleteReceiptItem;
+
+exports.writeUser = writeUser;
+exports.updateUser = updateUser;
+exports.syncUserName = syncUserName;
+exports.updateUserColor = updateUserColor;
+exports.getUserEmail = getUserEmail;

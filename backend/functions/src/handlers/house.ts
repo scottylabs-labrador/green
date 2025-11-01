@@ -1,6 +1,8 @@
 import * as crypto from 'crypto';
 
+import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
+import { onSchedule } from 'firebase-functions/v2/scheduler';
 
 import { setTyped, updateTyped } from '../db/db';
 import type { House, Invite, Member } from '../db/types';
@@ -23,7 +25,7 @@ export const createInviteCode = functions.https.onCall(
       .join('');
 
     const now = Date.now();
-    const expiresAt = now + 1000 * 60 * 60 * 24;
+    const expiresAt = now + 1000 * 60 * 60 * 24; // expires in a day
 
     const invite: Invite = {
       houseId,
@@ -31,10 +33,31 @@ export const createInviteCode = functions.https.onCall(
       expiresAt,
     };
     await setTyped<Invite>(`invites/${token}`, invite);
+    await setTyped<string>(`houses/${houseId}/invite`, token);
 
     return { token };
   },
 );
+
+export const deleteExpiredInviteCodes = onSchedule('every 24 hours', async () => {
+  const now = Date.now();
+  const db = admin.database();``
+
+  const itemsRef = db.ref(`invites`);
+
+  const snapshot = await itemsRef.orderByChild('expiresAt').endAt(now).once('value');
+
+  const updates: Record<string, null> = {};
+  if (snapshot.exists()) {
+    snapshot.forEach((child) => {
+      updates[child.key] = null;
+    })
+  }
+
+  if (Object.keys(updates).length > 0) {
+    await itemsRef.update(updates);
+  }
+});
 
 export const joinHouseWithInvite = functions.https.onCall(
   async (request: functions.https.CallableRequest<{ houseId: string, userId: string, color: string, houses: string[], name: string }>) => {
@@ -93,9 +116,32 @@ export const writeHouse = functions.https.onCall(
     const house: House = {
       name: name, 
       members: {},
-      grocerylist: groceryListId
+      grocerylist: groceryListId, 
+      receipts: {}, 
+      invite: '',
     }
     await setTyped<House>(`houses/${houseId}`, house);
+    
+    return null;
+  },
+)
+
+export const updateHouseName = functions.https.onCall(
+  async (request: functions.https.CallableRequest<{ name: string, houseId: string }>) => {
+    const { name, houseId } = request.data;
+
+    if (!request.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
+    }
+
+    if (!name) {
+      throw new functions.https.HttpsError('invalid-argument', 'name is required');
+    }
+    if (!houseId) {
+      throw new functions.https.HttpsError('invalid-argument', 'houseId is required');
+    }
+
+    await setTyped<string>(`houses/${houseId}/name`, name);
     
     return null;
   },

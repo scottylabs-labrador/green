@@ -1,7 +1,7 @@
+import * as types from '@db/types';
+import { GroceryItems } from '@db/types';
 import { child, get, getDatabase, push, ref, remove, runTransaction, set } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
-
-import * as types from '../db/types';
 
 import * as schema from './classes';
 import { db, functions } from './firebase';
@@ -12,9 +12,8 @@ export async function writeGroceryList(grocerylist: string, name: string) {
   await fn({ grocerylist, name });
 }
 
-export async function getGroceryListId(email: string): Promise<string> {
-  const emailKey = email.replace(/\./g, ':');
-  const houseRef = ref(db, `housemates/${emailKey}`);
+export async function getGroceryListId(userId: string): Promise<string> {
+  const houseRef = ref(db, `housemates/${userId}`);
   const houseSnap = await get(houseRef);
 
   if (!houseSnap.exists()) throw new Error('No housemate record found');
@@ -33,18 +32,32 @@ export async function getGroceryListId(email: string): Promise<string> {
   return grocerylist;
 }
 
-export function getGroceryListIdFromHouse(houseId: string) {
-  const db = getDatabase();
-  const dbRef = ref(db);
-  return get(child(dbRef, 'houses/' + houseId + '/grocerylist')).then(snapshot => {
-    if (snapshot.exists()) {
-      const groceryListId = snapshot.val();
-      return groceryListId;
+export async function getGroceryListIdFromHouse(houseId: string) {
+  const groceryListRef = ref(db, `houses/${houseId}/grocerylist`)
+  
+  const snap = await get(groceryListRef);
+
+  if (snap.exists()) {
+    return snap.val();
+  }
+
+  throw new Error('No grocery list found');
+}
+
+export function listenForGroceryItems(groceryListId: string, callback: (groceryItems: GroceryItems) => void) {
+  const houseRef = ref(db, `grocerylists/${groceryListId}/groceryitems`);
+
+  const unsubscribe = onValue(houseRef, snapshot => {
+    const data = snapshot.val();
+    if (data) {
+      const grceryItems = snapshot.val() as GroceryItems;
+      callback(grceryItems);
     } else {
-      console.error('failed to get grocery list id from house id');
-      return Promise.reject('no grocery list');
+      throw new Error('No grocery list found');
     }
   });
+
+  return unsubscribe;
 }
 
 export async function writeGroceryItem(grocerylist: string, name: string, member: string, quantity = 1) {

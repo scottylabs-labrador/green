@@ -1,30 +1,47 @@
-import '../../main.css';
-
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { useRouter } from 'expo-router';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { ImageBackground, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 
-import { getGroceryListId } from '../../api/grocerylist';
-import background from '../../assets/home-background.png';
-import LinkButton from '../../components/LinkButton';
+import { getGroceryListIdFromHouse } from '@/api/grocerylist';
+import { getHouseId } from '@/api/house';
+import background from '@/assets/home-background.png';
+import LinkButton from '@/components/LinkButton';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Home() {
   const router = useRouter();
-  const auth = getAuth();
-  onAuthStateChanged(auth, async user => {
-    if (user && user.email) {
-      getGroceryListId(user.email)
-        .then(groceryListId =>
-          router.replace({ pathname: '/list', params: { grocerylist: groceryListId } }),
-        )
-        .catch(error => {
-          console.error('Error when redirecting from homepage:', error);
-          router.replace({ pathname: '/choosehouse' });
-        });
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        if (!user?.uid) {
+          return;
+        }
+  
+        const houseId = await getHouseId(user.uid);
+  
+        if (!houseId) {
+          router.push('/choosehouse');
+          return;
+        }
+  
+        const groceryListId = await getGroceryListIdFromHouse(houseId);
+        if (groceryListId) {
+          router.push({ pathname: '/list', params: { grocerylist: groceryListId } });
+        } else {
+          router.push('/choosehouse');
+        }
+      } catch (err) {
+        console.log('Error while redirecting:', err);
+        router.push('/choosehouse');
+      }
     }
-  });
+
+    checkUser();
+  }, [user]);
+
   return (
     <KeyboardAvoidingView
       className={`padding-24 w-full flex-1`}
@@ -49,7 +66,7 @@ export default function Home() {
                 hoverColor="hover:bg-dark-sunflower-70"
               />
               <LinkButton
-                buttonLabel="Login"
+                buttonLabel="Log In"
                 page="/login"
                 color="bg-sunflower-70"
                 hoverColor="hover:bg-dark-sunflower-70"

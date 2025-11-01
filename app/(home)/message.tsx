@@ -2,74 +2,55 @@ import React, { useEffect, useState } from 'react';
 
 import Feather from '@expo/vector-icons/Feather';
 import { Link, useLocalSearchParams } from 'expo-router';
-import { get, getDatabase, ref } from 'firebase/database';
 import { Pressable, Text, View } from 'react-native';
+
+import { getUserName } from '@/api/auth';
+import { listenForReceipt } from '@/api/receipt';
 
 import { calculateSplits } from '../../api/splits';
 
 export default function Message() {
-  // TODO: Implement the bill page
-  // Returns an assignment of receipt items to grocery items,
-  // also might have popups to resolve any unknown items.
+  const { receiptId } = useLocalSearchParams<{ receiptId: string }>();
 
-  const { receiptId } = useLocalSearchParams();
-  const [splits, setSplits] = useState({});
+  const [splitPrices, setSplitPrices] = useState<Record<string, number>>({});
   const [message, setMessage] = useState(
     `Hi friends, I bought this week's groceries! Here is the breakdown:\n`,
   );
-  console.log('receiptid: ', receiptId);
-
-  const db = getDatabase();
 
   useEffect(() => {
-    const createMessage = async () => {
-      let currmessage = `Hi friends, I bought this week's groceries! Here is the breakdown:\n`;
-      const receiptItemRef = ref(db, 'receipts/' + receiptId + '/receiptitems');
-      const housematesRef = ref(db, 'housemates');
-      get(receiptItemRef)
-        .then(snapshot => {
-          const data = snapshot.val();
-          const svalues = calculateSplits(data);
-          console.log('svalues:', svalues);
-          setSplits(svalues);
-          return svalues;
-        })
-        .then(splits => {
-          return { snapshot: get(housematesRef), splits: splits };
-        })
-        .then(async ({ snapshot: snapshot, splits: splits }) => {
-          const data = (await snapshot).val();
-          console.log('data:', data);
-          for (const user in splits) {
-            console.log('user: ', data[user].name);
-            currmessage = currmessage + '\n' + data[user].name + ': $' + splits[user].toFixed(2);
-          }
-          setMessage(currmessage);
-        });
+    if (!receiptId) {
+      return;
+    }
 
-      // const housematesRef = ref(db, "housemates");
-      // get(housematesRef).then((snapshot) => {
-      //     const data = snapshot.val();
-      //     console.log("data:", data);
-      //     for (const user in splits){
-      //         console.log("user: ", data[user].name);
-      //         currmessage = currmessage + "\n" + data[user].name + ": $" + splits[user];
-      //     }
-      //     setMessage(currmessage);
-      // })
-      // .then(() => {
-      //     const receiptItemRef = ref(db, "receipts/"+receiptId+"/receiptitems");
-      //     return get(receiptItemRef) })
-      // .then((snapshot) => {
-      //     const data = snapshot.val();
-      //     const svalues = calculateSplits(data);
-      //     console.log("svalues:", svalues);
-      //     setSplits(svalues);
-      // });
-    };
+    try {
+      const unsubscribeReceipt = listenForReceipt(receiptId, (receipt) => {
+        const receiptItems = receipt.receiptitems || {};
+        setSplitPrices(calculateSplits(receiptItems));
+      });
+
+      return () => unsubscribeReceipt();
+    } catch (err) {
+      console.error("Error listening for receipt:", err);
+    }
+  }, [receiptId]);
+
+  useEffect(() => {
+    if (!splitPrices || Object.keys(splitPrices).length === 0) {
+      return;
+    }
+
+    const createMessage = async () => {
+      let message = `Hi friends, I bought this week's groceries! Here is the breakdown:\n`;
+      for (const userId in splitPrices) {
+        const amount = splitPrices[userId];
+        const name = await getUserName(userId);
+        message += `\n${name}: $${amount.toFixed(2)}`;
+      }
+      setMessage(message);
+    }
 
     createMessage();
-  }, [db]);
+  }, [splitPrices]);
 
   async function copyMessage() {
     console.log('Trying to copy Message');
@@ -98,18 +79,12 @@ export default function Message() {
             </Link>
             <Text className="mt-2 text-center">Grocery List</Text>
             <Text className="">{message}</Text>
-            {/* <Pressable 
-                      className="w-fit h-8 items-center justify-center self-center bg-emerald-900 hover:bg-gray-600 py-2.5 px-4 rounded-lg"
-                  >
-                      <Text className="text-white text-center">Copy Message</Text>
-                  </Pressable> */}
             <Pressable
               className="self-center rounded-lg bg-emerald-900 px-6 py-3 hover:bg-[#3e5636]"
               onPress={copyMessage}
             >
               <Text className="text-sm font-semibold text-white">Copy Message</Text>
             </Pressable>
-            {/* <CustomButton buttonLabel="Create House" onPress={() => copyMessage()}></CustomButton> */}
           </View>
         </View>
       </View>

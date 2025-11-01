@@ -1,29 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { useRouter } from 'expo-router';
-import { get, ref } from 'firebase/database';
 import { Text, TextInput, View } from 'react-native';
 
-import { db } from '../../api/firebase';
 import { getHouseIdFromInvite } from '../../api/house';
 import CustomButton from '../../components/CustomButton';
 
 export default function JoinHouseCode() {
-  const [code, onChangeCode] = useState('');
-  const [houses, setHousesItem] = useState([]);
-  const [error, setError] = useState('');
   const router = useRouter();
-
-  useEffect(() => {
-    const fetchData = () => {
-      const itemRef = ref(db, 'houses/');
-      get(itemRef).then(snapshot => {
-        const data = snapshot.val();
-        setHousesItem(data);
-      });
-    };
-    fetchData();
-  }, []);
+  
+  const [code, onChangeCode] = useState('');
+  const [error, setError] = useState('');
 
   async function redirectToHouse() {
     try {

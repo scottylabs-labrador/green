@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
 import { useRouter } from 'expo-router';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { get, getDatabase, ref } from 'firebase/database';
 import {
   ImageBackground,
   KeyboardAvoidingView,
@@ -13,89 +11,108 @@ import {
   View,
 } from 'react-native';
 
-import { userSignIn } from '../../api/firebase';
-import { getGroceryListId } from '../../api/grocerylist';
-import background from '../../assets/home-background.png';
-import BackButton from '../../components/BackButton';
-import Button from '../../components/CustomButton';
+import { userSignIn } from '@/api/auth';
+import { getGroceryListIdFromHouse } from '@/api/grocerylist';
+import { getHouseId } from '@/api/house';
+import background from '@/assets/home-background.png';
+import Button from '@/components/CustomButton';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Login() {
+  const router = useRouter();
+  const { user } = useAuth();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorText, setErrorText] = useState('');
-
-  const router = useRouter();
-  const auth = getAuth();
-  const db = getDatabase();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async user => {
-      if (user && user.email) {
-        console.log('User signed in:', user.email);
-        try {
-          const groceryListId = await getGroceryListId(user.email);
-          router.replace({ pathname: '/list', params: { grocerylist: groceryListId } });
-        } catch (err) {
-          console.error('Error when redirecting to grocery list:', err);
+    const checkUser = async () => {
+      try {
+        if (!user?.uid) {
+          return;
+        }
+  
+        const houseId = await getHouseId(user.uid);
+  
+        if (!houseId) {
+          router.push('/choosehouse');
+          return;
+        }
+  
+        const groceryListId = await getGroceryListIdFromHouse(houseId);
+        if (groceryListId) {
+          router.push({ pathname: '/list', params: { grocerylist: groceryListId } });
+        } else {
           router.push('/choosehouse');
         }
+      } catch (err) {
+        console.log('Error while redirecting:', err);
+        router.push('/choosehouse');
       }
-    });
+    }
 
-    return () => unsubscribe();
-  }, []);
+    checkUser();
+  }, [user]);
 
   const handleLogin = async () => {
+    setLoading(true);
+    let user;
+
     try {
-      await userSignIn(email, password);
+      user = await userSignIn(email, password);
+    } catch (err) {
+      console.log('Login error:', err);
+      if (err instanceof Error) {
+        setErrorText(err.message);
+      }
+      setLoading(false);
+      return;
+    }
 
-      const emailKey = email.replace(/\./g, ':'); // Replace dots with colons
-      const houseRef = ref(db, `housemates/${emailKey}`);
-      const houseSnap = await get(houseRef);
+    try {
+      if (!user?.uid) {
+        setErrorText('Failed to retrieve user information.');
+        setLoading(false);
+        return;
+      }
 
-      if (!houseSnap.exists()) {
-        console.log('No house data found, redirecting...');
+      const houseId = await getHouseId(user.uid);
+
+      if (!houseId) {
         router.push('/choosehouse');
         return;
       }
 
-      const houses = houseSnap.val().houses;
-      if (!houses || houses.length === 0) {
-        console.log('No houses array in data');
-        router.push('/choosehouse');
-        return;
-      }
-
-      const houseId = houses[0];
-      const houseDataSnap = await get(ref(db, `houses/${houseId}`));
-
-      if (!houseDataSnap.exists()) {
-        console.log('House data not found');
-        router.push('/choosehouse');
-        return;
-      }
-
-      const grocerylist = houseDataSnap.val().grocerylist;
-      if (grocerylist) {
-        router.push({ pathname: '/list', params: { grocerylist } });
+      const groceryListId = await getGroceryListIdFromHouse(houseId);
+      console.log("grocery list id:", groceryListId);
+      if (groceryListId) {
+        console.log("redirecting to list");
+        router.push({ pathname: '/list', params: { grocerylist: groceryListId } });
       } else {
         router.push('/choosehouse');
       }
     } catch (err) {
-      console.log('Login error:', err);
-      setErrorText('Invalid email or password.');
+      console.log('Error while redirecting:', err);
+      router.push('/choosehouse');
     }
   };
 
   return (
-    <ImageBackground source={background} resizeMode="cover">
+    <ImageBackground 
+      source={background}
+      className={`flex-1 bg-white h-screen w-screen overflow-hidden`}
+      imageStyle={{ opacity: 0.5 }}
+      resizeMode="stretch"
+    >
       <KeyboardAvoidingView
         className="padding-24 w-full flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView className="h-full">
           <View className="mx-auto mt-32 w-9/12 max-w-6xl flex-1 justify-center">
-            <Text className="mb-9 text-4xl font-semibold">Login</Text>
+            <Text className="mb-9 text-4xl font-semibold">Log In</Text>
 
             <Text className="mb-2">Email</Text>
             <TextInput
@@ -116,10 +133,17 @@ export default function Login() {
 
             <Text className="mb-4 text-red-500">{errorText}</Text>
 
-            <Button buttonLabel="Login" onPress={handleLogin} />
+            <Button buttonLabel={loading ? "Logging in..." : "Log In"} onPress={handleLogin} isLoading={loading}/>
+
+            <Text className="text-center mt-2">
+              Don't have an account?{' '}
+              <Text className="text-blue-500 font-medium" onPress={() => router.push('/signup')}>
+                Sign up
+              </Text>
+            </Text>
           </View>
 
-          <BackButton />
+          {/* <BackButton /> */}
         </ScrollView>
       </KeyboardAvoidingView>
     </ImageBackground>
