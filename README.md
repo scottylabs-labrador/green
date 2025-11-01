@@ -27,9 +27,10 @@ Start Expo App: `npx expo start --tunnel`
 
 ### Firebase Functions (Backend)
 
-Install dependencies: `cd backend/functions; npm install`
+Install dependencies: `cd backend/functions; npm install -g firebase-tools; firebase login; npm install firebase-admin`
 
-Build and start emulator: `npm run serve`
+Build and start emulator: `npm run serve` or `firebase emulators:start`
+
 
 ### Python OCR Server (Backend)
 

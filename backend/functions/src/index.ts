@@ -15,6 +15,11 @@ admin.initializeApp({
 import { createInviteCode, deleteExpiredInviteCodes, joinHouseWithInvite, updateHouseName, writeHouse } from './handlers/house';
 import { deleteReceiptItem, updateReceiptItem, writeReceipt } from './handlers/receipt';
 import { getUserEmail, syncUserName, updateUser, updateUserColor, writeUser } from './handlers/user';
+import { writeGroceryList, writeGroceryItem, updateGroceryItem } from './handlers/grocerylist';
+
+exports.writeGroceryList = writeGroceryList;
+exports.writeGroceryItem = writeGroceryItem;
+exports.updateGroceryItem = updateGroceryItem;
 
 exports.createInviteCode = createInviteCode;
 exports.joinHouseWithInvite = joinHouseWithInvite;
