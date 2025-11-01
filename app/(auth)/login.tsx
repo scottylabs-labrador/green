@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useRouter } from 'expo-router';
 import {
@@ -15,34 +15,69 @@ import { userSignIn } from '@/api/auth';
 import { getGroceryListIdFromHouse } from '@/api/grocerylist';
 import { getHouseId } from '@/api/house';
 import background from '@/assets/home-background.png';
-import BackButton from '@/components/BackButton';
 import Button from '@/components/CustomButton';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Login() {
   const router = useRouter();
+  const { user } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorText, setErrorText] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        if (!user?.uid) {
+          return;
+        }
+  
+        const houseId = await getHouseId(user.uid);
+  
+        if (!houseId) {
+          router.push('/choosehouse');
+          return;
+        }
+  
+        const groceryListId = await getGroceryListIdFromHouse(houseId);
+        if (groceryListId) {
+          router.push({ pathname: '/list', params: { grocerylist: groceryListId } });
+        } else {
+          router.push('/choosehouse');
+        }
+      } catch (err) {
+        console.log('Error while redirecting:', err);
+        router.push('/choosehouse');
+      }
+    }
+
+    checkUser();
+  }, [user]);
 
   const handleLogin = async () => {
-    let userCredential;
+    setLoading(true);
+    let user;
+
     try {
-      userCredential = await userSignIn(email, password);
+      user = await userSignIn(email, password);
     } catch (err) {
       console.log('Login error:', err);
       if (err instanceof Error) {
         setErrorText(err.message);
       }
+      setLoading(false);
       return;
     }
 
     try {
-      if (!userCredential || !userCredential.user || !userCredential.user.uid) {
+      if (!user?.uid) {
+        setErrorText('Failed to retrieve user information.');
+        setLoading(false);
         return;
       }
 
-      const user = userCredential.user;
       const houseId = await getHouseId(user.uid);
 
       if (!houseId) {
@@ -51,7 +86,9 @@ export default function Login() {
       }
 
       const groceryListId = await getGroceryListIdFromHouse(houseId);
+      console.log("grocery list id:", groceryListId);
       if (groceryListId) {
+        console.log("redirecting to list");
         router.push({ pathname: '/list', params: { grocerylist: groceryListId } });
       } else {
         router.push('/choosehouse');
@@ -59,12 +96,16 @@ export default function Login() {
     } catch (err) {
       console.log('Error while redirecting:', err);
       router.push('/choosehouse');
-      return;
     }
   };
 
   return (
-    <ImageBackground source={background} resizeMode="cover">
+    <ImageBackground 
+      source={background}
+      className={`flex-1 bg-white h-screen w-screen overflow-hidden`}
+      imageStyle={{ opacity: 0.5 }}
+      resizeMode="stretch"
+    >
       <KeyboardAvoidingView
         className="padding-24 w-full flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -92,10 +133,17 @@ export default function Login() {
 
             <Text className="mb-4 text-red-500">{errorText}</Text>
 
-            <Button buttonLabel="Log In" onPress={handleLogin} />
+            <Button buttonLabel={loading ? "Logging in..." : "Log In"} onPress={handleLogin} isLoading={loading}/>
+
+            <Text className="text-center mt-2">
+              Don't have an account?{' '}
+              <Text className="text-blue-500 font-medium" onPress={() => router.push('/signup')}>
+                Sign up
+              </Text>
+            </Text>
           </View>
 
-          <BackButton />
+          {/* <BackButton /> */}
         </ScrollView>
       </KeyboardAvoidingView>
     </ImageBackground>

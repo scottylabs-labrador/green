@@ -14,7 +14,7 @@ function RootLayoutNav() {
   const { user, loading } = useAuth();
 
   const [userDataLoading, setUserDataLoading] = useState(true);
-  const [groceryListId, setGroceryListId] = useState('');
+  const [groceryListId, setGroceryListId] = useState<string | null>(null);
 
   const segments = useSegments();
 
@@ -23,9 +23,10 @@ function RootLayoutNav() {
       if (user && user.uid) {
         try {
           const id = await getGroceryListId(user.uid);
-          setGroceryListId(id);
+          setGroceryListId(id || null);
         } catch (err) {
           console.error("No grocery list ID found for user:", err);
+          setGroceryListId(null);
         }
       }
       setUserDataLoading(false);
@@ -50,15 +51,6 @@ function RootLayoutNav() {
   // Redirect to login if not authenticated
   if (!user && !isAuthGroup) {
     return <Redirect href="/(auth)/login" />;
-  }
-
-  // Redirect authenticated user to their grocery list
-  if (user && isAuthGroup) {
-    if (groceryListId) {
-      return <Redirect href={{ pathname: '/list', params: { grocerylist: groceryListId } }} />;
-    } else {
-      return <Redirect href="/choosehouse" />;
-    }
   }
 
   return (

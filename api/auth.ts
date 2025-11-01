@@ -1,3 +1,4 @@
+import { FirebaseError } from 'firebase/app';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -14,8 +15,47 @@ export async function createUser(
   email: string,
   password: string,
 ) {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
+  if (!email || !password || !name) {
+    throw new Error('Please fill missing fields.');
+  }
+
+  if (phoneNumber.length != 10) {
+    throw new Error('Invalid phone number.');
+  }
+
+  // check password is minimum length
+  if (password.length < 6) {
+    throw new Error('Password must be at least 6 characters.');
+  }
+
+  let user;
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    user = userCredential.user;
+  } catch (err) {
+    console.error("Signup error:", err);
+    if (err instanceof FirebaseError) {
+      switch (err.code) {
+        case 'auth/email-already-in-use':
+          throw new Error('The email address is already in use by another account.');
+        case 'auth/invalid-email':
+          throw new Error('The email address is not valid.');
+        case 'auth/operation-not-allowed':
+          throw new Error('Email/password accounts are not enabled.');
+        case 'auth/weak-password':
+          throw new Error('The password is too weak.');
+        case 'auth/too-many-requests':
+          throw new Error('Too many requests. Please try again later.');
+        case 'auth/network-request-failed':
+          throw new Error('Network error. Please check your connection and try again.');
+        default:
+          throw new Error('An unexpected error occurred. Please try again later.');
+      }
+    } else {
+      throw new Error('An unexpected error occurred. Please try again later.');
+    }
+  }
 
   const fn = httpsCallable<{
     userId: string, 
@@ -27,7 +67,13 @@ export async function createUser(
 
   const userId = user.uid;
   const houses: string[] = [];
-  await fn({ userId, name, email, phoneNumber, houses });
+
+  try {
+    await fn({ userId, name, email, phoneNumber, houses });
+  } catch (err) {
+    console.error("Error creating user:", err);
+    throw new Error('Failed to create user data. Please try again.');
+  }
 }
 
 export async function updateUser(
@@ -75,15 +121,33 @@ export async function getUserEmail(userId: string) {
   return result.data.email;
 } 
 
-export function userSignIn(email: string, password: string) {
-  return signInWithEmailAndPassword(auth, email, password);
+export async function userSignIn(email: string, password: string) {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return userCredential.user;
+  } catch (err) {
+    console.log('Login error:', err);
+    if (err instanceof FirebaseError) {
+      switch (err.code) {
+        case 'auth/user-not-found':
+          throw new Error('No user found with this email.');
+        case 'auth/wrong-password':
+          throw new Error('Incorrect password. Please try again.');
+        case 'auth/invalid-email':
+          throw new Error('The email address is not valid.');
+        case 'auth/email-already-in-use':
+          throw new Error('The email address is already in use by another account.');
+        case 'auth/network-request-failed':
+          throw new Error('Network error. Please check your connection and try again.');
+        default:
+          throw new Error('An unexpected error occurred. Please try again later.');
+      }
+    } else {
+      throw new Error('An unexpected error occurred. Please try again later.');
+    }
+  }
 }
 
 export function userSignOut() {
   return signOut(auth);
-}
-
-export function getCurrentUser() {
-  const user = auth.currentUser;
-  return user;
 }
