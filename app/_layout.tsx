@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { Redirect, SplashScreen, Stack, useSegments } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
-import { getGroceryListId } from '@/api/grocerylist';
 
 import { AuthProvider, useAuth } from '../context/AuthContext';
 
@@ -12,33 +11,9 @@ SplashScreen.preventAutoHideAsync();
 
 function RootLayoutNav() {
   const { user, loading } = useAuth();
-
-  const [userDataLoading, setUserDataLoading] = useState(true);
-  const [groceryListId, setGroceryListId] = useState<string | null>(null);
-
   const segments = useSegments();
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (user && user.uid) {
-        try {
-          const id = await getGroceryListId(user.uid);
-          setGroceryListId(id || null);
-        } catch (err) {
-          console.error("No grocery list ID found for user:", err);
-          setGroceryListId(null);
-        }
-      }
-      setUserDataLoading(false);
-    };
-
-    if (!loading) {
-      SplashScreen.hideAsync();
-      fetchUserData();
-    }
-  }, [user, loading]);
-
-  if (loading || userDataLoading) {
+  if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" />

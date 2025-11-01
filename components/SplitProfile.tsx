@@ -1,8 +1,7 @@
 import React from 'react';
 
+import type { HousemateId, Members } from '@db/types';
 import { Text, View } from 'react-native';
-
-import type { HousemateId, Members } from '../db/types';
 
 type SplitProfileProps = {
   colors: Members,

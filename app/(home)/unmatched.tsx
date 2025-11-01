@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
+import type { GroceryItems, Splits } from '@db/types';
 import { Octicons } from '@expo/vector-icons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -8,12 +9,10 @@ import { FlatList, ListRenderItemInfo, Pressable, Text, TextInput, View } from '
 
 import { listenForGroceryItems } from '@/api/grocerylist';
 import { getHouseId, listenForHouseInfo } from '@/api/house';
+import { deleteReceiptItem, listenForReceipt, updateReceiptItem } from '@/api/receipt';
+import EditSplit from '@/components/EditSplit';
+import SplitProfile from '@/components/SplitProfile';
 import { useAuth } from '@/context/AuthContext';
-
-import { deleteReceiptItem, listenForReceipt, updateReceiptItem } from '../../api/receipt';
-import EditSplit from '../../components/EditSplit';
-import SplitProfile from '../../components/SplitProfile';
-import type { GroceryItems, Splits } from '../../db/types';
 
 export default function UnmatchedItem() {
   const router = useRouter();
