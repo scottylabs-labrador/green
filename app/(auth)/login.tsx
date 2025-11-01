@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { useRouter } from 'expo-router';
 import {
@@ -11,51 +11,39 @@ import {
   View,
 } from 'react-native';
 
-import { getUserIdFromEmail, userSignIn } from '@/api/auth';
-import { getGroceryListId, getGroceryListIdFromHouse } from '@/api/grocerylist';
+import { userSignIn } from '@/api/auth';
+import { getGroceryListIdFromHouse } from '@/api/grocerylist';
 import { getHouseId } from '@/api/house';
 import background from '@/assets/home-background.png';
 import BackButton from '@/components/BackButton';
 import Button from '@/components/CustomButton';
-import { useAuth } from '@/context/AuthContext';
 
 export default function Login() {
   const router = useRouter();
-  const { user } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorText, setErrorText] = useState('');
 
-  useEffect(() => {
-    const checkUser = async () => {
-      if (user && user.email) {
-        try {
-          const userId = getUserIdFromEmail(user.email);
-          const groceryListId = await getGroceryListId(userId);
-          router.replace({ pathname: '/list', params: { grocerylist: groceryListId } });
-        } catch (err) {
-          console.error('Error checking user grocery list:', err);
-          router.replace('/choosehouse');
-        }
-      }
-    }
-
-    checkUser();
-  }, [user]);
-
   const handleLogin = async () => {
+    let userCredential;
     try {
-      await userSignIn(email, password);
+      userCredential = await userSignIn(email, password);
     } catch (err) {
       console.log('Login error:', err);
-      setErrorText('Invalid email or password.');
+      if (err instanceof Error) {
+        setErrorText(err.message);
+      }
       return;
     }
 
     try {
-      const userId = getUserIdFromEmail(email);
-      const houseId = await getHouseId(userId);
+      if (!userCredential || !userCredential.user || !userCredential.user.uid) {
+        return;
+      }
+
+      const user = userCredential.user;
+      const houseId = await getHouseId(user.uid);
 
       if (!houseId) {
         router.push('/choosehouse');

@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { FlatList, Image, ListRenderItemInfo, Modal, NativeSyntheticEvent, Pressable, Text, TextInput, TextInputKeyPressEventData, View } from 'react-native';
 
-import { getUserIdFromEmail } from '@/api/auth';
 import { getGroceryListId, listenForGroceryItems, writeGroceryItem } from '@/api/grocerylist';
 import { getHouseId, listenForHouseInfo } from '@/api/house';
 import Button from '@/components/CustomButton';
@@ -37,14 +36,14 @@ export default function List() {
     const getGroceryList = async () => {
       const isValid = typeof grocerylist === 'string' && grocerylist.trim() !== '';
 
-      if (!isValid && user && user.email) {
+      if (!isValid && user && user.uid) {
         try {
-          const groceryListId = await getGroceryListId(getUserIdFromEmail(user.email));
+          const groceryListId = await getGroceryListId(user.uid);
           router.replace({ pathname: '/list', params: { grocerylist: groceryListId } });
         } catch (err) {
           console.error("Error fetching grocery list ID:", err);
         }
-      } else if (!user || !user.email) {
+      } else if (!user || !user.uid) {
         router.replace('/login');
       }
     };
@@ -54,12 +53,11 @@ export default function List() {
 
   useEffect(() => {
     const fetchHouseId = async () => {
-      if (user && user.email) {
-        const userId = getUserIdFromEmail(user.email);
-        setUserId(userId);
+      if (user && user.uid) {
+        setUserId(user.uid);
 
         try {
-          const id = await getHouseId(userId);
+          const id = await getHouseId(user.uid);
           setHouseId(id);
         } catch (err) {
           console.error("Error fetching house ID:", err);

@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Text, View } from 'react-native';
 
-import { getUserIdFromEmail } from '@/api/auth';
 import { joinHouseWithInvite, listenForHouseInfo } from '@/api/house';
 import ColorPicker from '@/components/ColorPicker';
 import CustomButton from '@/components/CustomButton';
@@ -27,8 +26,8 @@ export default function JoinHouse() {
   useEffect(() => {
     const fetchUserId = async () => {
       try {
-        if (user && user.email) {
-          setUserId(getUserIdFromEmail(user.email));
+        if (user && user.uid) {
+          setUserId(user.uid);
         } else {
           router.replace('/login');
         }

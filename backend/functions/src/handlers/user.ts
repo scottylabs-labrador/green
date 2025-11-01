@@ -5,7 +5,6 @@ import { onValueUpdated } from 'firebase-functions/v2/database';
 import { setTyped } from '../db/db';
 import type { Housemate } from '../db/types';
 
-
 export const writeUser = functions.https.onCall(
   async (request: functions.https.CallableRequest<{ userId: string, name: string, email: string, phoneNumber: string, houses: string[] }>) => {
     const { userId, name, email, phoneNumber, houses } = request.data;
@@ -71,8 +70,8 @@ export const syncUserName = onValueUpdated(`housemates/{userId}`,
 
       try {
         await admin.database().ref().update(updates);
-      } catch (error) {
-        console.error("Failed to update user name in houses:", error);
+      } catch (err) {
+        console.error("Failed to update user name in houses:", err);
         throw new functions.https.HttpsError('internal', `Failed to update name in house`);
       }
     }
@@ -100,5 +99,27 @@ export const updateUserColor = functions.https.onCall(
     setTyped<string>(`houses/${houseId}/members/${userId}/color`, color);
 
     return null;
+  }
+);
+
+export const getUserEmail = functions.https.onCall(
+  async (request: functions.https.CallableRequest<{ userId: string }>) => {
+    const { userId } = request.data;
+
+    if (!request.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
+    }
+
+    if (!userId) {
+      throw new functions.https.HttpsError('invalid-argument', 'userId is required');
+    }
+
+    try {
+      const userRecord = await admin.auth().getUser(userId);
+      return { email: userRecord.email };
+    } catch (err) {
+      console.log("Error fetching user email:", err);
+      throw new functions.https.HttpsError('not-found', 'User not found');
+    }
   }
 );

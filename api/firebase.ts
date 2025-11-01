@@ -11,7 +11,6 @@ import { connectDatabaseEmulator, getDatabase } from 'firebase/database';
 import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
 import { Platform } from 'react-native';
 
-
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -42,3 +41,4 @@ if (__DEV__) {
 }
 
 export { app, auth, db, functions };
+

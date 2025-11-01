@@ -10,7 +10,6 @@ import { listenForGroceryItems } from '@/api/grocerylist';
 import { getHouseId, listenForHouseInfo } from '@/api/house';
 import { useAuth } from '@/context/AuthContext';
 
-import { getUserIdFromEmail } from '../../api/auth';
 import { deleteReceiptItem, listenForReceipt, updateReceiptItem } from '../../api/receipt';
 import EditSplit from '../../components/EditSplit';
 import SplitProfile from '../../components/SplitProfile';
@@ -37,15 +36,14 @@ export default function UnmatchedItem() {
   useEffect(() => {
     const fetchHouseId = async () => {
       if (user && user.email) {
-        const userId = getUserIdFromEmail(user.email);
-        setUserId(userId);
+        setUserId(user.uid);
 
         if (!splits) {
-          setSplits({ [userId]: 1 });
+          setSplits({ [user.uid]: 1 });
         }
 
         try {
-          const id = await getHouseId(userId);
+          const id = await getHouseId(user.uid);
           setHouseId(id);
         } catch (err) {
           console.error("Error fetching house ID:", err);

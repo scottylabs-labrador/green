@@ -6,7 +6,7 @@ import { Pressable, Text, View } from 'react-native';
 import { getHouseId, listenForHouseInfo } from '@/api/house';
 import { useAuth } from '@/context/AuthContext';
 
-import { getUserIdFromEmail, userSignOut } from '../../api/auth';
+import { userSignOut } from '../../api/auth';
 import EditProfile from '../../components/EditProfile';
 import HouseInfo from '../../components/HouseInfo';
 import Loading from '../../components/Loading';
@@ -15,23 +15,27 @@ export default function Profile() {
   const router = useRouter();
   const { user } = useAuth();
 
-  const [name, setName] = useState('Name');
-  const [color, setColor] = useState('000000');
+  const [name, setName] = useState('');
+  const [color, setColor] = useState('');
   const [email, setEmail] = useState('');
-  const [houseName, setHouseName] = useState('House Name');
-  const [houseId, setHouseId] = useState('House ID');
+  const [userId, setUserId] = useState('');
+  const [houseName, setHouseName] = useState('');
+  const [houseId, setHouseId] = useState('');
   const [members, setMembers] = useState({});
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchHouseId = async () => {
-      if (user && user.email) {
-        setEmail(user.email);
+      if (user && user.uid) {
+        setUserId(user.uid);
 
-        const userId = getUserIdFromEmail(user.email);
+        if (user.email) {
+          setEmail(user.email);
+        }
+
         try {
-          const id = await getHouseId(userId);
+          const id = await getHouseId(user.uid);
           setHouseId(id);
         } catch (err) {
           console.error("Error fetching house ID:", err);
@@ -45,7 +49,7 @@ export default function Profile() {
   }, [user]);
 
   useEffect(() => {
-    if (!houseId || !email) return;
+    if (!houseId || !userId) return;
 
     try {
       const unsubscribe = listenForHouseInfo(houseId, (house) => {
@@ -53,8 +57,6 @@ export default function Profile() {
 
         setHouseName(house.name);
         setMembers(members);
-
-        const userId = getUserIdFromEmail(email);
 
         const userData = members[userId];
         if (userData) {
@@ -69,7 +71,7 @@ export default function Profile() {
     } catch (err) {
       console.error("Error listening for house info:", err);
     }
-  }, [houseId]);
+  }, [houseId, userId]);
 
   const handleEditProfile = () => {
     setShowEditProfile(!showEditProfile);
@@ -119,7 +121,7 @@ export default function Profile() {
           </Pressable>
         </View>
         <EditProfile 
-          userId={getUserIdFromEmail(email)} 
+          userId={userId} 
           name={name} 
           houseId={houseId} 
           color={color}

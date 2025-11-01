@@ -96,6 +96,7 @@ export function listenForHouseInfo(houseId: string, callback: (house: House) => 
     if (data) {
       callback(data);
     } else {
+      console.log("no house found for id:", houseId);
       throw new Error('No house found');
     }
   });

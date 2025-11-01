@@ -1,26 +1,12 @@
 import {
   createUserWithEmailAndPassword,
-  onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
-  User,
 } from 'firebase/auth';
 import { get, ref } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
 
 import { auth, db, functions } from './firebase';
-
-export function onAuthChange(callback: (user: User | null) => void) {
-  return onAuthStateChanged(auth, callback);
-}
-
-export function getUserIdFromEmail(email: string) {
-  return email.split('.').join(':');
-}
-
-export function getEmailFromUserId(userId: string) {
-  return userId.split(':').join('.');
-}
 
 export async function createUser(
   name: string,
@@ -28,7 +14,9 @@ export async function createUser(
   email: string,
   password: string,
 ) {
-  await createUserWithEmailAndPassword(auth, email, password);
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  const user = userCredential.user;
+
   const fn = httpsCallable<{
     userId: string, 
     name: string, 
@@ -37,7 +25,7 @@ export async function createUser(
     houses: string[]
   }, null>(functions, 'writeUser');
 
-  const userId = getUserIdFromEmail(email);
+  const userId = user.uid;
   const houses: string[] = [];
   await fn({ userId, name, email, phoneNumber, houses });
 }
@@ -77,6 +65,15 @@ export async function getUserName(userId: string) {
 
   throw new Error('No user found');
 }
+
+export async function getUserEmail(userId: string) {
+  const fn = httpsCallable<{
+    userId: string,
+  }, {email: string}>(functions, 'getUserEmail');
+
+  const result = await fn({ userId });
+  return result.data.email;
+} 
 
 export function userSignIn(email: string, password: string) {
   return signInWithEmailAndPassword(auth, email, password);

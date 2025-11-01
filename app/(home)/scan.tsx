@@ -6,7 +6,6 @@ import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
-import { getUserIdFromEmail } from '@/api/auth';
 import { getGroceryListIdFromHouse, listenForGroceryItems } from '@/api/grocerylist';
 import { getHouseId } from '@/api/house';
 import { matchWords, writeReceipt } from '@/api/receipt';
@@ -32,10 +31,9 @@ export default function Page() {
   useEffect(() => {
     const fetchHouseId = async () => {
       try {
-        if (user && user.email) {
-          const uId = getUserIdFromEmail(user.email);
-          setUserId(uId);
-          setHouseId(await getHouseId(uId));
+        if (user && user.uid) {
+          setUserId(user.uid);
+          setHouseId(await getHouseId(user.uid));
         } else {
           router.replace('/login');
         }

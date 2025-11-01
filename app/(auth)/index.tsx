@@ -2,31 +2,12 @@ import '../../main.css';
 
 import React from 'react';
 
-import { useRouter } from 'expo-router';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { ImageBackground, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 
-import { getUserIdFromEmail } from '@/api/auth';
-
-import { getGroceryListId } from '../../api/grocerylist';
-import background from '../../assets/home-background.png';
-import LinkButton from '../../components/LinkButton';
+import background from '@/assets/home-background.png';
+import LinkButton from '@/components/LinkButton';
 
 export default function Home() {
-  const router = useRouter();
-  const auth = getAuth();
-  onAuthStateChanged(auth, async user => {
-    if (user && user.email) {
-      getGroceryListId(getUserIdFromEmail(user.email))
-        .then(groceryListId =>
-          router.replace({ pathname: '/list', params: { grocerylist: groceryListId } }),
-        )
-        .catch(error => {
-          console.error('Error when redirecting from homepage:', error);
-          router.replace({ pathname: '/choosehouse' });
-        });
-    }
-  });
   return (
     <KeyboardAvoidingView
       className={`padding-24 w-full flex-1`}
