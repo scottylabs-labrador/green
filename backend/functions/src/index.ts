@@ -13,10 +13,11 @@ admin.initializeApp({
 });
 
 import { createInviteCode, joinHouseWithInvite, writeHouse } from './handlers/house';
-import { writeGroceryList } from './handlers/grocerylist';
-
+import { writeGroceryList, writeGroceryItem, updateGroceryItem } from './handlers/grocerylist';
 
 exports.writeGroceryList = writeGroceryList;
+exports.writeGroceryItem = writeGroceryItem;
+exports.updateGroceryItem = updateGroceryItem;
 exports.createInviteCode = createInviteCode;
 exports.joinHouseWithInvite = joinHouseWithInvite;
 exports.writeHouse = writeHouse;
