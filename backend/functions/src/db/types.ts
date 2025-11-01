@@ -34,12 +34,27 @@ export interface GroceryItem {
 
 export type GroceryItems = Record<string, GroceryItem>;
 
+export interface GroceryList {
+  name: string;
+  groceryitems: GroceryItems;
+}
+
+export type GroceryLists = Record<string, GroceryList>;
+
 export interface ReceiptItem {
   receiptItem: string;
   groceryItem: string;
   price: number;
   splits: Splits;
 }
+
+export interface ReceiptItem {
+  receiptItem: string;
+  groceryItem: string;
+  price: number;
+  splits: Splits;
+}
+
 
 export type ReceiptItems = Record<string, ReceiptItem>;
 
