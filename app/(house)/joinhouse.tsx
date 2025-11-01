@@ -81,12 +81,6 @@ export default function JoinHouse() {
     );
   }
 
-  if (loadingAddMember) {
-    return (
-      <Loading message="Joining house..." />
-    );
-  }
-
   if (!houseName) {
     return (
       <View className="flex-1 items-center justify-center">
@@ -110,7 +104,7 @@ export default function JoinHouse() {
         }
         <View className="flex-row items-center justify-evenly mt-5 w-fit self-center gap-4">
           <CustomButton buttonLabel="Back" onPress={() => router.back()} />
-          <CustomButton buttonLabel="Join House" onPress={addMember}></CustomButton>
+          <CustomButton buttonLabel="Join House" onPress={addMember} isLoading={loadingAddMember}></CustomButton>
         </View>
       </View>
     </View>

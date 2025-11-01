@@ -6,7 +6,7 @@ import { FlatList, Image, ListRenderItemInfo, Text, View } from 'react-native';
 
 import { listenForHouseInfo } from '@/api/house';
 
-import emptyList from '../../assets/empty-list.png';
+import emptyList from '../../assets/empty-past-list.png';
 import PastList from '../../components/PastList';
 
 export default function PastLists() {

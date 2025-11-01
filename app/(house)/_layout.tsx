@@ -1,25 +1,23 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
-import { Slot, useRouter } from 'expo-router';
+import { Slot } from 'expo-router';
+import { ImageBackground, View } from 'react-native';
 
-import { useAuth } from '../../context/AuthContext';
+import background from '../../assets/home-background.png';
 
-export default function ProtectedLayout() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (loading) return; // wait for auth to load
-
-    if (!user) {
-      // Redirect unauthenticated users to login
-      router.replace('/(auth)/login');
-    }
-  }, [user, loading]);
-
-  if (loading || !user) {
-    return null;
-  }
-
-  return <Slot />;
+export default function HomeLayout() {
+  return (
+    <ImageBackground
+      source={background}
+      className={`flex-1 bg-white h-screen w-screen overflow-hidden`}
+      imageStyle={{ opacity: 0.5 }}
+      resizeMode="stretch"
+    >
+      <View style={{ flex: 1, justifyContent: 'space-between', marginBottom: 0 }}>
+        <View style={{ flex: 1 }}>
+          <Slot />
+        </View>
+      </View>
+    </ImageBackground>
+  );
 }

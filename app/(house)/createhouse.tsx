@@ -6,7 +6,6 @@ import { Text, TextInput, View } from 'react-native';
 import { writeGroceryList } from '../../api/grocerylist';
 import { writeHouse } from '../../api/house';
 import CustomButton from '../../components/CustomButton';
-import Loading from '../../components/Loading';
 
 export default function CreateHouse() {
   const [name, onChangeName] = useState('');
@@ -35,12 +34,6 @@ export default function CreateHouse() {
     }
   }
 
-  if (loading) {
-    return (
-      <Loading message={"Creating house..."} />
-    );
-  }
-
   return (
     <View className="padding-24 flex-1 items-center">
       <View className="mx-auto mb-20 w-9/12 max-w-6xl flex-1 justify-center">
@@ -56,7 +49,7 @@ export default function CreateHouse() {
             Error: {error}
           </Text>
         }
-        <CustomButton buttonLabel="Create House" onPress={() => redirectToJoin(name)}></CustomButton>
+        <CustomButton buttonLabel="Create House" onPress={() => redirectToJoin(name)} isLoading={loading}></CustomButton>
       </View>
     </View>
   );

@@ -6,6 +6,7 @@ import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { FlatList, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
 
+
 import { getUserEmail } from '@/api/auth';
 
 import EditHouse from './EditHouse';
@@ -52,7 +53,7 @@ const HouseInfo = ({ name, houseid, members, onNameChange }: HouseInfoProps) => 
     }
 
     fetchEmails();
-  }, [Object.keys(members)]);
+  }, [members]);
 
   const renderMembers = ({ item }: ListRenderItemInfo<string>) => {
     return (

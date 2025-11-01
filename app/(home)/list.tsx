@@ -166,7 +166,7 @@ export default function List() {
 
         <Link href={{ pathname: '/pastlists', params: { houseId: houseId } }} asChild>
           <Pressable className="absolute bottom-8 left-10 h-fit w-fit items-center justify-center rounded-lg bg-emerald-900 px-4 py-2.5 shadow-lg hover:bg-emerald-950">
-            <Text className="self-center text-center text-white font-semibold">See Past Items</Text>
+            <Text className="self-center text-center text-white font-semibold">See Past Lists</Text>
           </Pressable>
         </Link>
         <Pressable
@@ -178,18 +178,19 @@ export default function List() {
 
         <Modal visible={modalVisible} transparent animationType="fade">
           <View className="flex-1 items-center justify-center bg-black/50">
-            <View className="align-center m-auto h-fit w-2/3 rounded-lg bg-white px-7 py-5 shadow-md">
+            <View className="relative w-[85%] rounded-2xl bg-white p-5 shadow-md">
               <Ionicons name="close" size={24} onPress={toggleModal} className="absolute right-3 top-3"/>
               <Text className="self-center text-lg font-medium">Add Item</Text>
-              <TextInput
-                className="my-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 align-middle text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-                onChangeText={setItem}
-                value={item}
-                placeholder="Add Item..."
-                onKeyPress={handleWriteItem}
-              />
-              <Button buttonLabel="Add" onPress={writeItem} fontSize="text-sm"></Button>
-              <Button buttonLabel="See All Past Items" onPress={() => {}} fontSize="text-sm"></Button>
+              <View className="px-2 my-4">
+                <TextInput
+                  className={`block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 align-middle text-sm ${item ? 'text-gray-900' : 'text-gray-500'} focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500`}
+                  onChangeText={setItem}
+                  value={item}
+                  placeholder="Item..."
+                  onKeyPress={handleWriteItem}
+                />
+              </View>
+              <Button buttonLabel="Add Item" onPress={writeItem} fontSize="text-sm"></Button>
             </View>
           </View>
         </Modal>

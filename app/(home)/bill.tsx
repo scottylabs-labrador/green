@@ -9,7 +9,6 @@ import { getHouseId, listenForHouseInfo } from '@/api/house';
 import { listenForReceipt } from '@/api/receipt';
 import { useAuth } from '@/context/AuthContext';
 
-import { getUserIdFromEmail } from '../../api/auth';
 import ReceiptItem from '../../components/ReceiptItem';
 
 export default function Bill() {
@@ -27,9 +26,8 @@ export default function Bill() {
   useEffect(() => {
     const fetchHouseId = async () => {
       try {
-        if (user && user.email) {
-          const userId = getUserIdFromEmail(user.email);
-          setHouseId(await getHouseId(userId)); 
+        if (user && user.uid) {
+          setHouseId(await getHouseId(user.uid)); 
         } else {
           router.replace('/login');
         }
