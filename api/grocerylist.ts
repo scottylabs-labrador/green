@@ -1,4 +1,4 @@
-import { GroceryItems } from '@db/types';
+import { GroceryItems, GroceryList } from '@db/types';
 import { get, getDatabase, onValue, ref, remove } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
 
@@ -39,19 +39,19 @@ export async function getGroceryListIdFromHouse(houseId: string) {
     return snap.val();
   }
 
-  throw new Error('No grocery list found');
+  throw new Error('No grocery list found from house');
 }
 
 export function listenForGroceryItems(groceryListId: string, callback: (groceryItems: GroceryItems) => void) {
-  const houseRef = ref(db, `grocerylists/${groceryListId}/groceryitems`);
+  const listRef = ref(db, `grocerylists/${groceryListId}`);
 
-  const unsubscribe = onValue(houseRef, snapshot => {
+  const unsubscribe = onValue(listRef, snapshot => {
     const data = snapshot.val();
     if (data) {
-      const grceryItems = snapshot.val() as GroceryItems;
-      callback(grceryItems);
+      const groceryList = snapshot.val() as GroceryList;
+      callback(groceryList?.groceryitems || {});
     } else {
-      throw new Error('No grocery list found');
+      throw new Error('No grocery list found while listening for grocery items');
     }
   });
 
