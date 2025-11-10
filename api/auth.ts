@@ -150,7 +150,12 @@ export async function userSignIn(email: string, password: string) {
 }
 
 export function userSignOut() {
-  return signOut(auth);
+  try {
+    signOut(auth);
+  } catch (err) {
+    console.error("Error when signing out:", err);
+    throw new Error('An unexpected error occurred. Please try again later.')
+  }
 }
 
 export async function userPasswordResetEmail(email: string) {

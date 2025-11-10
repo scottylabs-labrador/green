@@ -6,7 +6,7 @@ import { Pressable, Text, View } from 'react-native';
 import { getHouseId, listenForHouseInfo } from '@/api/house';
 import { useAuth } from '@/context/AuthContext';
 
-import { userSignOut } from '../../api/auth';
+import LogoutConfirm from '@/components/LogoutConfirm';
 import EditProfile from '../../components/EditProfile';
 import HouseInfo from '../../components/HouseInfo';
 import Loading from '../../components/Loading';
@@ -23,6 +23,7 @@ export default function Profile() {
   const [houseId, setHouseId] = useState('');
   const [members, setMembers] = useState({});
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -77,6 +78,10 @@ export default function Profile() {
     setShowEditProfile(!showEditProfile);
   };
 
+  const handleLogoutConfirm = () => {
+    setShowLogoutConfirm(!showLogoutConfirm);
+  }
+
   if (loading) {
     return (
       <Loading message={"Loading user..."} />
@@ -113,7 +118,7 @@ export default function Profile() {
           </Pressable>
           <Pressable 
             className="flex h-12 w-full items-center justify-center self-center rounded-lg bg-gray-50 border border-gray-100 hover:bg-gray-100" 
-            onPress={userSignOut}
+            onPress={handleLogoutConfirm}
           >
             <View className="w-full flex-row items-center justify-center gap-3 px-3">
               <Text className="text-1xl grow text-left font-semibold text-red-500">Log Out</Text>
@@ -130,6 +135,7 @@ export default function Profile() {
           onNameChange={setName} 
           onColorChange={setColor}
         />
+        <LogoutConfirm visible={showLogoutConfirm} onClose={handleLogoutConfirm} />
       </View>
     </View>
   );
