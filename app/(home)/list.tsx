@@ -136,10 +136,10 @@ export default function List() {
           </View>
         </View>
         <View className="mb-0 h-[200px] w-full flex-grow self-end overflow-hidden rounded-t-[40px] bg-white pb-24 pt-6">
-          <View className="justify-left h-10 w-full flex-row items-stretch self-center px-6">
+          <View className="justify-between h-10 w-full flex-row items-stretch self-center px-6">
             <Text className="text-1xl w-1/2 pl-4 text-left text-gray-400">Item</Text>
             <Text className="text-1xl w-1/4 pr-1 text-right text-gray-400">Split by</Text>
-            <Text className="text-1xl w-20 pr-3 text-right text-gray-400">Quantity</Text>
+            <Text className="text-1xl w-16 mx-3 text-center text-gray-400">Quantity</Text>
           </View>
           {groceryItems && Object.keys(groceryItems).length > 0 ? (
             <FlatList

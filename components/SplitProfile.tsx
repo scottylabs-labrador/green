@@ -16,8 +16,8 @@ const SplitProfile = ({ colors, housemateId, size, fontSize, quantity }: SplitPr
     return (
       <View className="overflow-visible">
         <View
-          className={`ml-1 w-${size} h-${size} flex items-center justify-center self-center rounded-full`}
-          style={{ backgroundColor: colors[housemateId].color }}
+          className={`ml-1 flex items-center justify-center self-center rounded-full`}
+          style={{ backgroundColor: colors[housemateId].color, width: size * 4, height: size * 4 }}
         >
           <Text className={`text-${fontSize} h-fit self-center text-center font-medium text-white`}>
             {colors[housemateId].name[0].toUpperCase()}
