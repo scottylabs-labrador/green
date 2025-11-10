@@ -125,15 +125,18 @@ export default function Login() {
 
             <Text className="mb-2">Password</Text>
             <TextInput
-              className="mb-4 block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
+              className="mb-2 block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
               onChangeText={setPassword}
               value={password}
               secureTextEntry
             />
+            <Text className="text-blue-500 font-medium text-right mb-2" onPress={() => router.push('/forgotpassword')}>
+              Forgot Password?
+            </Text>
 
             <Text className="mb-4 text-red-500">{errorText}</Text>
 
-            <Button buttonLabel={loading ? "Logging in..." : "Log In"} onPress={handleLogin} isLoading={loading}/>
+            <Button buttonLabel="Log In" onPress={handleLogin} isLoading={loading}/>
 
             <Text className="text-center mt-2">
               Don't have an account?{' '}

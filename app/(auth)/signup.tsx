@@ -71,7 +71,6 @@ export default function SignUp() {
 
     try {
       await createUser(name, phoneNumber, email, password);
-      router.push('/choosehouse');
     } catch (err) {
       if (err instanceof Error) {
         setErrorText(err.message);

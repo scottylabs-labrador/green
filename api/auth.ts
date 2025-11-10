@@ -1,8 +1,9 @@
 import { FirebaseError } from 'firebase/app';
 import {
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
-  signOut,
+  signOut
 } from 'firebase/auth';
 import { get, ref } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
@@ -150,4 +151,27 @@ export async function userSignIn(email: string, password: string) {
 
 export function userSignOut() {
   return signOut(auth);
+}
+
+export async function userPasswordResetEmail(email: string) {
+  try {
+    console.log(email);
+    await sendPasswordResetEmail(auth, email);
+  } catch (err) {
+    console.log("Send password reset email error:", err);
+    if (err instanceof FirebaseError) {
+      switch (err.code) {
+        case 'auth/invalid-email':
+          return;
+        case 'auth/user-not-found':
+          return;
+        case 'auth/missing-email':
+          throw new Error('Please enter your email address');
+        default:
+          throw new Error('An unexpected error occurred. Please try again later.');
+      }
+    } else {
+      throw new Error('An unexpected error occurred. Please try again later.');
+    }
+  }
 }
