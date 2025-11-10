@@ -3,7 +3,8 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
-  signOut
+  signOut,
+  updateProfile
 } from 'firebase/auth';
 import { get, ref } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
@@ -12,16 +13,11 @@ import { auth, db, functions } from './firebase';
 
 export async function createUser(
   name: string,
-  phoneNumber: string,
   email: string,
   password: string,
 ) {
   if (!email || !password || !name) {
     throw new Error('Please fill missing fields.');
-  }
-
-  if (phoneNumber.length != 10) {
-    throw new Error('Invalid phone number.');
   }
 
   // check password is minimum length
@@ -34,6 +30,10 @@ export async function createUser(
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     user = userCredential.user;
+
+    await updateProfile(user, {
+      displayName: name
+    });
   } catch (err) {
     console.error("Signup error:", err);
     if (err instanceof FirebaseError) {
@@ -62,7 +62,6 @@ export async function createUser(
     userId: string, 
     name: string, 
     email: string, 
-    phoneNumber: string,
     houses: string[]
   }, null>(functions, 'writeUser');
 
@@ -70,7 +69,7 @@ export async function createUser(
   const houses: string[] = [];
 
   try {
-    await fn({ userId, name, email, phoneNumber, houses });
+    await fn({ userId, name, email, houses });
   } catch (err) {
     console.error("Error creating user:", err);
     throw new Error('Failed to create user data. Please try again.');

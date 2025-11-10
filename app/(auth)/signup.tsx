@@ -23,7 +23,6 @@ export default function SignUp() {
   const { user } = useAuth();
 
   const [name, onChangeName] = useState('');
-  const [phoneNumber, onChangePhoneNumber] = useState('');
   const [email, onChangeEmail] = useState('');
   const [password, onChangePassword] = useState('');
   const [confirmPassword, onChangeConfirmPassword] = useState('');
@@ -70,7 +69,7 @@ export default function SignUp() {
     }
 
     try {
-      await createUser(name, phoneNumber, email, password);
+      await createUser(name, email, password);
     } catch (err) {
       if (err instanceof Error) {
         setErrorText(err.message);
@@ -106,13 +105,6 @@ export default function SignUp() {
               className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
               onChangeText={onChangeName}
               value={name}
-            />
-
-            <Text className="mb-2">Phone Number</Text>
-            <TextInput
-              className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
-              onChangeText={onChangePhoneNumber}
-              value={phoneNumber}
             />
 
             <Text className="mb-2">Email</Text>
