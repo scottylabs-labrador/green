@@ -32,7 +32,14 @@ export default function SignUp() {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        if (!user?.uid) {
+        if (!user) {
+          return;
+        }
+
+        setLoading(false);
+
+        if (!user.emailVerified) {
+          router.push('/verifyemail');
           return;
         }
   

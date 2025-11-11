@@ -1,10 +1,12 @@
 import { FirebaseError } from 'firebase/app';
 import {
   createUserWithEmailAndPassword,
+  sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
-  updateProfile
+  updateProfile,
+  User
 } from 'firebase/auth';
 import { get, ref } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
@@ -30,6 +32,8 @@ export async function createUser(
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     user = userCredential.user;
+
+    await sendEmailVerification(user);
 
     await updateProfile(user, {
       displayName: name
@@ -159,10 +163,9 @@ export function userSignOut() {
 
 export async function userPasswordResetEmail(email: string) {
   try {
-    console.log(email);
     await sendPasswordResetEmail(auth, email);
   } catch (err) {
-    console.log("Send password reset email error:", err);
+    console.error("Send password reset email error:", err);
     if (err instanceof FirebaseError) {
       switch (err.code) {
         case 'auth/invalid-email':
@@ -177,5 +180,14 @@ export async function userPasswordResetEmail(email: string) {
     } else {
       throw new Error('An unexpected error occurred. Please try again later.');
     }
+  }
+}
+
+export async function userVerifyEmail(user: User) {
+  try {
+    await sendEmailVerification(user);
+  } catch (err) {
+    console.error("Send email verification error:", err);
+    throw new Error('An unexpected error occurred. Please try again later.');
   }
 }

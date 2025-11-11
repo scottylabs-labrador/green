@@ -28,6 +28,11 @@ function RootLayoutNav() {
     return <Redirect href="/(auth)/login" />;
   }
 
+  // Redirect to verify email if email not verified
+  // if (!user?.emailVerified && !isAuthGroup) {
+  //   return <Redirect href="/(auth)/verifyemail" />
+  // }
+
   return (
     <Stack screenOptions={{ headerShown: false }} />
   )
