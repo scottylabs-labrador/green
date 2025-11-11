@@ -6,6 +6,7 @@ import { Pressable, Text, View } from 'react-native';
 import { getHouseId, listenForHouseInfo } from '@/api/house';
 import { useAuth } from '@/context/AuthContext';
 
+import AccountSettings from '@/components/AccountSettings';
 import LogoutConfirm from '@/components/LogoutConfirm';
 import EditProfile from '../../components/EditProfile';
 import HouseInfo from '../../components/HouseInfo';
@@ -22,8 +23,11 @@ export default function Profile() {
   const [houseName, setHouseName] = useState('');
   const [houseId, setHouseId] = useState('');
   const [members, setMembers] = useState({});
+
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showAccountSettings, setShowAccountSettings] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -78,6 +82,10 @@ export default function Profile() {
     setShowEditProfile(!showEditProfile);
   };
 
+  const handleAccountSettings = () => {
+    setShowAccountSettings(!showAccountSettings);
+  }
+
   const handleLogoutConfirm = () => {
     setShowLogoutConfirm(!showLogoutConfirm);
   }
@@ -118,6 +126,14 @@ export default function Profile() {
           </Pressable>
           <Pressable 
             className="flex h-12 w-full items-center justify-center self-center rounded-lg bg-gray-50 border border-gray-100 hover:bg-gray-100" 
+            onPress={handleAccountSettings}
+          >
+            <View className="w-full flex-row items-center justify-center gap-3 px-3">
+              <Text className="text-1xl grow text-left font-semibold">Account Settings</Text>
+            </View>
+          </Pressable>
+          <Pressable 
+            className="flex h-12 w-full items-center justify-center self-center rounded-lg bg-gray-50 border border-gray-100 hover:bg-gray-100" 
             onPress={handleLogoutConfirm}
           >
             <View className="w-full flex-row items-center justify-center gap-3 px-3">
@@ -135,7 +151,14 @@ export default function Profile() {
           onNameChange={setName} 
           onColorChange={setColor}
         />
-        <LogoutConfirm visible={showLogoutConfirm} onClose={handleLogoutConfirm} />
+        <LogoutConfirm 
+          visible={showLogoutConfirm} 
+          onClose={handleLogoutConfirm} 
+        />
+        <AccountSettings 
+          visible={showAccountSettings}
+          onClose={handleAccountSettings}
+        />
       </View>
     </View>
   );
