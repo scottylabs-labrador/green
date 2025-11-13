@@ -2,8 +2,8 @@ import React from 'react';
 
 import { Redirect, SplashScreen, Stack, useSegments } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
+import { MenuProvider } from 'react-native-popup-menu';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-
 
 import { AuthProvider, useAuth } from '../context/AuthContext';
 
@@ -28,11 +28,6 @@ function RootLayoutNav() {
     return <Redirect href="/(auth)/login" />;
   }
 
-  // Redirect to verify email if email not verified
-  // if (!user?.emailVerified && !isAuthGroup) {
-  //   return <Redirect href="/(auth)/verifyemail" />
-  // }
-
   return (
     <Stack screenOptions={{ headerShown: false }} />
   )
@@ -41,11 +36,13 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <SafeAreaProvider>
-        <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
-          <RootLayoutNav />
-        </SafeAreaView>
-      </SafeAreaProvider>
+      <MenuProvider>
+        <SafeAreaProvider>
+          <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+            <RootLayoutNav />
+          </SafeAreaView>
+        </SafeAreaProvider>
+      </MenuProvider>
     </AuthProvider>
   );
 }

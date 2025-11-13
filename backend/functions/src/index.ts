@@ -12,14 +12,16 @@ admin.initializeApp({
   databaseURL: process.env.DATABASE_URL,
 });
 
+import { clearGroceryItems, removeGroceryItem, updateGroceryItem, writeGroceryItem, writeGroceryList } from './handlers/grocerylist';
 import { createInviteCode, deleteExpiredInviteCodes, joinHouseWithInvite, updateHouseName, writeHouse } from './handlers/house';
 import { deleteReceiptItem, updateReceiptItem, writeReceipt } from './handlers/receipt';
 import { getUserEmail, syncUserName, updateUser, updateUserColor, writeUser } from './handlers/user';
-import { writeGroceryList, writeGroceryItem, updateGroceryItem } from './handlers/grocerylist';
 
 exports.writeGroceryList = writeGroceryList;
 exports.writeGroceryItem = writeGroceryItem;
 exports.updateGroceryItem = updateGroceryItem;
+exports.removeGroceryItem = removeGroceryItem
+exports.clearGroceryItems = clearGroceryItems
 
 exports.createInviteCode = createInviteCode;
 exports.joinHouseWithInvite = joinHouseWithInvite;

@@ -1,8 +1,8 @@
-import * as functions from 'firebase-functions';
 import * as crypto from 'crypto';
+import * as functions from 'firebase-functions';
 
-import type { GroceryList, Splits, GroceryItem } from '..//db/types';
-import { setTyped, updateTyped, exists, get, deleteData } from '../db/db';
+import { exists, get, remove, setTyped, updateTyped } from '../db/db';
+import type { GroceryItem, GroceryList, Splits } from '../db/types';
 
 export const writeGroceryList = functions.https.onCall(
   async (request: functions.https.CallableRequest<{ grocerylist: string , name: string}>) => {
@@ -121,10 +121,10 @@ export const updateGroceryItem = functions.https.onCall(
         }
         else{
           if (currquantity + changeQuantity <= 0){
-            await deleteData(`grocerylists/${grocerylist}/groceryitems/${id}`)
+            await remove(`grocerylists/${grocerylist}/groceryitems/${id}`)
           }
           else if(currmemberquantity + changeQuantity <= 0) {
-            await deleteData(`grocerylists/${grocerylist}/groceryitems/${id}/splits/${member}`)
+            await remove(`grocerylists/${grocerylist}/groceryitems/${id}/splits/${member}`)
             await setTyped<Number>(`grocerylists/${grocerylist}/groceryitems/${id}/quantity`, currquantity + changeQuantity)
           }
           else{
@@ -151,7 +151,7 @@ export const updateGroceryItem = functions.https.onCall(
 );
 
 export const removeGroceryItem = functions.https.onCall(
-  async (request: functions.https.CallableRequest<{ grocerylist: string, id: string}>) => {
+  async (request: functions.https.CallableRequest<{ grocerylist: string, id: string }>) => {
     const { grocerylist, id } = request.data;
 
     if (!request.auth) {
@@ -166,12 +166,25 @@ export const removeGroceryItem = functions.https.onCall(
       throw new functions.https.HttpsError('invalid-argument', 'id is required');
     }
 
-    const itemexists = await exists(`grocerylists/${grocerylist}/groceryitems/${id}`);
-    if (itemexists){
-      await deleteData(`grocerylists/${grocerylist}/groceryitems/${id}`);
-    }
+    await remove(`grocerylists/${grocerylist}/groceryitems/${id}`);
   },
 );
+
+export const clearGroceryItems = functions.https.onCall(
+  async (request: functions.https.CallableRequest<{ grocerylist: string }>) => {
+    const { grocerylist } = request.data;
+
+    if (!request.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
+    }
+
+    if (!grocerylist) {
+      throw new functions.https.HttpsError('invalid-argument', 'grocerylist is required');
+    }
+
+    await remove(`grocerylists/${grocerylist}/groceryitems`);
+  },
+)
 
 
 
