@@ -7,7 +7,6 @@ import { updateUser, updateUserColor } from '../api/auth';
 
 import ColorPicker from './ColorPicker';
 import Button from './CustomButton';
-import Loading from './Loading';
 
 type EditProfileProps = {
   userId: string;
@@ -88,12 +87,7 @@ const EditProfile = ({ userId, name, houseId, color, visible, onClose, onNameCha
               Error: {error}
             </Text>
           )}
-          <Button buttonLabel="Save Changes" onPress={saveChanges} fontSize="text-sm"></Button>
-          {loading && (
-            <View className="absolute inset-0 bg-white/70 justify-center items-center rounded-2xl">
-              <Loading message="Updating profile..." />
-            </View>
-          )}
+          <Button buttonLabel="Save Changes" onPress={saveChanges} fontSize="text-sm" isLoading={loading}></Button>
         </View>
       </View>
     </Modal>

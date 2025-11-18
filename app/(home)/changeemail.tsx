@@ -12,6 +12,7 @@ import {
 
 import { reauthenticateAndChangeEmail } from '@/api/auth';
 import Button from '@/components/CustomButton';
+import SecureTextInput from '@/components/SecureTextInput';
 import { useAuth } from '@/context/AuthContext';
 
 export default function ChangeEmail() {
@@ -76,12 +77,7 @@ export default function ChangeEmail() {
           />
 
           <Text className="mb-2">Current Password</Text>
-          <TextInput
-            className="mb-2 block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
-            onChangeText={setCurrPassword}
-            value={currPassword}
-            secureTextEntry
-          />
+          <SecureTextInput value={currPassword} onChangeText={setCurrPassword} />
           <Text className="text-blue-500 font-medium text-right mb-2" onPress={() => router.push('/forgotpassword')}>
             Forgot Password?
           </Text>

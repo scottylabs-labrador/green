@@ -6,12 +6,12 @@ import {
   Platform,
   ScrollView,
   Text,
-  TextInput,
   View
 } from 'react-native';
 
 import { reauthenticateAndChangePassword, userSignOut } from '@/api/auth';
 import Button from '@/components/CustomButton';
+import SecureTextInput from '@/components/SecureTextInput';
 import { useAuth } from '@/context/AuthContext';
 
 export default function ChangePassword() {
@@ -60,31 +60,16 @@ export default function ChangePassword() {
           <Text className="mb-9 text-3xl font-semibold">Change Password</Text>
 
           <Text className="mb-2">Current Password</Text>
-          <TextInput
-            className="mb-2 block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
-            onChangeText={setCurrPassword}
-            value={currPassword}
-            secureTextEntry
-          />
+          <SecureTextInput value={currPassword} onChangeText={setCurrPassword} />
           <Text className="text-blue-500 font-medium text-right mb-2" onPress={() => router.push('/forgotpassword')}>
             Forgot Password?
           </Text>
 
           <Text className="mb-2">New Password</Text>
-          <TextInput
-            className="mb-2 block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
-            onChangeText={setNewPassword}
-            value={newPassword}
-            secureTextEntry
-          />
+          <SecureTextInput value={newPassword} onChangeText={setNewPassword} />
 
           <Text className="mb-2">Confirm Password</Text>
-          <TextInput
-            className="mb-2 block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
-            onChangeText={setConfirmPassword}
-            value={confirmPassword}
-            secureTextEntry
-          />
+          <SecureTextInput value={confirmPassword} onChangeText={setConfirmPassword} />
 
           <Text className="mb-4 text-red-500">{errorText}</Text>
 

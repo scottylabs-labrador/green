@@ -6,7 +6,6 @@ import { Modal, Text, TextInput, View } from 'react-native';
 import { updateHouseName } from '../api/house';
 
 import Button from './CustomButton';
-import Loading from './Loading';
 
 type EditHouseProps = {
   houseId: string;
@@ -64,12 +63,7 @@ const EditHouse = ({ houseId, houseName, visible, onClose, onNameChange }: EditH
               Error: {error}
             </Text>
           )}
-          <Button buttonLabel="Save Changes" onPress={saveChanges} fontSize="text-sm"></Button>
-          {loading && (
-            <View className="absolute inset-0 bg-white/70 justify-center items-center rounded-2xl">
-              <Loading message="Updating profile..." />
-            </View>
-          )}        
+          <Button buttonLabel="Save Changes" onPress={saveChanges} fontSize="text-sm" isLoading={loading}></Button>        
         </View>
       </View>
     </Modal>

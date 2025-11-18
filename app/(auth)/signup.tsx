@@ -8,7 +8,7 @@ import {
   ScrollView,
   Text,
   TextInput,
-  View,
+  View
 } from 'react-native';
 
 import { createUser } from '@/api/auth';
@@ -16,6 +16,7 @@ import { getGroceryListIdFromHouse } from '@/api/grocerylist';
 import { getHouseId } from '@/api/house';
 import background from '@/assets/home-background.png';
 import Button from '@/components/CustomButton';
+import SecureTextInput from '@/components/SecureTextInput';
 import { useAuth } from '@/context/AuthContext';
 
 export default function SignUp() {
@@ -122,20 +123,10 @@ export default function SignUp() {
             />
 
             <Text className="mb-2">Password</Text>
-            <TextInput
-              className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
-              onChangeText={onChangePassword}
-              secureTextEntry
-              value={password}
-            />
+            <SecureTextInput value={password} onChangeText={onChangePassword} />
 
-            <Text className="mb-2">Confirm Password</Text>
-            <TextInput
-              className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
-              onChangeText={onChangeConfirmPassword}
-              secureTextEntry
-              value={confirmPassword}
-            />
+            <Text className="mt-2 mb-2">Confirm Password</Text>
+            <SecureTextInput value={confirmPassword} onChangeText={onChangeConfirmPassword} />
 
             <Text className="text-red-500 mb-4">{errorText}</Text>
 
