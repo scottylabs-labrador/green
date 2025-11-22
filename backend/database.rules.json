@@ -1,13 +1,11 @@
 {
   "rules": {
       "housemates": {
-          ".read": true, 
-          ".write": true,
           "$housemateid": {
+              ".read": "auth !== null", 
               "name": {
                   ".validate": "newData.isString()"
               },
-              "phone_number": {},
               "email": {},
               "houses": {},
               "$other": {".validate": false}
@@ -36,19 +34,31 @@
           }
       },
       "grocerylists": {
-          ".read": "auth !== null", 
-      		".write": "auth !== null",
-          "$grocerylistid": { 
-              "name": {},
+          "$grocerylistid": {
+              ".read": "auth !== null && root.child('houses/' + data.child('houseId').val() + '/members/' + auth.uid).exists()",  
+              "name": {
+                ".validate": "newData.isString() && root.child('houses/' + data.child('houseId').val() + '/name').val() === newData.val()"
+              },
               "groceryitems": {
                   "$groceryitemid": {
-                      ".validate": "newData.hasChildren(['name', 'quantity'])",
+                      ".validate": "newData.hasChildren(['name', 'quantity', 'splits'])",
                       ".indexOn": ["name"],
-                      "name": {".validate": true},
-                      "quantity": {".validate": true},
-                      "splits": {".validate": true},
+                      "name": {
+                        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30"
+                      },
+                      "quantity": {
+                        ".validate": "newData.isNumber() && newData.val() >= 0"
+                      },
+                      "splits": {
+                        "$key": {
+                          ".validate": "newData.isNumber() && newData.val() >= 0"
+                        }
+                      },
                       "$other": {".validate": false}
                   }
+              },
+              "houseId": {
+                ".validate": "newData.isString() && root.child('houses/' + data.child('houseId').val()).exists()"
               },
               "$other": {".validate": false}
           }

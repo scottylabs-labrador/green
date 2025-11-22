@@ -21,6 +21,10 @@ function RootLayoutNav() {
     );
   }
 
+  if (segments[0] === 'error') {
+    return <Stack screenOptions={{ headerShown: false }} />;
+  }
+
   const isAuthGroup = segments[0] === '(auth)';
 
   // Redirect to login if not authenticated

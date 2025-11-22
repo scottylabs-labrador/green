@@ -5,8 +5,8 @@ import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { FlatList, Image, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
 
-import { getGroceryListId, listenForGroceryItems } from '@/api/grocerylist';
-import { getHouseId, listenForHouseInfo } from '@/api/house';
+import { getGroceryListId, getHouseIdFromGroceryListId, listenForGroceryItems } from '@/api/grocerylist';
+import { listenForHouseInfo } from '@/api/house';
 import GroceryItem from '@/components/GroceryItem';
 import { useAuth } from '@/context/AuthContext';
 
@@ -34,23 +34,25 @@ export default function List() {
   const year = String(currentDate.getFullYear()).slice(-2);
   const date = `${month}.${day}.${year}`;
 
-  useEffect(() => {
-    const getGroceryList = async () => {
-      const isValid = typeof grocerylist === 'string' && grocerylist.trim() !== '';
-
-      if (!isValid && user && user.uid) {
-        try {
-          const groceryListId = await getGroceryListId(user.uid);
-          router.replace({ pathname: '/list', params: { grocerylist: groceryListId } });
-        } catch (err) {
-          console.error("Error fetching grocery list ID:", err);
-        }
-      } else if (!user || !user.uid) {
-        router.replace('/login');
+  const getGroceryList = async () => {
+    if (user && user.uid) {
+      try {
+        const groceryListId = await getGroceryListId(user.uid);
+        router.replace({ pathname: '/list', params: { grocerylist: groceryListId } });
+      } catch (err) {
+        console.error("Error fetching grocery list ID:", err);
       }
-    };
+    } else if (!user || !user.uid) {
+      router.replace('/login');
+    }
+  };
 
-    getGroceryList();
+  useEffect(() => {
+    const isValid = typeof grocerylist === 'string' && grocerylist.trim() !== '';
+
+    if (!isValid) {
+      getGroceryList();
+    }
   }, [grocerylist, router, user]);
 
   useEffect(() => {
@@ -58,11 +60,18 @@ export default function List() {
       if (user && user.uid) {
         setUserId(user.uid);
 
+        if (!grocerylist) {
+          return;
+        }
+
         try {
-          const id = await getHouseId(user.uid);
+          const id = await getHouseIdFromGroceryListId(grocerylist);
           setHouseId(id);
         } catch (err) {
           console.error("Error fetching house ID:", err);
+          if (err instanceof Error && err.message.includes('Permission denied')) { 
+            getGroceryList();
+          }
         }
       } else {
         router.replace('/login');
@@ -70,7 +79,7 @@ export default function List() {
     }
 
     fetchHouseId();
-  }, [user]);
+  }, [grocerylist]);
 
   useEffect(() => {
     if (!houseId) return;
@@ -84,17 +93,27 @@ export default function List() {
       return () => unsubscribe();
     } catch (err) {
       console.error("Error listening for house info:", err);
+      if (err instanceof Error && err.message.includes('Permission denied')) { 
+        router.replace('/error');
+      }
     }
   }, [houseId]);
 
   useEffect(() => {
     if (!grocerylist) return;
 
-    const unsubscribeItems = listenForGroceryItems(grocerylist, (items) => {
-      setGroceryItems(items);
-    });
+    try {
+      const unsubscribeItems = listenForGroceryItems(grocerylist, (items) => {
+        setGroceryItems(items);
+      });
 
-    return () => unsubscribeItems();
+      return () => unsubscribeItems();
+    } catch (err) {
+      console.error("Error while fetching grocery items:", err);
+      if (err instanceof Error && err.message.includes('Permission denied')) { 
+        router.replace('/error');
+      }
+    }    
   }, [grocerylist]);
 
   const toggleModal = () => setModalVisible(!modalVisible);
@@ -180,3 +199,4 @@ export default function List() {
     </View>
   );
 }
+

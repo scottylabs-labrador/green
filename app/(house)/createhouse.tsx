@@ -20,7 +20,7 @@ export default function CreateHouse() {
 
     try {
       await writeHouse(name, housecode, grocerylist);
-      await writeGroceryList(grocerylist, name);
+      await writeGroceryList(grocerylist, name, housecode);
       router.push({
         pathname: '/joinhouse',
         params: { key: housecode },

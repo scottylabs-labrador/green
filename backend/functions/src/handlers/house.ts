@@ -4,7 +4,7 @@ import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 
-import { setTyped, updateTyped } from '../db/db';
+import { get, setTyped, updateTyped } from '../db/db';
 import type { House, Invite, Member } from '../db/types';
 
 export const createInviteCode = functions.https.onCall(
@@ -141,7 +141,10 @@ export const updateHouseName = functions.https.onCall(
       throw new functions.https.HttpsError('invalid-argument', 'houseId is required');
     }
 
+    const groceryListId = await get(`houses/${houseId}/grocerylist`);
+
     await setTyped<string>(`houses/${houseId}/name`, name);
+    await setTyped<string>(`grocerylists/${groceryListId}/name`, name);
     
     return null;
   },
