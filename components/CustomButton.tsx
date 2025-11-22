@@ -8,23 +8,27 @@ type ButtonProps = {
   hoverColor?: string;
   fontSize?: string;
   isLoading?: boolean;
+  isDisabled?: boolean;
   onPress: () => void;
 };
 
-const CustomButton = ({ buttonLabel, color, hoverColor, fontSize, isLoading, onPress }: ButtonProps) => {
+const CustomButton = ({ buttonLabel, color, hoverColor, fontSize, isLoading, isDisabled, onPress }: ButtonProps) => {
   return (
     <Pressable
-      className={`${color ? color : 'bg-emerald-900'} ${isLoading && 'bg-opacity-50'} self-center rounded-lg px-6 py-3 mb-4 min-w-[120px] min-h-[50px] justify-center items-center ${isLoading ? '' : (hoverColor ? hoverColor : 'hover:bg-emerald-950')}`}
+      className={`${color ? color : 'bg-emerald-900'} ${(isLoading || isDisabled) && 'bg-opacity-50'} self-center rounded-lg px-6 py-3 mb-4 min-w-[120px] min-h-[50px] justify-center items-center ${isLoading ? '' : (hoverColor ? hoverColor : 'hover:bg-emerald-950')}`}
       onPress={onPress}
-      disabled={isLoading}
+      disabled={isLoading || isDisabled}
     >
-      {isLoading ? (
-        <ActivityIndicator color="#fff" />
-      ) : (
-        <Text className={`${fontSize ? fontSize : 'text-lg'} font-semibold text-white`}>
-          {buttonLabel}
-        </Text>
-      )}
+      {isLoading && <ActivityIndicator color="#fff" className="absolute" />}
+      <Text 
+        className={`
+          ${fontSize ? fontSize : 'text-base'} 
+          font-semibold text-white
+          ${isLoading ? 'opacity-0' : 'opacity-100'}
+        `}
+      >
+        {buttonLabel}
+      </Text>
     </Pressable>
   );
 };

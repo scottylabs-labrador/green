@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { createInviteCode } from '@/api/house';
+import { Entypo, FontAwesome6 } from '@expo/vector-icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Clipboard from 'expo-clipboard';
 import { getAuth } from 'firebase/auth';
 import { ActivityIndicator, Alert, Modal, Pressable, Text, View } from 'react-native';
-
-import { createInviteCode } from '../api/house';
 
 type InviteCodeProps = {
   houseId: string;
@@ -16,12 +15,14 @@ type InviteCodeProps = {
 
 const InviteCode = ({ houseId, visible, onClose }: InviteCodeProps) => {
   const [link, setLink] = useState('');
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (visible) {
       const handleCreateCode = async () => {
+        setCopied(false);
         setLoading(true);
 
         const userId = getAuth().currentUser?.uid;
@@ -57,6 +58,7 @@ const InviteCode = ({ houseId, visible, onClose }: InviteCodeProps) => {
     if (link) {
       await Clipboard.setStringAsync(link);
       Alert.alert('Copied to clipboard!');
+      setCopied(true);
     }
   };
 
@@ -71,13 +73,20 @@ const InviteCode = ({ houseId, visible, onClose }: InviteCodeProps) => {
             <View className="mt-4 flex-row gap-3 justify-center items-center">
               <Text className="w-full text-left font-medium">Join Code</Text>
               <Text className="flex-shrink text-gray-500">{link}</Text>
-              <Pressable className="rounded-full bg-gray-100 hover:bg-gray-200 p-2">
-                <FontAwesome6
-                  name="copy"
-                  size={18}
-                  color="gray"
-                  onPress={handleCopy}
-                />
+              <Pressable className={`flex justify-center items-center rounded-full w-6 h-6`}>
+                {copied 
+                  ? <Entypo 
+                      name="check" 
+                      size={20} 
+                      color="green"
+                      onPress={handleCopy} />
+                  : <FontAwesome6
+                      name="copy"
+                      size={18}
+                      color="gray"
+                      onPress={handleCopy}
+                    />
+                }
               </Pressable>
             </View>
           ) : loading ? (

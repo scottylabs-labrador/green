@@ -8,7 +8,7 @@ import {
   ScrollView,
   Text,
   TextInput,
-  View,
+  View
 } from 'react-native';
 
 import { createUser } from '@/api/auth';
@@ -16,6 +16,7 @@ import { getGroceryListIdFromHouse } from '@/api/grocerylist';
 import { getHouseId } from '@/api/house';
 import background from '@/assets/home-background.png';
 import Button from '@/components/CustomButton';
+import SecureTextInput from '@/components/SecureTextInput';
 import { useAuth } from '@/context/AuthContext';
 
 export default function SignUp() {
@@ -23,7 +24,6 @@ export default function SignUp() {
   const { user } = useAuth();
 
   const [name, onChangeName] = useState('');
-  const [phoneNumber, onChangePhoneNumber] = useState('');
   const [email, onChangeEmail] = useState('');
   const [password, onChangePassword] = useState('');
   const [confirmPassword, onChangeConfirmPassword] = useState('');
@@ -33,7 +33,14 @@ export default function SignUp() {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        if (!user?.uid) {
+        if (!user) {
+          return;
+        }
+
+        setLoading(false);
+
+        if (!user.emailVerified) {
+          router.push('/verifyemail');
           return;
         }
   
@@ -70,8 +77,7 @@ export default function SignUp() {
     }
 
     try {
-      await createUser(name, phoneNumber, email, password);
-      router.push('/choosehouse');
+      await createUser(name, email, password);
     } catch (err) {
       if (err instanceof Error) {
         setErrorText(err.message);
@@ -109,13 +115,6 @@ export default function SignUp() {
               value={name}
             />
 
-            <Text className="mb-2">Phone Number</Text>
-            <TextInput
-              className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
-              onChangeText={onChangePhoneNumber}
-              value={phoneNumber}
-            />
-
             <Text className="mb-2">Email</Text>
             <TextInput
               className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
@@ -124,20 +123,10 @@ export default function SignUp() {
             />
 
             <Text className="mb-2">Password</Text>
-            <TextInput
-              className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
-              onChangeText={onChangePassword}
-              secureTextEntry
-              value={password}
-            />
+            <SecureTextInput value={password} onChangeText={onChangePassword} />
 
-            <Text className="mb-2">Confirm Password</Text>
-            <TextInput
-              className="mb-4 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
-              onChangeText={onChangeConfirmPassword}
-              secureTextEntry
-              value={confirmPassword}
-            />
+            <Text className="mt-2 mb-2">Confirm Password</Text>
+            <SecureTextInput value={confirmPassword} onChangeText={onChangeConfirmPassword} />
 
             <Text className="text-red-500 mb-4">{errorText}</Text>
 

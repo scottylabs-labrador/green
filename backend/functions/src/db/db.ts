@@ -1,5 +1,4 @@
 import * as admin from 'firebase-admin';
-import { DataSnapshot } from 'firebase-admin/database';
 
 export function setTyped<T>(path: string, value: T): Promise<void> {
   const db = admin.database();
@@ -23,7 +22,7 @@ export async function get(path: string) {
   return snapshot.val();
 }
 
-export async function deleteData(path: string): Promise<void> {
+export function remove(path: string): Promise<void> {
   const db = admin.database();
-  await db.ref(path).remove();
+  return db.ref(path).remove();
 }

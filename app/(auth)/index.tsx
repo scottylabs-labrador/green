@@ -21,6 +21,11 @@ export default function Home() {
         if (!user?.uid) {
           return;
         }
+
+        if (!user.emailVerified) {
+          router.push('/verifyemail');
+          return;
+        }
   
         const houseId = await getHouseId(user.uid);
   

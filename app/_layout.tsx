@@ -2,8 +2,8 @@ import React from 'react';
 
 import { Redirect, SplashScreen, Stack, useSegments } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
+import { MenuProvider } from 'react-native-popup-menu';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-
 
 import { AuthProvider, useAuth } from '../context/AuthContext';
 
@@ -36,11 +36,13 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <SafeAreaProvider>
-        <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
-          <RootLayoutNav />
-        </SafeAreaView>
-      </SafeAreaProvider>
+      <MenuProvider>
+        <SafeAreaProvider>
+          <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+            <RootLayoutNav />
+          </SafeAreaView>
+        </SafeAreaProvider>
+      </MenuProvider>
     </AuthProvider>
   );
 }

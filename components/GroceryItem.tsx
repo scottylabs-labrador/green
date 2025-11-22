@@ -64,7 +64,7 @@ const GroceryItem = ({
         )}
       </View>
 
-      <View className="ml-4 flex-row items-center space-x-1 self-center">
+      <View className="ml-3 w-16 flex-row items-center justify-center space-x-1 self-center">
         <Pressable
           className="justify-center"
           onPress={() => updateGroceryItem(groceryListId, id, name, -1, member)}

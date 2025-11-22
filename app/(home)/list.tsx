@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
 
 import type { GroceryItems } from '@db/types';
-import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome6, Ionicons } from '@expo/vector-icons';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
-import { FlatList, Image, ListRenderItemInfo, Modal, NativeSyntheticEvent, Pressable, Text, TextInput, TextInputKeyPressEventData, View } from 'react-native';
+import { FlatList, Image, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
 
-import { getGroceryListId, listenForGroceryItems, writeGroceryItem } from '@/api/grocerylist';
+import { getGroceryListId, listenForGroceryItems } from '@/api/grocerylist';
 import { getHouseId, listenForHouseInfo } from '@/api/house';
-import Button from '@/components/CustomButton';
 import GroceryItem from '@/components/GroceryItem';
 import { useAuth } from '@/context/AuthContext';
 
+import AddGroceryItem from '@/components/AddGroceryItem';
+import ClearListConfirm from '@/components/ClearListConfirm';
+import { ListOptions, OptionItem } from '@/components/ListOptions';
 import emptyList from '../../assets/empty-list.png';
 
 export default function List() {
@@ -20,11 +22,11 @@ export default function List() {
 
   const [groceryItems, setGroceryItems] = useState<GroceryItems>({});
   const [modalVisible, setModalVisible] = useState(false);
-  const [item, setItem] = useState('');
   const [userId, setUserId] = useState('');
   const [colors, setColors] = useState({});
   const [houseId, setHouseId] = useState('');
   const [houseName, setHouseName] = useState('');
+  const [confirmClearVisible, setConfirmClearVisible] = useState(false);
 
   const currentDate = new Date();
   const month = String(currentDate.getMonth() + 1);
@@ -110,23 +112,19 @@ export default function List() {
     />
   );
 
-  const writeItem = () => {
-    if (!item.trim()) return;
-    writeGroceryItem(grocerylist, item, userId);
-    setItem('');
-    toggleModal();
-  };
-
-  const handleWriteItem = (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
-    const key = e.nativeEvent.key;
-    if (key === 'Enter') {
-      writeItem();
-    }
-  };
+  const options: OptionItem[] = [
+    { label: 'Clear All', 
+      icon: <FontAwesome6 name='trash-can' size={18} color='#f56565' />, 
+      color: '#f56565', 
+      onPress: () => setConfirmClearVisible(!confirmClearVisible) },
+  ];
 
   return (
     <View className="flex-1 items-center">
       <View className="h-full w-full flex-1">
+        <View className="absolute top-8 right-7">
+          <ListOptions options={options} />
+        </View>
         <View className="mb-8 mt-16 flex h-16 flex-col items-center justify-center">
           <Text className="text-1xl text-center font-medium text-white">Home</Text>
           <Text className="text-center text-4xl font-medium text-white">This week's list</Text>
@@ -136,10 +134,10 @@ export default function List() {
           </View>
         </View>
         <View className="mb-0 h-[200px] w-full flex-grow self-end overflow-hidden rounded-t-[40px] bg-white pb-24 pt-6">
-          <View className="justify-left h-10 w-full flex-row items-stretch self-center px-6">
+          <View className="justify-between h-10 w-full flex-row items-stretch self-center px-6">
             <Text className="text-1xl w-1/2 pl-4 text-left text-gray-400">Item</Text>
             <Text className="text-1xl w-1/4 pr-1 text-right text-gray-400">Split by</Text>
-            <Text className="text-1xl w-20 pr-3 text-right text-gray-400">Quantity</Text>
+            <Text className="text-1xl w-16 mx-3 text-center text-gray-400">Quantity</Text>
           </View>
           {groceryItems && Object.keys(groceryItems).length > 0 ? (
             <FlatList
@@ -166,7 +164,7 @@ export default function List() {
 
         <Link href={{ pathname: '/pastlists', params: { houseId: houseId } }} asChild>
           <Pressable className="absolute bottom-8 left-10 h-fit w-fit items-center justify-center rounded-lg bg-emerald-900 px-4 py-2.5 shadow-lg hover:bg-emerald-950">
-            <Text className="self-center text-center text-white font-semibold">See Past Lists</Text>
+            <Text className="self-center text-center text-white font-semibold">See Past Receipts</Text>
           </Pressable>
         </Link>
         <Pressable
@@ -176,24 +174,8 @@ export default function List() {
           <Ionicons name="add-circle" size={76} color="#064e3b" />
         </Pressable>
 
-        <Modal visible={modalVisible} transparent animationType="fade">
-          <View className="flex-1 items-center justify-center bg-black/50">
-            <View className="relative w-[85%] rounded-2xl bg-white p-5 shadow-md">
-              <Ionicons name="close" size={24} onPress={toggleModal} className="absolute right-3 top-3"/>
-              <Text className="self-center text-lg font-medium">Add Item</Text>
-              <View className="px-2 my-4">
-                <TextInput
-                  className={`block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 align-middle text-sm ${item ? 'text-gray-900' : 'text-gray-500'} focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500`}
-                  onChangeText={setItem}
-                  value={item}
-                  placeholder="Item..."
-                  onKeyPress={handleWriteItem}
-                />
-              </View>
-              <Button buttonLabel="Add Item" onPress={writeItem} fontSize="text-sm"></Button>
-            </View>
-          </View>
-        </Modal>
+        <AddGroceryItem userId={user?.uid} groceryListId={grocerylist} visible={modalVisible} onClose={toggleModal} />
+        <ClearListConfirm groceryListId={grocerylist} visible={confirmClearVisible} onClose={() => setConfirmClearVisible(!confirmClearVisible)} />
       </View>
     </View>
   );

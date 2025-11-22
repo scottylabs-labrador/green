@@ -16,6 +16,7 @@ import { getGroceryListIdFromHouse } from '@/api/grocerylist';
 import { getHouseId } from '@/api/house';
 import background from '@/assets/home-background.png';
 import Button from '@/components/CustomButton';
+import SecureTextInput from '@/components/SecureTextInput';
 import { useAuth } from '@/context/AuthContext';
 
 export default function Login() {
@@ -31,6 +32,11 @@ export default function Login() {
     const checkUser = async () => {
       try {
         if (!user?.uid) {
+          return;
+        }
+
+        if (!user.emailVerified) {
+          router.push('/verifyemail');
           return;
         }
   
@@ -124,16 +130,14 @@ export default function Login() {
             />
 
             <Text className="mb-2">Password</Text>
-            <TextInput
-              className="mb-4 block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
-              onChangeText={setPassword}
-              value={password}
-              secureTextEntry
-            />
+            <SecureTextInput value={password} onChangeText={setPassword} className="mb-10" />
+            <Text className="text-blue-500 font-medium text-right mb-2" onPress={() => router.push('/forgotpassword')}>
+              Forgot Password?
+            </Text>
 
             <Text className="mb-4 text-red-500">{errorText}</Text>
 
-            <Button buttonLabel={loading ? "Logging in..." : "Log In"} onPress={handleLogin} isLoading={loading}/>
+            <Button buttonLabel="Log In" onPress={handleLogin} isLoading={loading}/>
 
             <Text className="text-center mt-2">
               Don't have an account?{' '}
@@ -142,8 +146,6 @@ export default function Login() {
               </Text>
             </Text>
           </View>
-
-          {/* <BackButton /> */}
         </ScrollView>
       </KeyboardAvoidingView>
     </ImageBackground>

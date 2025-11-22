@@ -1,5 +1,5 @@
 import { GroceryItems, GroceryList } from '@db/types';
-import { get, getDatabase, onValue, ref, remove } from 'firebase/database';
+import { get, onValue, ref } from 'firebase/database';
 import { httpsCallable } from 'firebase/functions';
 
 import { db, functions } from './firebase';
@@ -72,7 +72,7 @@ export async function writeGroceryItem(grocerylist: string, name: string, member
 export async function updateGroceryItem(grocerylist: string, id: string, name: string, changeQuantity = 1, member: string) {
   const fn = httpsCallable<{ 
     grocerylist: string, 
-    id: String, 
+    id: string, 
     name: string, 
     changeQuantity: Number, 
     member: string
@@ -81,24 +81,19 @@ export async function updateGroceryItem(grocerylist: string, id: string, name: s
   await fn({ grocerylist, id, name, changeQuantity, member });
 }
 
-export function removeGroceryItem(grocerylist: string, id: string) {
-  const db = getDatabase();
-  const itemRef = ref(db, 'grocerylists/' + grocerylist + '/groceryitems/');
+export async function removeGroceryItem(grocerylist: string, id: string) {
+  const fn = httpsCallable<{
+    grocerylist: string, 
+    id: string
+  }, null>(functions, 'removeGroceryItem');
 
-  get(itemRef).then(snapshot => {
-    if (snapshot.exists()) {
-      const items = snapshot.val();
+  await fn({ grocerylist, id });
+}
 
-      Object.keys(items).forEach(itemId => {
-        // Check if the name matches and quantity matches one removed
-        if (itemId == id) {
-          const itemRef = ref(db, `grocerylists/${grocerylist}/groceryitems/${id}`);
-          remove(itemRef) // Remove the item
-            .catch(error => console.error('Error removing item:', error));
-        }
-      });
-    } else {
-      console.error('No matching items found');
-    }
-  });
+export async function clearGroceryItems(grocerylist: string) {
+  const fn = httpsCallable<{
+    grocerylist: string
+  }, null>(functions, 'clearGroceryItems');
+
+  await fn({ grocerylist });
 }
