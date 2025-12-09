@@ -1,79 +1,127 @@
 {
   "rules": {
-      "housemates": {
-          "$housemateid": {
-              ".read": "auth !== null", 
-              "name": {
-                  ".validate": "newData.isString()"
-              },
-              "email": {},
-              "houses": {},
-              "$other": {".validate": false}
+    "housemates": {
+      "$housemateid": {
+        ".read": "auth !== null && auth.uid === $housemateid", 
+        "name": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30"
+        },
+        "houses": {
+          "$index": {
+            ".validate": "newData.isString() && root.child('houses/' + newData.val()).exists()"
           }
-      },
-      "houses": {
-          ".read": "auth !== null", 
-      		".write": "auth !== null",
-          "$housecode": { 
-              "name": {
-              
-              },
-              "members": {
-                ".read": "auth !== null",
-                ".write": "auth !== null"
-              },
-              "grocerylist": {
-                ".read": "auth !== null", 
-      		      ".write": "auth !== null"
-              },
-              "receipts": {
-                ".read": "auth !== null", 
-      		      ".write": "auth !== null"
-              },
-              "$other": {".validate": false}
-          }
-      },
-      "grocerylists": {
-          "$grocerylistid": {
-              ".read": "auth !== null && root.child('houses/' + data.child('houseId').val() + '/members/' + auth.uid).exists()",  
-              "name": {
-                ".validate": "newData.isString() && root.child('houses/' + data.child('houseId').val() + '/name').val() === newData.val()"
-              },
-              "groceryitems": {
-                  "$groceryitemid": {
-                      ".validate": "newData.hasChildren(['name', 'quantity', 'splits'])",
-                      ".indexOn": ["name"],
-                      "name": {
-                        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30"
-                      },
-                      "quantity": {
-                        ".validate": "newData.isNumber() && newData.val() >= 0"
-                      },
-                      "splits": {
-                        "$key": {
-                          ".validate": "newData.isNumber() && newData.val() >= 0"
-                        }
-                      },
-                      "$other": {".validate": false}
-                  }
-              },
-              "houseId": {
-                ".validate": "newData.isString() && root.child('houses/' + data.child('houseId').val()).exists()"
-              },
-              "$other": {".validate": false}
-          }
-      },
-      "receipts": {
-          ".read": "auth !== null", 
-      		".write": "auth !== null",
-          "$receiptid": {
-
-          }
-      },
-      "invites": {
-        ".read": "auth !== null", 
-      	".write": "auth !== null",
-        ".indexOn": "expiresAt"
+        },
+        "$other": {".validate": false}
       }
+    },
+    "houses": {
+      "$houseid": {
+        ".read": "auth !== null && root.child('houses/' + $houseid + '/members/' + auth.uid).exists()",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30"
+        },
+        "members": {
+          "$memberid": {
+            "color": {
+              ".validate": "newData.isString() && newData.val().matches(/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/)"
+            },
+            "name": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30"
+            }
+          }
+        },
+        "grocerylist": {
+          ".validate": "newData.isString()"
+        },
+        "receipts": {
+          "$receiptid": {
+            "date": {
+              ".validate": "newData.isString()"
+            }
+          }
+        },
+        "$other": {".validate": false}
+      }
+    },
+    "grocerylists": {
+      "$grocerylistid": {
+        ".read": "auth !== null && root.child('houses/' + data.child('houseId').val() + '/members/' + auth.uid).exists()",  
+        "name": {
+          ".validate": "newData.isString() && root.child('houses/' + data.child('houseId').val() + '/name').val() === newData.val()"
+        },
+        "groceryitems": {
+          "$groceryitemid": {
+            ".validate": "newData.hasChildren(['name', 'quantity', 'splits'])",
+            ".indexOn": ["name"],
+            "name": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30"
+            },
+            "quantity": {
+              ".validate": "newData.isNumber() && newData.val() >= 0"
+            },
+            "splits": {
+              "$key": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              }
+            },
+            "$other": {".validate": false}
+          }
+        },
+        "houseId": {
+          ".validate": "newData.isString() && root.child('houses/' + data.child('houseId').val()).exists()"
+        },
+        "$other": {".validate": false}
+      }
+    },
+    "receipts": {
+      "$receiptid": {
+        ".read": "auth !== null && root.child('houses/' + data.child('houseId').val() + '/members/' + auth.uid).exists()", 
+        "date": {
+          ".validate": "newData.isString() && newData.val().matches(/^\\d{4}-\\d{2}-\\d{2}$/)"
+        },
+        "groceryListId": {
+          ".validate": "newData.isString() && root.child('grocerylists/' + data.child('groceryListId').val()).exists()"
+        },
+        "houseId": {
+          ".validate": "newData.isString() && root.child('houses/' + data.child('houseId').val()).exists()"
+        },
+        "receiptitems": {
+          "$receiptitemid": {
+            ".validate": "newData.hasChildren(['groceryItem', 'price', 'receiptItem', 'splits'])",
+            "groceryItem": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30"
+            },
+            "price": {
+              ".validate": "newData.isNumber() && newData.val() >= 0"
+            },
+            "receiptItem": {
+              ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30"
+            },
+            "splits": {
+              "$key": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              }
+            },
+            "$other": {".validate": false}
+          }
+        },        
+        "$other": {".validate": false}
+      }
+    },
+    "invites": {
+      ".read": "auth !== null",
+      "$inviteid": {
+        "houseId": {
+          ".validate": "newData.isString() && root.child('houses/' + data.child('houseId').val()).exists()"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "expiresAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "$other": {".validate": false}
+      }
+    }
   }
 }

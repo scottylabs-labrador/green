@@ -7,14 +7,14 @@ import type { Housemate } from '../db/types';
 import { isValidHexColor, userInHouse } from '../validation/verify';
 
 export const writeUser = functions.https.onCall(
-  async (request: functions.https.CallableRequest<{ userId: string, name: string, email: string, houses: string[] }>) => {
-    const { userId, name, email, houses } = request.data;
+  async (request: functions.https.CallableRequest<{ userId: string, name: string, houses: string[] }>) => {
+    const { userId, name, houses } = request.data;
 
     if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
     }
 
-    if (!userId || !name || !email || !houses ) {
+    if (!userId || !name || !houses ) {
       throw new functions.https.HttpsError('invalid-argument', 'all arguments are required');
     }
     if (userId !== request.auth.uid) {
@@ -26,7 +26,6 @@ export const writeUser = functions.https.onCall(
 
     const user: Housemate = {
       name, 
-      email, 
       houses,
     }
     await setTyped<Housemate>(`housemates/${userId}`, user);

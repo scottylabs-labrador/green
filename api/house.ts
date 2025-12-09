@@ -75,6 +75,12 @@ export async function getHouseNameFromId(houseId: string) {
   throw new Error('No house found');
 }
 
+export async function getHouseNameFromServer(houseId: string) {
+  const fn = httpsCallable<{ houseId: string }, { houseName: string }>(functions, 'getHouseNameFromServer');
+  const result = await fn({ houseId });
+  return result.data.houseName;
+}
+
 export function listenForHouseInfo(houseId: string, callback: (house: House) => void) {
   const houseRef = ref(db, `houses/${houseId}`);
 

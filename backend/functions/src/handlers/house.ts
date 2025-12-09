@@ -175,3 +175,24 @@ export const updateHouseName = functions.https.onCall(
     return null;
   },
 )
+
+export const getHouseNameFromServer = functions.https.onCall(
+  async (request: functions.https.CallableRequest<{ houseId: string }>) => {
+    const { houseId } = request.data;
+
+    if (!request.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
+    }
+    if (!houseId) {
+      throw new functions.https.HttpsError('invalid-argument', 'houseId is required');
+    }
+
+    try {
+      const houseName = await get(`houses/${houseId}/name`);
+      return { houseName };
+    } catch (err) {
+      console.error('Error getting house name:', err);
+      throw new functions.https.HttpsError('not-found', 'No house found');
+    }
+  },
+);

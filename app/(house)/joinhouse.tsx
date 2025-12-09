@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Text, View } from 'react-native';
 
-import { joinHouseWithInvite, listenForHouseInfo } from '@/api/house';
+import { getGroceryListIdFromHouse } from '@/api/grocerylist';
+import { getHouseNameFromServer, joinHouseWithInvite } from '@/api/house';
 import ColorPicker from '@/components/ColorPicker';
 import CustomButton from '@/components/CustomButton';
 import Loading from '@/components/Loading';
@@ -18,7 +19,6 @@ export default function JoinHouse() {
   const [color, setColor] = useState('#ca3a31');
   const [houseName, setHouseName] = useState('');
   const [userId, setUserId] = useState('');
-  const [groceryListId, setGroceryListId] = useState('');
   const [loading, setLoading] = useState(true);
   const [loadingAddMember, setLoadingAddMember] = useState(false);
   const [error, setError] = useState('');
@@ -43,28 +43,28 @@ export default function JoinHouse() {
   useEffect(() => {
     if (!key) return;
 
-    try {
-      const unsubscribe = listenForHouseInfo(key, (house) => {
-        if (house.name) {
-          setHouseName(house.name);
-        }
-        if (house.grocerylist) {
-          setGroceryListId(house.grocerylist);
-        }
+    const fetchHouseName = async () => {
+      try {
+        setLoading(true);
+
+        const name = await getHouseNameFromServer(key);
+        setHouseName(name);
 
         setLoading(false);
-      });
-
-      return () => unsubscribe();
-    } catch (err) {
-      console.error("Error listening for house info:", err);
+      } catch (err) {
+        console.error("Error listening for house info:", err);
+        setLoading(false);
+      }
     }
+
+    fetchHouseName();
   }, [key]);
 
   async function addMember() {
     try {
       setLoadingAddMember(true);
       await joinHouseWithInvite(key, userId, color);
+      const groceryListId = await getGroceryListIdFromHouse(key);
       router.push({ pathname: '/list', params: { grocerylist: groceryListId } });
     } catch (err) {
       setLoadingAddMember(false);
@@ -84,7 +84,7 @@ export default function JoinHouse() {
   if (!houseName) {
     return (
       <View className="flex-1 items-center justify-center">
-        <Text>No house found for this code.</Text>
+        <Text className="mb-10">No house found for this code.</Text>
         <CustomButton buttonLabel="Back" onPress={() => router.back()} />
       </View>
     );
