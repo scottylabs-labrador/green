@@ -26,6 +26,10 @@ export async function createUser(
     throw new Error('Please fill missing fields.');
   }
 
+  if (name.trim().length < 1 || name.trim().length > 30) {
+    throw new Error('Name must be less than 30 characters.');
+  }
+
   // check password is minimum length
   if (password.length < 6) {
     throw new Error('Password must be at least 6 characters.');
