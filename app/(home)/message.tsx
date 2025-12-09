@@ -7,7 +7,7 @@ import { Pressable, Text, View } from 'react-native';
 import { getUserName } from '@/api/auth';
 import { listenForReceipt } from '@/api/receipt';
 
-import { calculateSplits } from '../../api/splits';
+import { calculateSplits } from '@/api/splits';
 
 export default function Message() {
   const { receiptId } = useLocalSearchParams<{ receiptId: string }>();
@@ -16,6 +16,7 @@ export default function Message() {
   const [message, setMessage] = useState(
     `Hi friends, I bought this week's groceries! Here is the breakdown:\n`,
   );
+  const [copyButtonLabel, setCopyButtonLabel] = useState('Copy Message');
 
   useEffect(() => {
     if (!receiptId) {
@@ -58,6 +59,8 @@ export default function Message() {
       .writeText(message)
       .then(() => {
         console.log('Message copied to clipboard!');
+        setCopyButtonLabel('Copied!');
+        setTimeout(() => setCopyButtonLabel('Copy Message'), 3000);
       })
       .catch(err => {
         console.error('Failed to copy: ', err);
@@ -80,10 +83,10 @@ export default function Message() {
             <Text className="mt-2 text-center">Grocery List</Text>
             <Text className="">{message}</Text>
             <Pressable
-              className="self-center rounded-lg bg-emerald-900 px-6 py-3 hover:bg-[#3e5636]"
+              className="self-center rounded-lg bg-emerald-900 px-6 py-3 hover:bg-emerald-950"
               onPress={copyMessage}
             >
-              <Text className="text-sm font-semibold text-white">Copy Message</Text>
+              <Text className="text-sm font-semibold text-white">{copyButtonLabel}</Text>
             </Pressable>
           </View>
         </View>
