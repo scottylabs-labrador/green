@@ -43,26 +43,13 @@ export async function getHouseIdFromInvite(inviteToken: string): Promise<string>
 }
 
 export async function joinHouseWithInvite(houseId: string, userId: string, color: string) {
-  const nameSnap = await get(ref(db, `housemates/${userId}/name`));
-  const name = nameSnap.exists() ? nameSnap.val() : 'Unknown';
-
-  const housesRef = ref(db, `housemates/${userId}/houses`);
-  const housesSnap = await get(housesRef);
-  let houses = housesSnap.exists() ? housesSnap.val() : [];
-
-  if (!houses.includes(houseId)) {
-    houses.push(houseId);
-  }
-
   const fn = httpsCallable<{ 
     houseId: string, 
     userId: string, 
-    color: string, 
-    houses: string[], 
-    name: string 
+    color: string
   }, null>(functions, 'joinHouseWithInvite');
 
-  await fn({ houseId, userId, color, houses, name });
+  await fn({ houseId, userId, color });
 }
 
 export async function getHouseId(userId: string) {

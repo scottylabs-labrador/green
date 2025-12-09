@@ -6,6 +6,7 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 
 import { get, setTyped, updateTyped } from '../db/db';
 import type { House, Invite, Member } from '../db/types';
+import { isValidHexColor, userInHouse } from '../validation/verify';
 
 export const createInviteCode = functions.https.onCall(
   async (request: functions.https.CallableRequest<{ houseId: string }>) => {
@@ -17,6 +18,9 @@ export const createInviteCode = functions.https.onCall(
 
     if (!houseId) {
       throw new functions.https.HttpsError('invalid-argument', 'houseId is required');
+    }
+    if (!(await userInHouse(request.auth.uid, houseId))) {
+      throw new functions.https.HttpsError('permission-denied', 'You must be a member of the house to create an invite code');
     }
 
     const randomBytes = crypto.randomBytes(4);
@@ -60,27 +64,46 @@ export const deleteExpiredInviteCodes = onSchedule('every 24 hours', async () =>
 });
 
 export const joinHouseWithInvite = functions.https.onCall(
-  async (request: functions.https.CallableRequest<{ houseId: string, userId: string, color: string, houses: string[], name: string }>) => {
-    const { houseId, userId, color, houses, name } = request.data;
+  async (request: functions.https.CallableRequest<{ houseId: string, userId: string, color: string }>) => {
+    const { houseId, userId, color } = request.data;
 
     if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
     }
 
+    if (!userId || userId !== request.auth.uid) {
+      throw new functions.https.HttpsError('invalid-argument', 'userId is required and must match authenticated user');
+    }
+
     if (!houseId) {
       throw new functions.https.HttpsError('invalid-argument', 'houseId is required');
     }
-    if (!userId) {
-      throw new functions.https.HttpsError('invalid-argument', 'userId is required');
-    }
-    if (!color) {
+
+    if (!color || !isValidHexColor(color)) {
       throw new functions.https.HttpsError('invalid-argument', 'color is required');
     }
-    if (!houses) {
-      throw new functions.https.HttpsError('invalid-argument', 'houses is required');
+
+    let name: string;
+
+    try {
+      name = await get(`housemates/${userId}/name`);
+      if (!name) {
+        throw new functions.https.HttpsError('invalid-argument', 'User name not found');
+      }
+    } catch {
+      throw new functions.https.HttpsError('invalid-argument', 'User name not found');
     }
-    if (!name) {
-      throw new functions.https.HttpsError('invalid-argument', 'name is required');
+
+    let houses: string[];
+
+    try {
+      const housesRef = await get(`housemates/${userId}/houses`);
+      houses = housesRef ? housesRef : [];
+      if (!houses.includes(houseId)) {
+        houses.push(houseId);
+      }
+    } catch {
+      houses = [houseId];
     }
 
     const user: Member = {
@@ -103,8 +126,8 @@ export const writeHouse = functions.https.onCall(
       throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
     }
 
-    if (!name) {
-      throw new functions.https.HttpsError('invalid-argument', 'name is required');
+    if (!name || name.trim().length === 0 || name.length > 30) {
+      throw new functions.https.HttpsError('invalid-argument', 'name is required and must be between 1 and 30 characters');
     }
     if (!houseId) {
       throw new functions.https.HttpsError('invalid-argument', 'houseId is required');
@@ -134,11 +157,14 @@ export const updateHouseName = functions.https.onCall(
       throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
     }
 
-    if (!name) {
-      throw new functions.https.HttpsError('invalid-argument', 'name is required');
+    if (!name || name.trim().length === 0 || name.length > 30) {
+      throw new functions.https.HttpsError('invalid-argument', 'name is required and must be between 1 and 30 characters');
     }
     if (!houseId) {
       throw new functions.https.HttpsError('invalid-argument', 'houseId is required');
+    }
+    if (!(await userInHouse(request.auth.uid, houseId))) {
+      throw new functions.https.HttpsError('permission-denied', 'You must be a member of the house to update the house name');
     }
 
     const groceryListId = await get(`houses/${houseId}/grocerylist`);
