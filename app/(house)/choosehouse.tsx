@@ -2,9 +2,9 @@ import React from 'react';
 
 import { Text, View } from 'react-native';
 
-import LinkButton from '../../components/LinkButton';
+import LinkButton from '@/components/LinkButton';
 
-export default function House() {
+export default function House() {  
   return (
     <View className="flex-1 items-center justify-center p-6">
       <View className="flex w-full max-w-lg items-center justify-center gap-6">

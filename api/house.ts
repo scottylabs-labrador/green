@@ -42,12 +42,12 @@ export async function getHouseIdFromInvite(inviteToken: string): Promise<string>
   return houseId;
 }
 
-export async function joinHouseWithInvite(houseId: string, userId: string, color: string) {
+export async function joinHouse(houseId: string, userId: string, color: string) {
   const fn = httpsCallable<{ 
     houseId: string, 
     userId: string, 
     color: string
-  }, null>(functions, 'joinHouseWithInvite');
+  }, null>(functions, 'joinHouse');
 
   await fn({ houseId, userId, color });
 }

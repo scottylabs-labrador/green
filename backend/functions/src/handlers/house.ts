@@ -63,7 +63,7 @@ export const deleteExpiredInviteCodes = onSchedule('every 24 hours', async () =>
   }
 });
 
-export const joinHouseWithInvite = functions.https.onCall(
+export const joinHouse = functions.https.onCall(
   async (request: functions.https.CallableRequest<{ houseId: string, userId: string, color: string }>) => {
     const { houseId, userId, color } = request.data;
 

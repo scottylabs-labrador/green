@@ -3,11 +3,14 @@ import React, { useState } from 'react';
 import { router } from 'expo-router';
 import { Text, TextInput, View } from 'react-native';
 
-import { writeGroceryList } from '../../api/grocerylist';
-import { writeHouse } from '../../api/house';
-import CustomButton from '../../components/CustomButton';
+import { writeGroceryList } from '@/api/grocerylist';
+import { joinHouse, writeHouse } from '@/api/house';
+import CustomButton from '@/components/CustomButton';
+import { useAuth } from '@/context/AuthContext';
 
 export default function CreateHouse() {
+  const { user } = useAuth();
+  
   const [name, onChangeName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -15,12 +18,19 @@ export default function CreateHouse() {
   async function redirectToJoin(name: string) {
     const housecode = window.crypto.randomUUID();
     const grocerylist = window.crypto.randomUUID();
+    const defaultColor = '#ca3a31';
+
+    if (!user || !user.uid) {
+      router.replace('/login');
+      return;
+    }
 
     setLoading(true);
 
     try {
       await writeHouse(name, housecode, grocerylist);
       await writeGroceryList(grocerylist, name, housecode);
+      await joinHouse(housecode, user.uid, defaultColor);
       router.push({
         pathname: '/joinhouse',
         params: { key: housecode },
@@ -49,7 +59,10 @@ export default function CreateHouse() {
             Error: {error}
           </Text>
         }
-        <CustomButton buttonLabel="Create House" onPress={() => redirectToJoin(name)} isLoading={loading}></CustomButton>
+        <View className="flex-row items-center justify-evenly mt-5 w-fit self-center gap-4">
+          <CustomButton buttonLabel="Back" onPress={() => router.back()} />
+          <CustomButton buttonLabel="Create House" onPress={() => redirectToJoin(name)} isLoading={loading}></CustomButton>
+        </View>
       </View>
     </View>
   );

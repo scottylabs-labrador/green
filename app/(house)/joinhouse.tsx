@@ -3,8 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Text, View } from 'react-native';
 
+import { updateUserColor } from '@/api/auth';
 import { getGroceryListIdFromHouse } from '@/api/grocerylist';
-import { getHouseNameFromServer, joinHouseWithInvite } from '@/api/house';
+import { getHouseNameFromId } from '@/api/house';
 import ColorPicker from '@/components/ColorPicker';
 import CustomButton from '@/components/CustomButton';
 import Loading from '@/components/Loading';
@@ -47,7 +48,7 @@ export default function JoinHouse() {
       try {
         setLoading(true);
 
-        const name = await getHouseNameFromServer(key);
+        const name = await getHouseNameFromId(key);
         setHouseName(name);
 
         setLoading(false);
@@ -63,7 +64,7 @@ export default function JoinHouse() {
   async function addMember() {
     try {
       setLoadingAddMember(true);
-      await joinHouseWithInvite(key, userId, color);
+      await updateUserColor(userId, key, color);
       const groceryListId = await getGroceryListIdFromHouse(key);
       router.push({ pathname: '/list', params: { grocerylist: groceryListId } });
     } catch (err) {
@@ -103,8 +104,7 @@ export default function JoinHouse() {
           </Text>
         }
         <View className="flex-row items-center justify-evenly mt-5 w-fit self-center gap-4">
-          <CustomButton buttonLabel="Back" onPress={() => router.back()} />
-          <CustomButton buttonLabel="Join House" onPress={addMember} isLoading={loadingAddMember}></CustomButton>
+          <CustomButton buttonLabel="Enter House" onPress={addMember} isLoading={loadingAddMember}></CustomButton>
         </View>
       </View>
     </View>
