@@ -30,6 +30,15 @@ export const groceryListInHouse = async (groceryListId: string, houseId: string)
   }
 }
 
+export const receiptInHouse = async (receiptId: string, houseId: string) => {
+  if (!receiptId || !houseId) {
+    return false;
+  }
+
+  const inHouse = await exists(`houses/${houseId}/receipts/${receiptId}`);
+  return inHouse;
+}
+
 export const isValidHexColor = (color: string) => {
   const hexRegex = /^#([0-9A-F]{3}){1,2}$/i;
   return hexRegex.test(color);

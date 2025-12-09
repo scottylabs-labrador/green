@@ -69,6 +69,7 @@ export interface Receipt {
   receiptitems: ReceiptItems;
   date: string;
   groceryListId: string;
+  houseId: string;
 }
 
 export interface Invite {

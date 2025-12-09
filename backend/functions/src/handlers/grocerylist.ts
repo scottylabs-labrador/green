@@ -53,7 +53,7 @@ export const writeGroceryItem = functions.https.onCall(
     if (!name) {
       throw new functions.https.HttpsError('invalid-argument', 'name is required');
     }
-    if (name.length == 0 || name.length > 30) {
+    if (name.trim().length == 0 || name.trim().length > 30) {
       throw new functions.https.HttpsError('invalid-argument', 'name length must be between 1 and 30');
     }
 
