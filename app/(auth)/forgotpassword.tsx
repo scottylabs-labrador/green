@@ -50,7 +50,7 @@ export default function ForgotPassword() {
       >
         <ScrollView className="h-full">
           <View className="mx-auto mt-32 w-9/12 max-w-6xl flex-1 justify-center">
-            <Text className="mb-3 text-4xl font-semibold">Reset Password</Text>
+            <Text className="mb-3 text-2xl font-semibold">Reset Password</Text>
 
             <Text className="text-gray-500 mb-9">
               Enter your email address and we will send you instructions to reset your password. 
@@ -70,7 +70,7 @@ export default function ForgotPassword() {
             <Button buttonLabel="Send Reset Link" onPress={handleForgotPassword} isLoading={loading}/>
 
             <Text className="text-center mt-2 text-blue-500 font-medium" onPress={() => router.push('/login')}>
-              Back to log in
+              Back
             </Text>
           </View>
 

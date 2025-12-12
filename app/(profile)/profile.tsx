@@ -3,97 +3,50 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 
-import { getHouseId, listenForHouseInfo } from '@/api/house';
 import { useAuth } from '@/context/AuthContext';
 
-import AccountSettings from '@/components/AccountSettings';
 import LogoutConfirm from '@/components/LogoutConfirm';
-import EditProfile from '../../components/EditProfile';
 import HouseInfo from '../../components/HouseInfo';
-import Loading from '../../components/Loading';
+
+import { useHouseInfo } from '@/context/HouseContext';
 
 export default function Profile() {
   const router = useRouter();
   const { user } = useAuth();
+  const { houseId, houseName, color, ownerId, members } = useHouseInfo();
 
-  const [name, setName] = useState('');
-  const [color, setColor] = useState('');
-  const [email, setEmail] = useState('');
-  const [userId, setUserId] = useState('');
-  const [houseName, setHouseName] = useState('');
-  const [houseId, setHouseId] = useState('');
-  const [members, setMembers] = useState({});
+  const [name, setName] = useState(user?.displayName || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [userId, setUserId] = useState(user?.uid || '');
 
-  const [showEditProfile, setShowEditProfile] = useState(false);
-  const [showAccountSettings, setShowAccountSettings] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    const fetchHouseId = async () => {
-      if (user && user.uid) {
+    if (user) {
+      if (user.uid && user.uid !== userId) {
         setUserId(user.uid);
-
-        if (user.email) {
-          setEmail(user.email);
-        }
-
-        try {
-          const id = await getHouseId(user.uid);
-          setHouseId(id);
-        } catch (err) {
-          console.error("Error fetching house ID:", err);
-        }
-      } else {
-        router.replace('/login');
       }
+      if (user.email && user.email !== email) {
+        setEmail(user.email);
+      }
+      if (user.displayName && user.displayName !== name) {
+        setName(user.displayName);
+      }
+    } else {
+      router.replace('/login');
     }
-
-    fetchHouseId();
-  }, [user]);
-
-  useEffect(() => {
-    if (!houseId || !userId) return;
-
-    try {
-      const unsubscribe = listenForHouseInfo(houseId, (house) => {
-        const members = house.members || {};
-
-        setHouseName(house.name);
-        setMembers(members);
-
-        const userData = members[userId];
-        if (userData) {
-          setName(userData.name);
-          setColor(userData.color);
-        }
-
-        setLoading(false);
-      });
-
-      return () => unsubscribe();
-    } catch (err) {
-      console.error("Error listening for house info:", err);
-    }
-  }, [houseId, userId]);
+  }, [user, user?.displayName, user?.email]);
 
   const handleEditProfile = () => {
-    setShowEditProfile(!showEditProfile);
+    router.push('/editprofile');
   };
 
   const handleAccountSettings = () => {
-    setShowAccountSettings(!showAccountSettings);
+    router.push('/accountsettings');
   }
 
   const handleLogoutConfirm = () => {
     setShowLogoutConfirm(!showLogoutConfirm);
-  }
-
-  if (loading) {
-    return (
-      <Loading message={"Loading user..."} />
-    )
   }
 
   return (
@@ -111,7 +64,7 @@ export default function Profile() {
 
         <View className="w-full flex-col items-center justify-center gap-2">
           <Text className="w-full px-1 text-left font-medium text-gray-500">House</Text>
-          <HouseInfo name={houseName} houseid={houseId} members={members} onNameChange={setHouseName} />
+          <HouseInfo name={houseName} houseId={houseId} members={members} owner={ownerId} onNameChange={() => {}} />
         </View>
 
         <View className="w-full flex-col items-center justify-center gap-2 mt-2">
@@ -141,23 +94,9 @@ export default function Profile() {
             </View>
           </Pressable>
         </View>
-        <EditProfile 
-          userId={userId} 
-          name={name} 
-          houseId={houseId} 
-          color={color}
-          visible={showEditProfile} 
-          onClose={handleEditProfile} 
-          onNameChange={setName} 
-          onColorChange={setColor}
-        />
         <LogoutConfirm 
           visible={showLogoutConfirm} 
           onClose={handleLogoutConfirm} 
-        />
-        <AccountSettings 
-          visible={showAccountSettings}
-          onClose={handleAccountSettings}
         />
       </View>
     </View>
