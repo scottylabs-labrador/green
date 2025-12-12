@@ -6,20 +6,22 @@ import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { FlatList, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
 
-
 import { getUserEmail } from '@/api/auth';
 
-import EditHouse from './EditHouse';
+import { useRouter } from 'expo-router';
 import InviteCode from './InviteCode';
 
 type HouseInfoProps = {
   name: string;
-  houseid: string;
+  houseId: string;
   members: Members;
+  owner: string;
   onNameChange: (newName: string) => void;
 };
 
-const HouseInfo = ({ name, houseid, members, onNameChange }: HouseInfoProps) => {
+const HouseInfo = ({ name, houseId, members, owner, onNameChange }: HouseInfoProps) => {
+  const router = useRouter();
+  
   const [showInfo, setShowInfo] = useState(false);
   const handlePress = () => {
     setShowInfo(!showInfo);
@@ -30,7 +32,7 @@ const HouseInfo = ({ name, houseid, members, onNameChange }: HouseInfoProps) => 
   };
   const [showEdit, setShowEdit] = useState(false);
   const handleEditHouse = () => {
-    setShowEdit(!showEdit);
+    router.push('/edithouse');
   };
   const [showInviteCode, setShowInviteCode] = useState(false);
   const handleInviteCode = () => {
@@ -57,11 +59,22 @@ const HouseInfo = ({ name, houseid, members, onNameChange }: HouseInfoProps) => 
 
   const renderMembers = ({ item }: ListRenderItemInfo<string>) => {
     return (
-      <View className="w-full flex-row items-center justify-center self-center py-1">
-        <Text className="w-1/3 grow self-center text-left">{members[item].name}</Text>
-        <Text className="w-2/3 grow self-center text-right text-xs text-gray-500">
-          {userEmails[item] || ''}
-        </Text>
+      <View className="w-full flex-row items-center justify-center self-center py-1 gap-2">
+        <View
+          className={`flex w-8 h-8 items-center justify-center rounded-full`}
+          style={{ backgroundColor: members[item].color }}
+        >
+          <Text className={`text-xs h-fit self-center text-center font-medium text-white`}>
+            {members[item].name[0].toUpperCase()}
+          </Text>
+        </View>
+        <View className="flex-col grow">
+          <Text className="self-center text-left w-full">{members[item].name}</Text>
+          <Text className="self-center text-left text-xs text-gray-500 w-full">
+            {userEmails[item] || ''}
+          </Text>
+        </View>
+        {item === owner && <Text className="text-gray-500 text-xs font-light mr-2">Owner</Text>}
       </View>
     );
   };
@@ -94,32 +107,39 @@ const HouseInfo = ({ name, houseid, members, onNameChange }: HouseInfoProps) => 
               }
             </Pressable>
             {showMembers && (
-              <FlatList
-                className="h-full w-full pl-3 pr-2"
-                data={Object.keys(members)}
-                renderItem={renderMembers}
-                keyExtractor={item => item}
-              />
+              <View>
+                <FlatList
+                  className="h-full w-full pl-3 pr-2"
+                  data={Object.keys(members)}
+                  renderItem={renderMembers}
+                  keyExtractor={item => item}
+                />
+              </View>
             )}
           </View>
           <View className="w-full flex-col px-1 mt-2 gap-2">
-            <Pressable className="flex h-10 w-full items-center justify-center self-center rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-100 " onPress={handleEditHouse}>
+            <Pressable 
+              className="flex h-10 w-full items-center justify-center self-center rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-100 " 
+              onPress={handleEditHouse}
+            >
               <View className="w-full flex-row items-center justify-center gap-3 px-2">
-                <Text className="text-1xl grow text-left">Edit House</Text>
+                <Text className="text-1xl grow text-left font-semibold">Edit House</Text>
                 <Ionicons name="pencil" size={18} color="gray" />
               </View>
             </Pressable>
-            <Pressable className="flex h-10 w-full items-center justify-center self-center rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-100" onPress={handleInviteCode}>
+            <Pressable 
+              className="flex h-10 w-full items-center justify-center self-center rounded-lg bg-gray-50 hover:bg-gray-100 border border-gray-100" 
+              onPress={handleInviteCode}
+            >
               <View className="w-full flex-row items-center justify-center gap-3 px-2">
-                <Text className="text-1xl grow text-left">Invite Member</Text>
+                <Text className="text-1xl grow text-left font-semibold">Invite Member</Text>
                 <Feather name="user-plus" size={18} color="gray" />
               </View>
             </Pressable>
           </View>
         </View>
       )}
-      <EditHouse houseId={houseid} houseName={name} visible={showEdit} onClose={handleEditHouse} onNameChange={onNameChange} />
-      <InviteCode houseId={houseid} visible={showInviteCode} onClose={handleInviteCode} />
+      <InviteCode houseId={houseId} visible={showInviteCode} onClose={handleInviteCode} />
     </View>
   );
 };

@@ -96,6 +96,11 @@ export async function updateUser(
     name: string, 
   }, null>(functions, 'updateUser');
 
+  const user = auth.currentUser;
+  if (user && user.uid === userId) {
+    await updateProfile(user, { displayName: name });
+  }
+
   await fn({ userId, name });
 }
 

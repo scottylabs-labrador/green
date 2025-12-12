@@ -63,6 +63,8 @@ export default function EditProfile() {
     }
 
     setLoading(false);
+
+    router.push('/profile');
   }
 
   return (

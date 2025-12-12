@@ -13,7 +13,7 @@ admin.initializeApp({
 });
 
 import { clearGroceryItems, removeGroceryItem, updateGroceryItem, writeGroceryItem, writeGroceryList } from './handlers/grocerylist';
-import { createInviteCode, deleteExpiredInviteCodes, getHouseNameFromServer, joinHouse, updateHouseName, writeHouse } from './handlers/house';
+import { createInviteCode, deleteExpiredInviteCodes, getHouseNameFromServer, joinHouse, removeMember, updateHouseName, updateOwner, writeHouse } from './handlers/house';
 import { deleteReceiptItem, updateReceiptItem, writeReceipt } from './handlers/receipt';
 import { getUserEmail, syncUserName, updateUser, updateUserColor, writeUser } from './handlers/user';
 
@@ -29,6 +29,8 @@ exports.writeHouse = writeHouse;
 exports.deleteExpiredInviteCodes = deleteExpiredInviteCodes;
 exports.updateHouseName = updateHouseName;
 exports.getHouseNameFromServer = getHouseNameFromServer;
+exports.updateOwner = updateOwner;
+exports.removeMember = removeMember;
 
 exports.writeReceipt = writeReceipt;
 exports.updateReceiptItem = updateReceiptItem;

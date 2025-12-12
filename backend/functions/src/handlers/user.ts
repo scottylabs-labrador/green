@@ -51,11 +51,6 @@ export const updateUser = functions.https.onCall(
 
     await setTyped<String>(`housemates/${userId}/name`, name);
 
-    const user = await admin.auth().getUser(userId);
-    if (user.displayName !== name) {
-      await admin.auth().updateUser(userId, { displayName: name });
-    }
-
     return null;
   }
 );

@@ -4,7 +4,7 @@ import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 
-import { get, setTyped, updateTyped } from '../db/db';
+import { get, remove, setTyped, updateTyped } from '../db/db';
 import type { House, Invite, Member } from '../db/types';
 import { isValidHexColor, userInHouse } from '../validation/verify';
 
@@ -142,6 +142,7 @@ export const writeHouse = functions.https.onCall(
       grocerylist: groceryListId, 
       receipts: {}, 
       invite: '',
+      owner: request.auth.uid,
     }
     await setTyped<House>(`houses/${houseId}`, house);
     
@@ -196,3 +197,134 @@ export const getHouseNameFromServer = functions.https.onCall(
     }
   },
 );
+
+export const updateOwner = functions.https.onCall(
+  async (request: functions.https.CallableRequest<{ houseId: string, newOwnerId: string }>) => {
+    const { houseId, newOwnerId } = request.data;
+
+    if (!request.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
+    }
+
+    if (!houseId) {
+      throw new functions.https.HttpsError('invalid-argument', 'houseId is required');
+    }
+    if (!newOwnerId || !(await userInHouse(newOwnerId, houseId))) {
+      throw new functions.https.HttpsError('invalid-argument', 'newOwnerId is required');
+    }
+
+    let currentOwnerId: string;
+
+    try {
+      currentOwnerId = await get(`houses/${houseId}/owner`);
+    } catch (err) {
+      console.error('Error getting house owner:', err);
+      throw new functions.https.HttpsError('internal', 'Internal error occurred');
+    }
+
+    if (currentOwnerId !== request.auth.uid) {
+      throw new functions.https.HttpsError('permission-denied', 'Only the current owner can transfer ownership');
+    }
+    await setTyped<string>(`houses/${houseId}/owner`, newOwnerId);
+    
+    return null;
+  },
+);
+
+export const removeMember = functions.https.onCall(
+  async (request: functions.https.CallableRequest<{ houseId: string, userId: string }>) => {
+    const { houseId, userId } = request.data;
+    if (!request.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
+    }
+
+    let ownerId: string;
+
+    try {
+      ownerId = await get(`houses/${houseId}/owner`);
+    } catch (err) {
+      console.error('Error getting house owner:', err);
+      ownerId = '';
+    }
+    
+    if (ownerId === userId) {
+      throw new functions.https.HttpsError('invalid-argument', 'House owner cannot leave the house');
+    }
+
+    if (!userId) {
+      throw new functions.https.HttpsError('invalid-argument', 'userId is required');
+    }
+    if (userId !== request.auth.uid && ownerId !== request.auth.uid) {
+      throw new functions.https.HttpsError('permission-denied', 'You can only remove yourself from a house');
+    }
+
+    if (!houseId) {
+      throw new functions.https.HttpsError('invalid-argument', 'houseId is required');
+    }
+    await remove(`houses/${houseId}/members/${userId}`);
+    
+    let houses: string[];
+    try {
+      const housesRef = await get(`housemates/${userId}/houses`);
+      houses = housesRef ? housesRef : [];
+      houses = houses.filter(hId => hId !== houseId);
+    } catch (err) {
+      console.error('Error getting user houses:', err);
+      houses = [];
+    }
+
+    await setTyped<string[]>(`housemates/${userId}/houses`, houses);
+    
+    return null;
+  },
+);
+
+export const deleteHouse = functions.https.onCall(
+  async (request: functions.https.CallableRequest<{ houseId: string }>) => {
+    const { houseId } = request.data;
+
+    if (!request.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
+    }
+
+    if (!houseId) {
+      throw new functions.https.HttpsError('invalid-argument', 'houseId is required');
+    }
+
+    try {
+      const ownerId = await get(`houses/${houseId}/owner`);
+      if (ownerId !== request.auth.uid) {
+        throw new functions.https.HttpsError('permission-denied', 'Only the house owner can delete the house');
+      }
+    } catch (err) {
+      console.error('Error getting house owner:', err);
+      throw new functions.https.HttpsError('internal', 'Internal error occurred');
+    }
+
+    try {
+      const membersSnap = await get(`houses/${houseId}/members`);
+      if (membersSnap) {
+        const memberIds = Object.keys(membersSnap);
+        for (const memberId of memberIds) {
+          let houses: string[];
+          try {
+            const housesRef = await get(`housemates/${memberId}/houses`);
+            houses = housesRef ? housesRef : [];
+            houses = houses.filter(hId => hId !== houseId);
+          } catch (err) {
+            console.error(`Error getting houses for member ${memberId}:`, err);
+            houses = [];
+          }
+          await setTyped<string[]>(`housemates/${memberId}/houses`, houses);
+        }
+      }
+    } catch (err) {
+      console.error('Error getting house members:', err);
+    }
+
+    await remove(`houses/${houseId}`);
+    
+    return null;
+  },
+);
+    

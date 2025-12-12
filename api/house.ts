@@ -115,3 +115,21 @@ export async function updateHouseName(name: string, houseId: string) {
 
   await fn({ name, houseId });
 }
+
+export async function updateOwner(houseId: string, newOwnerId: string) {
+  const fn = httpsCallable<{ 
+    houseId: string, 
+    newOwnerId: string, 
+  }, null>(functions, 'updateOwner');
+
+  await fn({ houseId, newOwnerId });
+}
+
+export async function removeMember(houseId: string, userId: string) {
+  const fn = httpsCallable<{ 
+    houseId: string, 
+    userId: string, 
+  }, null>(functions, 'removeMember');
+
+  await fn({ houseId, userId });
+}

@@ -19,6 +19,7 @@ export interface House {
   grocerylist: string;
   receipts: ReceiptRecordsInHouse;
   invite: string;
+  owner: string;
 }
 
 export type Houses = Record<string, House>;
