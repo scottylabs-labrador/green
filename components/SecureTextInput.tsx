@@ -14,7 +14,7 @@ const SecureTextInput = ({ value, onChangeText, className }: SecureTextInputProp
   const [seeValue, setSeeValue] = useState(false);
 
   const combinedClassName = twMerge(
-    'flex flex-row justify-center items-center mb-2 w-full rounded-lg border border-gray-300 bg-gray-50',
+    'flex flex-row justify-center items-center mb-2 w-full rounded-lg border border-gray-300 bg-white',
     className
   );
 

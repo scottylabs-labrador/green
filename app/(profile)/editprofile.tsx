@@ -79,7 +79,7 @@ export default function EditProfile() {
           <View className="px-2 mb-2">
             <Text className="mb-2">Name</Text>
             <TextInput
-              className="mb-2 block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
+              className="mb-2 block rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900"
               onChangeText={setNewName}
               value={newName}
               autoCapitalize="none"

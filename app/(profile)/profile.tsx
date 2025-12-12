@@ -53,21 +53,21 @@ export default function Profile() {
     <View className="h-full w-full flex-1 items-center justify-start overflow-y-auto">
       <View className="flex h-full w-full max-w-lg items-center justify-start gap-1 pb-6 pt-16 px-8">
         <View
-          className="ml-1 flex h-32 w-32 items-center justify-center self-center rounded-full"
+          className="ml-1 flex h-24 w-24 items-center justify-center self-center rounded-full"
           style={{ backgroundColor: `${color}` }}
         >
-          <Text className="text-center text-5xl text-white">{name[0]?.toUpperCase()}</Text>
+          <Text className="text-center text-4xl text-white">{name[0]?.toUpperCase()}</Text>
         </View>
 
-        <Text className="pt-2 text-center text-3xl font-bold">{name}</Text>
-        <Text className="pb-4 text-center text-lg text-gray-500">{email}</Text>
+        <Text className="pt-2 text-center text-xl font-bold">{name}</Text>
+        <Text className="pb-4 text-center text-sm text-gray-500">{email}</Text>
 
         <View className="w-full flex-col items-center justify-center gap-2">
           <Text className="w-full px-1 text-left font-medium text-gray-500">House</Text>
           <HouseInfo name={houseName} houseId={houseId} members={members} owner={ownerId} onNameChange={() => {}} />
         </View>
 
-        <View className="w-full flex-col items-center justify-center gap-2 mt-2">
+        <View className="w-full flex-col items-center justify-center gap-3 mt-2">
           <Text className="w-full px-1 text-left font-medium text-gray-500">Account</Text>
           <Pressable 
             className="flex h-12 w-full items-center justify-center self-center rounded-lg bg-gray-50 border border-gray-100 hover:bg-gray-100" 

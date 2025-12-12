@@ -24,7 +24,7 @@ export default function AccountSettings() {
         <BackButton />
         <View className="mx-auto mt-16 flex-1 justify-center w-full px-8">
           <Text className="text-center text-lg font-medium">Account Settings</Text>
-            <View className="flex-col gap-2 mt-5">
+            <View className="flex-col gap-3 mt-5">
               <Pressable 
                 className="flex h-12 w-full items-center justify-center self-center rounded-lg bg-gray-50 border border-gray-100 hover:bg-gray-100" 
                 onPress={() => router.push('/changeemail')}

@@ -64,7 +64,7 @@ export default function ChangeEmail() {
           <View className="px-2 mb-2">
             <Text className="mb-2">New Email</Text>
             <TextInput
-              className="mb-2 block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
+              className="mb-2 block rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900"
               onChangeText={setNewEmail}
               value={newEmail}
               keyboardType="email-address"
@@ -73,7 +73,7 @@ export default function ChangeEmail() {
           <View className="px-2 mb-2">
             <Text className="mb-2">Confirm Email</Text>
             <TextInput
-              className="mb-2 block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
+              className="mb-2 block rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900"
               onChangeText={setConfirmEmail}
               value={confirmEmail}
               keyboardType="email-address"

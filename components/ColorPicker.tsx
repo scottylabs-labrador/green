@@ -43,7 +43,7 @@ const ColorPick = ({ color, onColorPick }: ColorPickProps) => {
       >
         <View className="flex-row self-center gap-2">
           <TextInput
-            className={`rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-center font-medium`}
+            className={`rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-center font-medium`}
             onChangeText={handleEditColorString}
             value={colorString}
             autoCapitalize="none"

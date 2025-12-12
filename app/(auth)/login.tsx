@@ -122,7 +122,7 @@ export default function Login() {
 
             <Text className="mb-2">Email</Text>
             <TextInput
-              className="mb-4 block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
+              className="mb-4 block rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900"
               onChangeText={setEmail}
               value={email}
               autoCapitalize="none"

@@ -96,7 +96,7 @@ export default function EditHouse() {
           <View className="px-2 mb-4">
             <Text className="mb-2">Name</Text>
             <TextInput
-              className="block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
+              className="block rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900"
               onChangeText={setNewHouseName}
               value={newHouseName}
               autoCapitalize="none"
