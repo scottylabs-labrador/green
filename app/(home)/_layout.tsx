@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Slot, useSegments } from 'expo-router';
 import { ImageBackground, View } from 'react-native';
 
+import { HouseProvider } from '@/context/HouseContext';
 import background from '../../assets/background.png';
 import NavBar from '../../components/NavBar';
 
@@ -35,17 +36,19 @@ export default function HomeLayout() {
   }, [segments]);
 
   return (
-    <ImageBackground
-      source={background}
-      className={`flex-1 ${bgColor} h-screen w-screen overflow-hidden`}
-      resizeMode="stretch"
-    >
-      <View style={{ flex: 1, justifyContent: 'space-between', marginBottom: 0 }}>
-        <View style={{ flex: 1 }}>
-          <Slot />
+    <HouseProvider>
+      <ImageBackground
+        source={background}
+        className={`flex-1 ${bgColor} h-screen w-screen overflow-hidden`}
+        resizeMode="stretch"
+      >
+        <View style={{ flex: 1, justifyContent: 'space-between', marginBottom: 0 }}>
+          <View style={{ flex: 1 }}>
+            <Slot />
+          </View>
+          <NavBar />
         </View>
-        <NavBar />
-      </View>
-    </ImageBackground>
+      </ImageBackground>
+    </HouseProvider>
   );
 }

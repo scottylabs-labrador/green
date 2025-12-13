@@ -12,8 +12,6 @@ import {
 } from 'react-native';
 
 import { userSignIn } from '@/api/auth';
-import { getGroceryListIdFromHouse } from '@/api/grocerylist';
-import { getHouseId } from '@/api/house';
 import background from '@/assets/home-background.png';
 import Button from '@/components/CustomButton';
 import SecureTextInput from '@/components/SecureTextInput';
@@ -29,37 +27,16 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const checkUser = async () => {
-      try {
-        if (!user?.uid) {
-          return;
-        }
-
-        if (!user.emailVerified) {
-          router.push('/verifyemail');
-          return;
-        }
-  
-        const houseId = await getHouseId(user.uid);
-  
-        if (!houseId) {
-          router.push('/choosehouse');
-          return;
-        }
-  
-        const groceryListId = await getGroceryListIdFromHouse(houseId);
-        if (groceryListId) {
-          router.push({ pathname: '/list', params: { grocerylist: groceryListId } });
-        } else {
-          router.push('/choosehouse');
-        }
-      } catch (err) {
-        console.log('Error while redirecting:', err);
-        router.push('/choosehouse');
-      }
+    if (!user?.uid) {
+      return;
     }
 
-    checkUser();
+    if (!user.emailVerified) {
+      router.replace('/verifyemail');
+      return;
+    }
+
+    router.replace('/list');
   }, [user]);
 
   const handleLogin = async () => {
@@ -77,32 +54,13 @@ export default function Login() {
       return;
     }
 
-    try {
-      if (!user?.uid) {
-        setErrorText('Failed to retrieve user information.');
-        setLoading(false);
-        return;
-      }
-
-      const houseId = await getHouseId(user.uid);
-
-      if (!houseId) {
-        router.push('/choosehouse');
-        return;
-      }
-
-      const groceryListId = await getGroceryListIdFromHouse(houseId);
-      console.log("grocery list id:", groceryListId);
-      if (groceryListId) {
-        console.log("redirecting to list");
-        router.push({ pathname: '/list', params: { grocerylist: groceryListId } });
-      } else {
-        router.push('/choosehouse');
-      }
-    } catch (err) {
-      console.log('Error while redirecting:', err);
-      router.push('/choosehouse');
+    if (!user?.uid) {
+      setErrorText('Failed to retrieve user information.');
+      setLoading(false);
+      return;
     }
+
+    router.push('list');
   };
 
   return (

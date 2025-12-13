@@ -1,31 +1,27 @@
 import React, { useEffect, useState } from 'react';
 
-import type { GroceryItems } from '@db/types';
 import { FontAwesome6, Ionicons } from '@expo/vector-icons';
-import { Link, useLocalSearchParams, useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { FlatList, Image, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
 
-import { getGroceryListId, getHouseIdFromGroceryListId, listenForGroceryItems } from '@/api/grocerylist';
-import { listenForHouseInfo } from '@/api/house';
 import GroceryItem from '@/components/GroceryItem';
 import { useAuth } from '@/context/AuthContext';
 
+import { listenForGroceryItems } from '@/api/grocerylist';
 import AddGroceryItem from '@/components/AddGroceryItem';
 import ClearListConfirm from '@/components/ClearListConfirm';
 import { ListOptions, OptionItem } from '@/components/ListOptions';
+import { useHouseInfo } from '@/context/HouseContext';
+import { GroceryItems } from '@db/types';
 import emptyList from '../../assets/empty-list.png';
 
 export default function List() {
   const router = useRouter();
   const { user } = useAuth();
-  const { grocerylist } = useLocalSearchParams<{ grocerylist: string }>();
+  const { houseId, houseName, groceryListId, members } = useHouseInfo();
 
   const [groceryItems, setGroceryItems] = useState<GroceryItems>({});
   const [modalVisible, setModalVisible] = useState(false);
-  const [userId, setUserId] = useState('');
-  const [colors, setColors] = useState({});
-  const [houseId, setHouseId] = useState('');
-  const [houseName, setHouseName] = useState('');
   const [confirmClearVisible, setConfirmClearVisible] = useState(false);
 
   const currentDate = new Date();
@@ -34,76 +30,11 @@ export default function List() {
   const year = String(currentDate.getFullYear()).slice(-2);
   const date = `${month}.${day}.${year}`;
 
-  const getGroceryList = async () => {
-    if (user && user.uid) {
-      try {
-        const groceryListId = await getGroceryListId(user.uid);
-        router.replace({ pathname: '/list', params: { grocerylist: groceryListId } });
-      } catch (err) {
-        console.error("Error fetching grocery list ID:", err);
-      }
-    } else if (!user || !user.uid) {
-      router.replace('/login');
-    }
-  };
-
   useEffect(() => {
-    const isValid = typeof grocerylist === 'string' && grocerylist.trim() !== '';
-
-    if (!isValid) {
-      getGroceryList();
-    }
-  }, [grocerylist, router, user]);
-
-  useEffect(() => {
-    const fetchHouseId = async () => {
-      if (user && user.uid) {
-        setUserId(user.uid);
-
-        if (!grocerylist) {
-          return;
-        }
-
-        try {
-          const id = await getHouseIdFromGroceryListId(grocerylist);
-          setHouseId(id);
-        } catch (err) {
-          console.error("Error fetching house ID:", err);
-          if (err instanceof Error && err.message.includes('Permission denied')) { 
-            getGroceryList();
-          }
-        }
-      } else {
-        router.replace('/login');
-      }
-    }
-
-    fetchHouseId();
-  }, [grocerylist]);
-
-  useEffect(() => {
-    if (!houseId) return;
+    if (!groceryListId) return;
 
     try {
-      const unsubscribe = listenForHouseInfo(houseId, (house) => {
-        setHouseName(house.name || '');
-        setColors(house.members || {});
-      });
-
-      return () => unsubscribe();
-    } catch (err) {
-      console.error("Error listening for house info:", err);
-      if (err instanceof Error && err.message.includes('Permission denied')) { 
-        router.replace('/error');
-      }
-    }
-  }, [houseId]);
-
-  useEffect(() => {
-    if (!grocerylist) return;
-
-    try {
-      const unsubscribeItems = listenForGroceryItems(grocerylist, (items) => {
+      const unsubscribeItems = listenForGroceryItems(groceryListId, (items) => {
         setGroceryItems(items);
       });
 
@@ -114,20 +45,20 @@ export default function List() {
         router.replace('/error');
       }
     }    
-  }, [grocerylist]);
+  }, [groceryListId]);
 
   const toggleModal = () => setModalVisible(!modalVisible);
 
   const renderItem = ({ item }: ListRenderItemInfo<string>) => (
     <GroceryItem
       key={item}
-      groceryListId={grocerylist}
+      groceryListId={groceryListId}
       id={item}
       name={groceryItems[item]?.name}
       quantity={groceryItems[item]?.quantity}
       splits={groceryItems[item]?.splits}
-      member={userId}
-      colors={colors}
+      member={user?.uid || ''}
+      colors={members}
     />
   );
 
@@ -193,8 +124,8 @@ export default function List() {
           <Ionicons name="add-circle" size={76} color="#064e3b" />
         </Pressable>
 
-        <AddGroceryItem userId={user?.uid} groceryListId={grocerylist} visible={modalVisible} onClose={toggleModal} />
-        <ClearListConfirm groceryListId={grocerylist} visible={confirmClearVisible} onClose={() => setConfirmClearVisible(!confirmClearVisible)} />
+        <AddGroceryItem userId={user?.uid} groceryListId={groceryListId} visible={modalVisible} onClose={toggleModal} />
+        <ClearListConfirm groceryListId={groceryListId} visible={confirmClearVisible} onClose={() => setConfirmClearVisible(!confirmClearVisible)} />
       </View>
     </View>
   );

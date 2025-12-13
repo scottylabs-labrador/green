@@ -64,6 +64,18 @@ export async function getHouseId(userId: string) {
   throw new Error('No house found');
 }
 
+export async function getHouseIds(userId: string) {
+  const housemateRef = ref(db, `housemates/${userId}/houses`);
+  const snap = await get(housemateRef);
+
+  if (snap.exists()) {
+    const houses: string[] = snap.val();
+    if (houses.length > 0) return houses;
+  }
+
+  throw new Error('No houses found');
+}
+
 export async function getHouseNameFromId(houseId: string) {
   const houseRef = ref(db, `houses/${houseId}/name`);
   const snap = await get(houseRef);

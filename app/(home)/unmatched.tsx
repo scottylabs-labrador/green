@@ -8,25 +8,24 @@ import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, ListRenderItemInfo, Pressable, Text, TextInput, View } from 'react-native';
 
 import { listenForGroceryItems } from '@/api/grocerylist';
-import { getHouseId, listenForHouseInfo } from '@/api/house';
 import { deleteReceiptItem, listenForReceipt, updateReceiptItem } from '@/api/receipt';
 import EditSplit from '@/components/EditSplit';
 import SplitProfile from '@/components/SplitProfile';
 import { useAuth } from '@/context/AuthContext';
+import { useHouseInfo } from '@/context/HouseContext';
 
 export default function UnmatchedItem() {
   const router = useRouter();
   const { user } = useAuth();
+  const { members } = useHouseInfo();
 
   var { itemId, receiptId } = useLocalSearchParams<{ itemId: string, receiptId: string }>();
   
   const [userId, setUserId] = useState('');
   const [itemName, setItemName] = useState('');
-  const [houseId, setHouseId] = useState('');
   const [groceryListId, setGroceryListId] = useState('');
   const [groceryItems, setGroceryItems] = useState<GroceryItems>({});
   const [selectedItem, setSelectedItem] = useState('');
-  const [colors, setColors] = useState({});
   const [price, setPrice] = useState(0);
   const [splits, setSplits] = useState<Splits>({});
   const [newItem, setNewItem] = useState('');
@@ -35,41 +34,12 @@ export default function UnmatchedItem() {
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    const fetchHouseId = async () => {
-      if (user && user.email) {
-        setUserId(user.uid);
-
-        if (!splits) {
-          setSplits({ [user.uid]: 1 });
-        }
-
-        try {
-          const id = await getHouseId(user.uid);
-          setHouseId(id);
-        } catch (err) {
-          console.error("Error fetching house ID:", err);
-        }
-      } else {
-        router.replace('/login');
-      }
+    if (user && user.uid) {
+      setUserId(user.uid);
+    } else {
+      router.replace('/login');
     }
-
-    fetchHouseId();
-  }, [user]);
-
-  useEffect(() => {
-      if (!houseId) return;
-  
-      try {
-        const unsubscribe = listenForHouseInfo(houseId, (house) => {
-          setColors(house.members || {});
-        });
-  
-        return () => unsubscribe();
-      } catch (err) {
-        console.error("Error listening for house info:", err);
-      }
-    }, [houseId]);
+  })
 
   useEffect(() => {
     if (!receiptId) return;
@@ -122,7 +92,7 @@ export default function UnmatchedItem() {
     return (
       <SplitProfile
         key={item}
-        colors={colors}
+        colors={members}
         housemateId={item}
         size={10}
         fontSize={'1xl'}
@@ -261,7 +231,7 @@ export default function UnmatchedItem() {
             Match the product to a grocery list item from this week!
           </Text>
           {groceryItems && Object.keys(groceryItems).length > 0 ? (
-            <View className="flex-grow">
+            <View className="h-10 flex-grow">
               <FlatList
                 className="mb-2"
                 data={Object.keys(groceryItems)}
@@ -286,7 +256,7 @@ export default function UnmatchedItem() {
             </View>
           ) : (
             <View className="flex-grow">
-              <View className="h-12  w-full flex-row items-center justify-start self-center border-y border-gray-200 px-2">
+              <View className="h-12 w-full flex-row items-center justify-start self-center border-y border-gray-200 px-2">
                   <TextInput
                     className="h-fit w-1/2 grow rounded-md text-left text-gray-400 outline-none"
                     placeholder="New Item"
@@ -302,7 +272,7 @@ export default function UnmatchedItem() {
             </View>
           )}
           
-          <View className="mb-2 flex-row items-center justify-between">
+          <View className="my-2 flex-row items-center justify-between h-10">
             <Text className="text-left text-2xl font-medium text-black">Price:</Text>
             <TextInput
               className={`h-fit w-14 rounded-md border-solid bg-slate-100 p-2 text-center text-${price ? 'black' : 'slate-400'}`}
@@ -355,7 +325,7 @@ export default function UnmatchedItem() {
             
           </View>
 
-          <EditSplit colors={colors} splits={splits} visible={modalVisible} onClose={toggleModal} onSplitsChange={setSplits} />
+          <EditSplit colors={members} splits={splits} visible={modalVisible} onClose={toggleModal} onSplitsChange={setSplits} />
           
         </View>
         

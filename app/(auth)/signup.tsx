@@ -12,8 +12,6 @@ import {
 } from 'react-native';
 
 import { createUser } from '@/api/auth';
-import { getGroceryListIdFromHouse } from '@/api/grocerylist';
-import { getHouseId } from '@/api/house';
 import background from '@/assets/home-background.png';
 import Button from '@/components/CustomButton';
 import SecureTextInput from '@/components/SecureTextInput';
@@ -31,39 +29,16 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const checkUser = async () => {
-      try {
-        if (!user) {
-          return;
-        }
-
-        setLoading(false);
-
-        if (!user.emailVerified) {
-          router.push('/verifyemail');
-          return;
-        }
-  
-        const houseId = await getHouseId(user.uid);
-  
-        if (!houseId) {
-          router.push('/choosehouse');
-          return;
-        }
-  
-        const groceryListId = await getGroceryListIdFromHouse(houseId);
-        if (groceryListId) {
-          router.push({ pathname: '/list', params: { grocerylist: groceryListId } });
-        } else {
-          router.push('/choosehouse');
-        }
-      } catch (err) {
-        console.log('Error while redirecting:', err);
-        router.push('/choosehouse');
-      }
+    if (!user?.uid) {
+      return;
     }
 
-    checkUser();
+    if (!user.emailVerified) {
+      router.replace('/verifyemail');
+      return;
+    }
+
+    router.replace('/list');
   }, [user]);
 
   const handleSubmit = async () => {

@@ -35,24 +35,6 @@ export default function VerifyEmail() {
       if (user.emailVerified) {
         clearInterval(interval);
         router.push('/list');
-        // try {
-        //   const houseId = await getHouseId(user.uid);
-
-        //   if (!houseId) {
-        //     router.push('/choosehouse');
-        //     return;
-        //   }
-
-        //   const groceryListId = await getGroceryListIdFromHouse(houseId);
-        //   if (groceryListId) {
-        //     router.push({ pathname: '/list', params: { grocerylist: groceryListId } });
-        //   } else {
-        //     router.push('/choosehouse');
-        //   }
-        // } catch (err) {
-        //   console.log('Error while redirecting:', err);
-        //   router.push('/choosehouse');
-        // }
       }
     }, 5000);
 
@@ -98,24 +80,6 @@ export default function VerifyEmail() {
 
     if (user.emailVerified) {
       router.push('/list');
-      // try {
-      //   const houseId = await getHouseId(user.uid);
-
-      //   if (!houseId) {
-      //     router.push('/choosehouse');
-      //     return;
-      //   }
-
-      //   const groceryListId = await getGroceryListIdFromHouse(houseId);
-      //   if (groceryListId) {
-      //     router.push({ pathname: '/list', params: { grocerylist: groceryListId } });
-      //   } else {
-      //     router.push('/choosehouse');
-      //   }
-      // } catch (err) {
-      //   console.log('Error while redirecting:', err);
-      //   router.push('/choosehouse');
-      // }
     }
   }
 

@@ -11,6 +11,7 @@ import { useAuth } from './AuthContext';
 type HouseContextType = {
   houseId: string;
   houseName: string;
+  groceryListId: string;
   color: string;
   ownerId: string;
   members: Members;
@@ -21,6 +22,7 @@ type HouseContextType = {
 const HouseContext = createContext<HouseContextType>({
   houseId: '',
   houseName: '',
+  groceryListId: '',
   color: '',
   ownerId: '',
   members: {},
@@ -32,6 +34,7 @@ export const HouseProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [userId, setUserId] = useState('');
   const [houseId, setHouseId] = useState('');
   const [houseName, setHouseName] = useState('');
+  const [groceryListId, setGroceryListId] = useState('');
   const [color, setColor] = useState('');
   const [ownerId, setOwnerId] = useState('');
   const [members, setMembers] = useState<Record<string, any>>({});
@@ -51,6 +54,7 @@ export const HouseProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setHouseId(id);
         } catch (err) {
           console.error("Error fetching house ID:", err);
+          router.replace('/choosehouse');
         }
       } else {
         router.replace('/login');
@@ -69,14 +73,13 @@ export const HouseProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
         setHouseName(house.name);
         setMembers(members);
-        console.log("members", members)
+        setGroceryListId(house.grocerylist);
+        setOwnerId(house.owner);
 
         const userData = members[userId];
         if (userData) {
           setColor(userData.color);
         }
-
-        setOwnerId(house.owner || '');
 
         setLoading(false);
       });
@@ -88,24 +91,24 @@ export const HouseProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [houseId, userId]);
 
   useEffect(() => {
-      const fetchEmails = async () => {
-        const emails: Record<string, string> = {};
-  
-        for (const userId of Object.keys(members)) {
-          try {
-            emails[userId] = await getUserEmail(userId);
-          } catch (err) {
-            console.error(`Error fetching email for user ${userId}:`, err);
-          }
+    const fetchEmails = async () => {
+      const emails: Record<string, string> = {};
+
+      for (const userId of Object.keys(members)) {
+        try {
+          emails[userId] = await getUserEmail(userId);
+        } catch (err) {
+          console.error(`Error fetching email for user ${userId}:`, err);
         }
-        setUserEmails(emails);
       }
-  
-      fetchEmails();
-    }, [members]);
+      setUserEmails(emails);
+    }
+
+    fetchEmails();
+  }, [members]);
 
   return (
-    <HouseContext.Provider value={{ houseId, houseName, color, ownerId, members, userEmails, loading }}>
+    <HouseContext.Provider value={{ houseId, houseName, groceryListId, color, ownerId, members, userEmails, loading }}>
       {loading ? (
         <Loading message="Loading house..."/>
       ) : (

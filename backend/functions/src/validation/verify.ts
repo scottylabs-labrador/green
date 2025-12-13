@@ -40,6 +40,6 @@ export const receiptInHouse = async (receiptId: string, houseId: string) => {
 }
 
 export const isValidHexColor = (color: string) => {
-  const hexRegex = /^#([0-9A-F]{3}){1,2}$/i;
+  const hexRegex = /^#(?:(?:[a-f0-9]{3}){1,2}|(?:[a-f0-9]{4}){1,2})$/i;
   return hexRegex.test(color);
 }

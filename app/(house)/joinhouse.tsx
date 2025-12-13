@@ -4,7 +4,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Text, View } from 'react-native';
 
 import { updateUserColor } from '@/api/auth';
-import { getGroceryListIdFromHouse } from '@/api/grocerylist';
 import { getHouseNameFromId } from '@/api/house';
 import ColorPicker from '@/components/ColorPicker';
 import CustomButton from '@/components/CustomButton';
@@ -65,8 +64,7 @@ export default function JoinHouse() {
     try {
       setLoadingAddMember(true);
       await updateUserColor(userId, key, color);
-      const groceryListId = await getGroceryListIdFromHouse(key);
-      router.push({ pathname: '/list', params: { grocerylist: groceryListId } });
+      router.push('/list');
     } catch (err) {
       setLoadingAddMember(false);
       if (err instanceof Error) {

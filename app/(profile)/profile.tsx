@@ -15,6 +15,8 @@ export default function Profile() {
   const { user } = useAuth();
   const { houseId, houseName, color, ownerId, members } = useHouseInfo();
 
+  console.log("profile color:", color);
+
   const [name, setName] = useState(user?.displayName || '');
   const [email, setEmail] = useState(user?.email || '');
   const [userId, setUserId] = useState(user?.uid || '');

@@ -23,7 +23,6 @@ import { useRouter } from 'expo-router';
 export default function EditHouse() {
   const router = useRouter();
   const { user } = useAuth();
-
   const { houseId, houseName, ownerId, userEmails, members } = useHouseInfo();
 
   const [newHouseName, setNewHouseName] = useState(houseName);
