@@ -56,19 +56,11 @@ export interface ReceiptItem {
   splits: Splits;
 }
 
-export interface ReceiptItem {
-  receiptItem: string;
-  groceryItem: string;
-  price: number;
-  splits: Splits;
-}
-
 export type ReceiptItems = Record<string, ReceiptItem>;
 
 export interface Receipt {
   receiptitems: ReceiptItems;
   date: string;
-  groceryListId: string;
   houseId: string;
 }
 

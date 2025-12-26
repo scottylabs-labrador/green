@@ -2,11 +2,12 @@
   "rules": {
     "housemates": {
       "$housemateid": {
-        ".read": "auth !== null && auth.uid === $housemateid", 
+        ".read": "auth !== null", 
         "name": {
           ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30"
         },
         "houses": {
+          ".read": "auth !== null && auth.uid === $housemateid", 
           "$index": {
             ".validate": "newData.isString() && root.child('houses/' + newData.val()).exists()"
           }

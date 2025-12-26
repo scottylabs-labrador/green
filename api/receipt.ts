@@ -11,7 +11,6 @@ export const matchWords = (
   groceryItems: GroceryItems,
   threshold = 0.3,
 ): ReceiptItems => {
-  console.log("match words");
   const groceryItemsArray = Object.values(groceryItems);
   const fuse = new Fuse<GroceryItem>(groceryItemsArray, {
     keys: ['name'],
@@ -45,6 +44,17 @@ export const matchWords = (
     };
   });
 
+  for (const groceryItem of groceryItemsArray) {
+    if (!usedWords.has(groceryItem.name)) {
+      matchedList.push({
+        receiptItem: '',
+        groceryItem: groceryItem.name, 
+        price: 0, 
+        splits: groceryItem.splits,
+      })
+    }
+  }
+
   const finalReceiptItems: ReceiptItems = {};
   for (const item of matchedList) {
     const itemId = crypto.randomUUID();
@@ -58,16 +68,14 @@ export async function writeReceipt(
   receiptId: string,
   houseId: string,
   receiptItems: ReceiptItems,
-  groceryListId: string,
 ) {
   const fn = httpsCallable<{
     receiptId: String, 
     houseId: String, 
     receiptItems: ReceiptItems, 
-    groceryListId: string,
   }, null>(functions, 'writeReceipt');
 
-  await fn({ receiptId, houseId, receiptItems, groceryListId });
+  await fn({ receiptId, houseId, receiptItems });
 }
 
 export async function updateReceiptItem(

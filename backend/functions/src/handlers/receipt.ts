@@ -3,11 +3,11 @@ import * as functions from 'firebase-functions';
 
 import { get, updateTyped } from '../db/db';
 import type { Receipt, ReceiptItem, ReceiptItems, ReceiptRecordInHouse, Splits } from '../db/types';
-import { groceryListInHouse, receiptInHouse, userInHouse } from '../validation/verify';
+import { receiptInHouse, userInHouse } from '../validation/verify';
 
 export const writeReceipt = functions.https.onCall(
-  async (request: functions.https.CallableRequest<{ receiptId: string, houseId: string, receiptItems: ReceiptItems, groceryListId: string }>) => {
-    const { receiptId, houseId, receiptItems, groceryListId } = request.data;
+  async (request: functions.https.CallableRequest<{ receiptId: string, houseId: string, receiptItems: ReceiptItems }>) => {
+    const { receiptId, houseId, receiptItems } = request.data;
 
     if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
@@ -19,16 +19,12 @@ export const writeReceipt = functions.https.onCall(
     if (!houseId || !(await userInHouse(request.auth.uid, houseId))) {
       throw new functions.https.HttpsError('invalid-argument', 'houseId is required');
     }
-    if (!groceryListId || !(await groceryListInHouse(groceryListId, houseId))) {
-      throw new functions.https.HttpsError('invalid-argument', 'groceryListId is required and must belong to the house');
-    }
 
     const currentDate = new Date();
 
     const receipt: Receipt = {
       date: currentDate.toLocaleDateString(),
       receiptitems: receiptItems, 
-      groceryListId: groceryListId,
       houseId: houseId,
     }
     const receiptRecordInHouse: ReceiptRecordInHouse = {

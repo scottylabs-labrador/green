@@ -65,8 +65,8 @@ const EditSplit = ({ colors, splits, visible, onClose, onSplitsChange }: EditSpl
           onPress={() => toggleSplit(item)}
         >
           <View
-            className={`flex h-10 w-10 items-center justify-center self-center rounded-full ${inSplit ? inSplitStyle : ''}`}
-            style={{ backgroundColor: '#' + colors[item].color }}
+            className={`flex h-10 w-10 items-center justify-center self-center rounded-full ${inSplit && inSplitStyle}`}
+            style={{ backgroundColor: colors[item].color, opacity: inSplit ? 1 : 0.5 }}
           >
             <Text className="w-1/2 self-center text-center text-white font-medium">
               {colors[item].name[0].toUpperCase()}

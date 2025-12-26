@@ -107,7 +107,7 @@ export default function Page() {
 
           try {
             const receiptId = window.crypto.randomUUID();
-            await writeReceipt(receiptId, houseId, receiptItems, groceryListId);
+            await writeReceipt(receiptId, houseId, receiptItems);
             router.replace({
               pathname: '/bill',
               params: { receiptId: receiptId },

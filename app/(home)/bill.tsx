@@ -32,7 +32,8 @@ export default function Bill() {
 
         for (const key of Object.keys(receiptItems)) {
           const item = receiptItems[key];
-          if (item.groceryItem?.length === 0) unmatched[key] = item;
+          if (item.receiptItem.length === 0) continue;
+          if (item.groceryItem.length === 0) unmatched[key] = item;
           else matched[key] = item;
         }
 
