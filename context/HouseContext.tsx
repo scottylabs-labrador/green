@@ -5,11 +5,11 @@ import { getUserEmail } from '@/api/auth';
 import { getHouseId, listenForHouseInfo } from '@/api/house';
 import Loading from '@/components/Loading';
 import { Members } from '@db/types';
-import { useRouter } from 'expo-router';
 import { useAuth } from './AuthContext';
 
 type HouseContextType = {
-  houseId: string;
+  houseId: string | null;
+  setHouseId: (id: string) => void;
   houseName: string;
   groceryListId: string;
   color: string;
@@ -20,7 +20,8 @@ type HouseContextType = {
 };
 
 const HouseContext = createContext<HouseContextType>({
-  houseId: '',
+  houseId: null,
+  setHouseId: () => {},
   houseName: '',
   groceryListId: '',
   color: '',
@@ -32,7 +33,7 @@ const HouseContext = createContext<HouseContextType>({
 
 export const HouseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [userId, setUserId] = useState('');
-  const [houseId, setHouseId] = useState('');
+  const [houseId, setHouseId] = useState<string | null>(null);
   const [houseName, setHouseName] = useState('');
   const [groceryListId, setGroceryListId] = useState('');
   const [color, setColor] = useState('');
@@ -42,7 +43,6 @@ export const HouseProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [loading, setLoading] = useState(true);
 
   const { user } = useAuth();
-  const router = useRouter();
 
   useEffect(() => {
     const fetchHouseId = async () => {
@@ -54,10 +54,10 @@ export const HouseProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setHouseId(id);
         } catch (err) {
           console.error("Error fetching house ID:", err);
-          router.replace('/choosehouse');
+          setLoading(false);
         }
       } else {
-        router.replace('/login');
+        setLoading(false);
       }
     }
 
@@ -108,7 +108,7 @@ export const HouseProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [members]);
 
   return (
-    <HouseContext.Provider value={{ houseId, houseName, groceryListId, color, ownerId, members, userEmails, loading }}>
+    <HouseContext.Provider value={{ houseId, setHouseId, houseName, groceryListId, color, ownerId, members, userEmails, loading }}>
       {loading ? (
         <Loading message="Loading house..."/>
       ) : (

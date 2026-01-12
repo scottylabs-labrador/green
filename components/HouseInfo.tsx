@@ -13,7 +13,7 @@ import InviteCode from './InviteCode';
 
 type HouseInfoProps = {
   name: string;
-  houseId: string;
+  houseId: string | null;
   members: Members;
   owner: string;
   onNameChange: (newName: string) => void;
@@ -78,6 +78,10 @@ const HouseInfo = ({ name, houseId, members, owner, onNameChange }: HouseInfoPro
       </View>
     );
   };
+
+  if (!houseId) {
+    return null;
+  }
 
   return (
     <View className="w-full flex-col items-center justify-center self-center rounded-lg border border-gray-300 px-2">

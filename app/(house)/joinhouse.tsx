@@ -9,10 +9,12 @@ import ColorPicker from '@/components/ColorPicker';
 import CustomButton from '@/components/CustomButton';
 import Loading from '@/components/Loading';
 import { useAuth } from '@/context/AuthContext';
+import { useHouseInfo } from '@/context/HouseContext';
 
 export default function JoinHouse() {
   const router = useRouter();
   const { user } = useAuth();
+  const { setHouseId } = useHouseInfo();
 
   const { key } = useLocalSearchParams<{ key: string }>();
 
@@ -64,6 +66,7 @@ export default function JoinHouse() {
     try {
       setLoadingAddMember(true);
       await updateUserColor(userId, key, color);
+      setHouseId(key);
       router.push('/list');
     } catch (err) {
       setLoadingAddMember(false);
