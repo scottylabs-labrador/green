@@ -52,7 +52,7 @@ export async function joinHouse(houseId: string, userId: string, color: string) 
   await fn({ houseId, userId, color });
 }
 
-export async function getHouseId(userId: string) {
+export async function getDefaultHouseId(userId: string) {
   const housemateRef = ref(db, `housemates/${userId}/houses`);
   const snap = await get(housemateRef);
 
@@ -61,7 +61,7 @@ export async function getHouseId(userId: string) {
     if (houses.length > 0) return houses[0]; // Return the first house ID
   }
 
-  throw new Error('No house found');
+  return null;
 }
 
 export async function getHouseIds(userId: string) {

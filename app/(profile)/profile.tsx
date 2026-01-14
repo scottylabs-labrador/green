@@ -45,6 +45,14 @@ export default function Profile() {
     router.push('/accountsettings');
   }
 
+  const handleSwitchHouse = () => {
+    router.push('/houses');
+  }
+
+  const handleJoinHouse = () => {
+    router.push('/choosehouse');
+  }
+
   const handleLogoutConfirm = () => {
     setShowLogoutConfirm(!showLogoutConfirm);
   }
@@ -65,6 +73,22 @@ export default function Profile() {
         <View className="w-full flex-col items-center justify-center gap-2">
           <Text className="w-full px-1 text-left font-medium text-gray-500">House</Text>
           <HouseInfo name={houseName} houseId={houseId} members={members} owner={ownerId} onNameChange={() => {}} />
+          <Pressable 
+            className="flex h-12 w-full items-center justify-center self-center rounded-lg bg-gray-50 border border-gray-100 hover:bg-gray-100" 
+            onPress={handleSwitchHouse}
+          >
+            <View className="w-full flex-row items-center justify-center gap-3 px-3">
+              <Text className="text-1xl grow text-left font-semibold">Switch House</Text>
+            </View>
+          </Pressable>
+          <Pressable 
+            className="flex h-12 w-full items-center justify-center self-center rounded-lg bg-gray-50 border border-gray-100 hover:bg-gray-100" 
+            onPress={handleJoinHouse}
+          >
+            <View className="w-full flex-row items-center justify-center gap-3 px-3">
+              <Text className="text-1xl grow text-left font-semibold">New House</Text>
+            </View>
+          </Pressable>
         </View>
 
         <View className="w-full flex-col items-center justify-center gap-3 mt-2">

@@ -32,7 +32,6 @@ export default function Page() {
       try {
         if (user && user.uid) {
           setUserId(user.uid);
-          // setHouseId(await getHouseId(user.uid));
         } else {
           router.replace('/login');
         }

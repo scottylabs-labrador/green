@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { FontAwesome6, Ionicons } from '@expo/vector-icons';
+import { FontAwesome6, Ionicons, Octicons } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
 import { FlatList, Image, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
 
@@ -66,7 +66,14 @@ export default function List() {
     { label: 'Clear All', 
       icon: <FontAwesome6 name='trash-can' size={18} color='#f56565' />, 
       color: '#f56565', 
-      onPress: () => setConfirmClearVisible(!confirmClearVisible) },
+      onPress: () => setConfirmClearVisible(!confirmClearVisible) 
+    },
+    {
+      label: 'Switch House',
+      icon: <Octicons name='arrow-switch' size={18} color='gray' />, 
+      color: 'gray',
+      onPress: () => router.push('/houses')
+    },
   ];
 
   return (

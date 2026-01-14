@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-
 import { getUserEmail } from '@/api/auth';
-import { getHouseId, listenForHouseInfo } from '@/api/house';
+import { getDefaultHouseId, listenForHouseInfo } from '@/api/house';
 import Loading from '@/components/Loading';
 import { Members } from '@db/types';
 import { useAuth } from './AuthContext';
@@ -50,7 +49,13 @@ export const HouseProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setUserId(user.uid);
 
         try {
-          const id = await getHouseId(user.uid);
+          const id = await getDefaultHouseId(user.uid);
+
+          if (!id) {
+            setLoading(false);
+            return;
+          }
+          
           setHouseId(id);
         } catch (err) {
           console.error("Error fetching house ID:", err);
@@ -65,7 +70,10 @@ export const HouseProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [user]);
 
   useEffect(() => {
-    if (!houseId || !userId) return;
+    if (!houseId || !userId) {
+      setLoading(false);
+      return;
+    };
 
     try {
       const unsubscribe = listenForHouseInfo(houseId, (house) => {
