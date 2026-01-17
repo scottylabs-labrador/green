@@ -99,7 +99,7 @@ export default function List() {
           {groceryItems && Object.keys(groceryItems).length > 0 ? (
             <FlatList
               className="h-full"
-              data={Object.keys(groceryItems)}
+              data={Object.keys(groceryItems).reverse()}
               renderItem={renderItem}
               keyExtractor={item => item}
               contentContainerStyle={{ gap: 8 }}

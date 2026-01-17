@@ -1,7 +1,6 @@
-import * as crypto from 'crypto';
 import * as functions from 'firebase-functions';
 
-import { exists, get, remove, setTyped, updateTyped } from '../db/db';
+import { exists, get, pushTyped, remove, setTyped, updateTyped } from '../db/db';
 import type { GroceryItem, GroceryList, Splits } from '../db/types';
 import { houseExists, userInHouse } from '../validation/verify';
 
@@ -74,12 +73,7 @@ export const writeGroceryItem = functions.https.onCall(
         splits: splits
     }
 
-    const randomBytes = crypto.randomBytes(16);
-    const token = Array.from(randomBytes)
-      .map(b => b.toString(36).padStart(2, '0'))
-      .join('');
-
-    await setTyped<GroceryItem>(`grocerylists/${grocerylist}/groceryitems/${token}`, newgroceryitem);
+    await pushTyped<GroceryItem>(`grocerylists/${grocerylist}/groceryitems`, newgroceryitem);
   },
 );
 

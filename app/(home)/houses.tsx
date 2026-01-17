@@ -4,6 +4,7 @@ import { Link, useRouter } from 'expo-router';
 import { FlatList, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
 
 import { getHouseIds, getHouseNameFromId } from '@/api/house';
+import BackButton from '@/components/BackButton';
 import { useAuth } from '@/context/AuthContext';
 import { useHouseInfo } from '@/context/HouseContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -85,6 +86,7 @@ export default function Houses() {
   return (
     <View className="h-full w-full flex-1 items-center justify-start overflow-y-auto">
       <View className="flex h-full w-full max-w-lg items-center justify-start gap-1 pb-6 pt-16 px-8">
+        <BackButton />
         <Text className="text-center text-lg font-medium">Houses</Text>
         <View className="w-full mt-5">
           <FlatList

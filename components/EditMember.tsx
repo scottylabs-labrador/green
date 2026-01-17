@@ -11,7 +11,7 @@ import { Feather } from '@expo/vector-icons';
 type EditMemberProps = {
   visible: boolean;
   memberId: string;
-  houseId: string;
+  houseId: string | null;
   userEmails: Record<string, string>;
   members: Members;
   onClose: () => void;
@@ -25,6 +25,11 @@ const EditMember = ({ visible, memberId, onClose }: EditMemberProps) => {
   const [loadingRemove, setLoadingRemove] = useState(false);
   
   const transferOwnership = async () => {
+    if (!houseId) {
+      setError("Invalid house.");
+      return;
+    }
+
     try {
       setLoadingOwner(true);
       await updateOwner(houseId, memberId);
@@ -37,6 +42,11 @@ const EditMember = ({ visible, memberId, onClose }: EditMemberProps) => {
   };
 
   const handleRemoveMember = async () => {
+    if (!houseId) {
+      setError("Invalid house.");
+      return;
+    }
+    
     try {
       setLoadingRemove(true);
       await removeMember(houseId, memberId);

@@ -119,7 +119,11 @@ export async function writeHouse(name: string, houseId: string, groceryListId: s
   await fn({ name, houseId, groceryListId });
 }
 
-export async function updateHouseName(name: string, houseId: string) {
+export async function updateHouseName(name: string, houseId: string | null) {
+  if (!houseId) {
+    throw new Error('Invalid house ID');
+  }
+
   const fn = httpsCallable<{ 
     name: string, 
     houseId: string, 
@@ -128,7 +132,11 @@ export async function updateHouseName(name: string, houseId: string) {
   await fn({ name, houseId });
 }
 
-export async function updateOwner(houseId: string, newOwnerId: string) {
+export async function updateOwner(houseId: string | null, newOwnerId: string) {
+  if (!houseId) {
+    throw new Error('Invalid house ID');
+  }
+
   const fn = httpsCallable<{ 
     houseId: string, 
     newOwnerId: string, 
@@ -137,7 +145,11 @@ export async function updateOwner(houseId: string, newOwnerId: string) {
   await fn({ houseId, newOwnerId });
 }
 
-export async function removeMember(houseId: string, userId: string) {
+export async function removeMember(houseId: string | null, userId: string) {
+  if (!houseId) {
+    throw new Error('Invalid house ID');
+  }
+
   const fn = httpsCallable<{ 
     houseId: string, 
     userId: string, 

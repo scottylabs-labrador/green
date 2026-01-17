@@ -5,6 +5,12 @@ export function setTyped<T>(path: string, value: T): Promise<void> {
   return db.ref(path).set(value);
 }
 
+export function pushTyped<T>(path: string, value: T): Promise<admin.database.Reference> {
+  const db = admin.database();
+  const ref = db.ref(path).push();
+  return ref.set(value).then(() => ref);
+}
+
 export function updateTyped<T extends object>(path: string, value: Partial<T>) {
   const db = admin.database();
   return db.ref(path).update(value);

@@ -66,9 +66,13 @@ export const matchWords = (
 
 export async function writeReceipt(
   receiptId: string,
-  houseId: string,
+  houseId: string | null,
   receiptItems: ReceiptItems,
 ) {
+  if (!houseId) {
+    throw new Error('Invalid house');
+  }
+
   const fn = httpsCallable<{
     receiptId: String, 
     houseId: String, 

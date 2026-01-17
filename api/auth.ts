@@ -106,9 +106,13 @@ export async function updateUser(
 
 export async function updateUserColor(
   userId: string,
-  houseId: string, 
+  houseId: string | null, 
   color: string,
 ) {
+  if (!houseId) {
+    throw new Error('Invalid house ID');
+  }
+
   const fn = httpsCallable<{
     userId: string,
     houseId: string, 

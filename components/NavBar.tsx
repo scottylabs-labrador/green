@@ -7,7 +7,7 @@ import { View } from 'react-native';
 const NavBar = () => {
   const segments = useSegments();
   const [location, setLocation] = useState('');
-  const [isProfile, setIsProfile] = useState(false);
+  const [root, setRoot] = useState(segments[0]);
 
   const SELECTED_COLOR = '#3e5636';
   const DESELECTED_COLOR = '#9fa3af';
@@ -18,14 +18,6 @@ const NavBar = () => {
     setLocation(segments[segments.length - 1]);
   }, [segments]);
 
-  useEffect(() => {
-    if (profileLocations.includes(location)) {
-      setIsProfile(true);
-    } else {
-      setIsProfile(false);
-    }
-  }, [location]);
-
   return (
     <View className="h-16 w-full items-center justify-center bg-white">
       <View className="flex w-3/4 flex-row justify-between space-x-4">
@@ -33,7 +25,7 @@ const NavBar = () => {
           <Ionicons
             name="home"
             size={24}
-            color={isProfile || location == 'scan' ? DESELECTED_COLOR : SELECTED_COLOR}
+            color={segments[0] === '(home)' && location !== 'scan' ? SELECTED_COLOR : DESELECTED_COLOR}
           />
         </Link>
         <Link href="/scan" asChild>
@@ -47,7 +39,7 @@ const NavBar = () => {
           <FontAwesome
             name="user-circle"
             size={24}
-            color={isProfile ? SELECTED_COLOR : DESELECTED_COLOR}
+            color={segments[0] !== '(home)' ? SELECTED_COLOR : DESELECTED_COLOR}
           />
         </Link>
       </View>
