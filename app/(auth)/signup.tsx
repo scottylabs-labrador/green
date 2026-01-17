@@ -34,7 +34,7 @@ export default function SignUp() {
     }
 
     if (!user.emailVerified) {
-      router.replace('/verifyemail');
+      router.replace('/(account)/verifyemail');
       return;
     }
 

@@ -34,7 +34,7 @@ export default function Home() {
       <ImageBackground
         source={background}
         resizeMode="cover"
-        className="h-full w-full bg-dark-green"
+        className="h-full w-full bg-dark-green overflow-hidden"
       >
         <View className="h-full w-full flex-1 items-center justify-center p-6">
           <View className="flex h-fit max-w-lg items-center justify-center gap-6">

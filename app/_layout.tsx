@@ -27,14 +27,23 @@ function RootLayoutNav() {
     return <Stack screenOptions={{ headerShown: false }} />;
   }
 
-  const isAuthGroup = segments[0] === '(auth)';
+  if (loading) {
+    return (
+      <Stack screenOptions={{ headerShown: false }} />
+    )
+  }
 
-  // Redirect to login if not authenticated
-  if (!user && !isAuthGroup) {
+  const root = segments[0];
+
+  if (!user && root !== '(auth)') {
     return <Redirect href="/(auth)/login" />;
   }
-  
-  if (user && !houseId && segments[0] !== '(house)') {
+
+  if (user && !user.emailVerified && root !== '(account)') {
+    return <Redirect href="/(account)/verifyemail" />;
+  }
+
+  if (user && user.emailVerified && houseId === null && root !== '(house)') {
     return <Redirect href="/(house)/choosehouse" />;
   }
 
