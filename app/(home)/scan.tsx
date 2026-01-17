@@ -1,30 +1,29 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import { GroceryItems } from '@db/types';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
-import { getGroceryListIdFromHouse, listenForGroceryItems } from '@/api/grocerylist';
-import { getHouseId } from '@/api/house';
+import { listenForGroceryItems } from '@/api/grocerylist';
 import { matchWords, writeReceipt } from '@/api/receipt';
 import Button from '@/components/CustomButton';
 import Loading from '@/components/Loading';
 import { useAuth } from '@/context/AuthContext';
+import { useHouseInfo } from '@/context/HouseContext';
+import { GroceryItems } from '@db/types';
 
 export default function Page() {
   const router = useRouter();
   const { user } = useAuth();
+  const { houseId, groceryListId } = useHouseInfo();
   
   const [userId, setUserId] = useState('');
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
   const [imageUri, setImageUri] = useState<string | null>(null);
   const cameraRef = useRef<CameraView>(null);
-  const [groceryListId, setGroceryListId] = useState('');
   const [groceryItems, setGroceryItems] = useState<GroceryItems>({});
-  const [houseId, setHouseId] = useState('');
 
   let RECEIPT_API_URL = 'http://127.0.0.1:8000/receiptLines';
 
@@ -33,7 +32,6 @@ export default function Page() {
       try {
         if (user && user.uid) {
           setUserId(user.uid);
-          setHouseId(await getHouseId(user.uid));
         } else {
           router.replace('/login');
         }
@@ -44,22 +42,6 @@ export default function Page() {
 
     fetchHouseId();
   }, [user, router]);
-
-  useEffect(() => {
-    if (!houseId) {
-      return;
-    }
-
-    const fetchGroceryListId = async () => {
-      try {
-        setGroceryListId(await getGroceryListIdFromHouse(houseId));
-      } catch (err) {
-        console.error("Error fetching grocery list ID from house:", err);
-      }
-    }
-
-    fetchGroceryListId();
-  }, [houseId]);
 
   useEffect(() => {
     if (!groceryListId) {
@@ -124,7 +106,7 @@ export default function Page() {
 
           try {
             const receiptId = window.crypto.randomUUID();
-            await writeReceipt(receiptId, houseId, receiptItems, groceryListId);
+            await writeReceipt(receiptId, houseId, receiptItems);
             router.replace({
               pathname: '/bill',
               params: { receiptId: receiptId },

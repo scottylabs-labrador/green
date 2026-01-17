@@ -54,7 +54,7 @@ const AddGroceryItem = ({ userId, groceryListId, visible, onClose }: AddGroceryI
           <Text className="text-center text-lg font-medium mb-4">Add Item</Text>
           <View className="px-2 mb-4">
             <TextInput
-              className={`block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 align-middle text-sm ${item ? 'text-gray-900' : 'text-gray-500'} focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500`}
+              className={`block w-full rounded-lg border border-gray-300 bg-white p-2.5 align-middle text-sm ${item ? 'text-gray-900' : 'text-gray-500'} focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500`}
               onChangeText={setItem}
               value={item}
               placeholder="Item..."

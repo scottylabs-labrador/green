@@ -5,8 +5,6 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { ImageBackground, KeyboardAvoidingView, Platform, Text, View } from 'react-native';
 
-import { getGroceryListIdFromHouse } from '@/api/grocerylist';
-import { getHouseId } from '@/api/house';
 import background from '@/assets/home-background.png';
 import LinkButton from '@/components/LinkButton';
 import { useAuth } from '@/context/AuthContext';
@@ -16,37 +14,16 @@ export default function Home() {
   const { user } = useAuth();
 
   useEffect(() => {
-    const checkUser = async () => {
-      try {
-        if (!user?.uid) {
-          return;
-        }
-
-        if (!user.emailVerified) {
-          router.push('/verifyemail');
-          return;
-        }
-  
-        const houseId = await getHouseId(user.uid);
-  
-        if (!houseId) {
-          router.push('/choosehouse');
-          return;
-        }
-  
-        const groceryListId = await getGroceryListIdFromHouse(houseId);
-        if (groceryListId) {
-          router.push({ pathname: '/list', params: { grocerylist: groceryListId } });
-        } else {
-          router.push('/choosehouse');
-        }
-      } catch (err) {
-        console.log('Error while redirecting:', err);
-        router.push('/choosehouse');
-      }
+    if (!user?.uid) {
+      return;
     }
 
-    checkUser();
+    if (!user.emailVerified) {
+      router.replace('/verifyemail');
+      return;
+    }
+
+    router.replace('/list');
   }, [user]);
 
   return (
@@ -57,7 +34,7 @@ export default function Home() {
       <ImageBackground
         source={background}
         resizeMode="cover"
-        className="h-full w-full bg-dark-green"
+        className="h-full w-full bg-dark-green overflow-hidden"
       >
         <View className="h-full w-full flex-1 items-center justify-center p-6">
           <View className="flex h-fit max-w-lg items-center justify-center gap-6">

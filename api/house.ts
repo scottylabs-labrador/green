@@ -42,30 +42,17 @@ export async function getHouseIdFromInvite(inviteToken: string): Promise<string>
   return houseId;
 }
 
-export async function joinHouseWithInvite(houseId: string, userId: string, color: string) {
-  const nameSnap = await get(ref(db, `housemates/${userId}/name`));
-  const name = nameSnap.exists() ? nameSnap.val() : 'Unknown';
-
-  const housesRef = ref(db, `housemates/${userId}/houses`);
-  const housesSnap = await get(housesRef);
-  let houses = housesSnap.exists() ? housesSnap.val() : [];
-
-  if (!houses.includes(houseId)) {
-    houses.push(houseId);
-  }
-
+export async function joinHouse(houseId: string, userId: string, color: string) {
   const fn = httpsCallable<{ 
     houseId: string, 
     userId: string, 
-    color: string, 
-    houses: string[], 
-    name: string 
-  }, null>(functions, 'joinHouseWithInvite');
+    color: string
+  }, null>(functions, 'joinHouse');
 
-  await fn({ houseId, userId, color, houses, name });
+  await fn({ houseId, userId, color });
 }
 
-export async function getHouseId(userId: string) {
+export async function getDefaultHouseId(userId: string) {
   const housemateRef = ref(db, `housemates/${userId}/houses`);
   const snap = await get(housemateRef);
 
@@ -74,7 +61,19 @@ export async function getHouseId(userId: string) {
     if (houses.length > 0) return houses[0]; // Return the first house ID
   }
 
-  throw new Error('No house found');
+  return null;
+}
+
+export async function getHouseIds(userId: string) {
+  const housemateRef = ref(db, `housemates/${userId}/houses`);
+  const snap = await get(housemateRef);
+
+  if (snap.exists()) {
+    const houses: string[] = snap.val();
+    if (houses.length > 0) return houses;
+  }
+
+  throw new Error('No houses found');
 }
 
 export async function getHouseNameFromId(houseId: string) {
@@ -86,6 +85,12 @@ export async function getHouseNameFromId(houseId: string) {
   }
 
   throw new Error('No house found');
+}
+
+export async function getHouseNameFromServer(houseId: string) {
+  const fn = httpsCallable<{ houseId: string }, { houseName: string }>(functions, 'getHouseNameFromServer');
+  const result = await fn({ houseId });
+  return result.data.houseName;
 }
 
 export function listenForHouseInfo(houseId: string, callback: (house: House) => void) {
@@ -121,4 +126,22 @@ export async function updateHouseName(name: string, houseId: string) {
   }, null>(functions, 'updateHouseName');
 
   await fn({ name, houseId });
+}
+
+export async function updateOwner(houseId: string, newOwnerId: string) {
+  const fn = httpsCallable<{ 
+    houseId: string, 
+    newOwnerId: string, 
+  }, null>(functions, 'updateOwner');
+
+  await fn({ houseId, newOwnerId });
+}
+
+export async function removeMember(houseId: string, userId: string) {
+  const fn = httpsCallable<{ 
+    houseId: string, 
+    userId: string, 
+  }, null>(functions, 'removeMember');
+
+  await fn({ houseId, userId });
 }

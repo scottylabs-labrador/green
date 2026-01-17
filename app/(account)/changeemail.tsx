@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import { reauthenticateAndChangeEmail } from '@/api/auth';
+import BackButton from '@/components/BackButton';
 import Button from '@/components/CustomButton';
 import SecureTextInput from '@/components/SecureTextInput';
 import { useAuth } from '@/context/AuthContext';
@@ -57,37 +58,38 @@ export default function ChangeEmail() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView className="h-full">
-        <View className="mx-auto mt-32 w-9/12 max-w-6xl flex-1 justify-center">
-          <Text className="mb-9 text-3xl font-semibold">Change Email</Text>
-
-          <Text className="mb-2">New Email</Text>
-          <TextInput
-            className="mb-2 block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
-            onChangeText={setNewEmail}
-            value={newEmail}
-            keyboardType="email-address"
-          />
-
-          <Text className="mb-2">Confirm Email</Text>
-          <TextInput
-            className="mb-2 block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900"
-            onChangeText={setConfirmEmail}
-            value={confirmEmail}
-            keyboardType="email-address"
-          />
-
-          <Text className="mb-2">Current Password</Text>
-          <SecureTextInput value={currPassword} onChangeText={setCurrPassword} />
-          <Text className="text-blue-500 font-medium text-right mb-2" onPress={() => router.push('/forgotpassword')}>
-            Forgot Password?
-          </Text>
+        <BackButton />
+        <View className="mx-auto mt-16 flex-1 justify-center w-full px-8">
+          <Text className="mb-6 text-center text-lg font-medium">Change Email</Text>
+          <View className="px-2 mb-2">
+            <Text className="mb-2">New Email</Text>
+            <TextInput
+              className="mb-2 block rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900"
+              onChangeText={setNewEmail}
+              value={newEmail}
+              keyboardType="email-address"
+            />
+          </View>
+          <View className="px-2 mb-2">
+            <Text className="mb-2">Confirm Email</Text>
+            <TextInput
+              className="mb-2 block rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-900"
+              onChangeText={setConfirmEmail}
+              value={confirmEmail}
+              keyboardType="email-address"
+            />
+          </View>
+          <View className="px-2 mb-2">
+            <Text className="mb-2">Current Password</Text>
+            <SecureTextInput value={currPassword} onChangeText={setCurrPassword} />
+            <Text className="text-blue-500 font-medium text-right mb-2" onPress={() => router.push('/forgotpassword')}>
+              Forgot Password?
+            </Text>
+          </View>
 
           <Text className="mb-4 text-red-500">{errorText}</Text>
 
-          <Button buttonLabel="Change Email" onPress={handleChangeEmail} isLoading={loading}/>
-          <Text className={`text-center mt-2 text-blue-500 font-medium`} onPress={() => {router.back();}}>
-            Back
-          </Text>
+          <Button buttonLabel="Change Email" onPress={handleChangeEmail} isLoading={loading} fontSize={"text-sm"}/>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

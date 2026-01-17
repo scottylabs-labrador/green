@@ -19,13 +19,13 @@ export interface House {
   grocerylist: string;
   receipts: ReceiptRecordsInHouse;
   invite: string;
+  owner: string;
 }
 
 export type Houses = Record<string, House>;
 
 export interface Housemate {
   name: string;
-  email: string;
   houses: string[];
 }
 
@@ -44,6 +44,7 @@ export type GroceryItems = Record<string, GroceryItem>;
 export interface GroceryList {
   name: string;
   groceryitems: GroceryItems;
+  houseId: string;
 }
 
 export type GroceryLists = Record<string, GroceryList>;
@@ -55,20 +56,12 @@ export interface ReceiptItem {
   splits: Splits;
 }
 
-export interface ReceiptItem {
-  receiptItem: string;
-  groceryItem: string;
-  price: number;
-  splits: Splits;
-}
-
-
 export type ReceiptItems = Record<string, ReceiptItem>;
 
 export interface Receipt {
   receiptitems: ReceiptItems;
   date: string;
-  groceryListId: string;
+  houseId: string;
 }
 
 export interface Invite {

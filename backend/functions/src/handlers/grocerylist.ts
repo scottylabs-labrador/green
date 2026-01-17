@@ -3,24 +3,33 @@ import * as functions from 'firebase-functions';
 
 import { exists, get, remove, setTyped, updateTyped } from '../db/db';
 import type { GroceryItem, GroceryList, Splits } from '../db/types';
+import { houseExists, userInHouse } from '../validation/verify';
 
 export const writeGroceryList = functions.https.onCall(
-  async (request: functions.https.CallableRequest<{ grocerylist: string , name: string}>) => {
-    const { grocerylist, name } = request.data;
+  async (request: functions.https.CallableRequest<{ grocerylist: string , name: string, houseId: string }>) => {
+    const { grocerylist, name, houseId } = request.data;
 
     if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
     }
-
-    if (!grocerylist || !name) {
-      throw new functions.https.HttpsError('invalid-argument', 'grocerylist and name are required');
+    if (!grocerylist || !name || !houseId) {
+      throw new functions.https.HttpsError('invalid-argument', 'grocerylist, name, and houseId are required');
+    }
+    if (!(await houseExists(houseId))) {
+      throw new functions.https.HttpsError('invalid-argument', 'houseId does not exist');
     }
 
-    const newgrocerylist : GroceryList = {
+    const houseName = await get(`houses/${houseId}/name`);
+    if (houseName !== name) {
+      throw new functions.https.HttpsError('invalid-argument', 'name must match with house name');
+    }
+
+    const newGroceryList : GroceryList = {
         name: name,
-        groceryitems: {}
+        groceryitems: {}, 
+        houseId: houseId
     };
-    await setTyped<GroceryList>(`grocerylists/${grocerylist}`, newgrocerylist)
+    await setTyped<GroceryList>(`grocerylists/${grocerylist}`, newGroceryList)
   },
 );
 
@@ -36,16 +45,24 @@ export const writeGroceryItem = functions.https.onCall(
       throw new functions.https.HttpsError('invalid-argument', 'grocerylist is required');
     }
 
+    const houseId = await get(`grocerylists/${grocerylist}/houseId`);
+    if (!(await userInHouse(request.auth.uid, houseId))) {
+      throw new functions.https.HttpsError('permission-denied', 'You must be a part of the house');
+    }
+
     if (!name) {
       throw new functions.https.HttpsError('invalid-argument', 'name is required');
     }
+    if (name.trim().length == 0 || name.trim().length > 30) {
+      throw new functions.https.HttpsError('invalid-argument', 'name length must be between 1 and 30');
+    }
 
-    if (!member) {
+    if (!member || !(await userInHouse(member, houseId))) {
       throw new functions.https.HttpsError('invalid-argument', 'member is required');
     }
 
-    if (!quantity) {
-      throw new functions.https.HttpsError('invalid-argument', 'quantity is required');
+    if (!quantity || quantity <= 0) {
+      throw new functions.https.HttpsError('invalid-argument', 'quantity is required and must be greater than 0');
     }
 
     let splits: Splits =  {};
@@ -62,7 +79,7 @@ export const writeGroceryItem = functions.https.onCall(
       .map(b => b.toString(36).padStart(2, '0'))
       .join('');
 
-    await setTyped<GroceryItem>(`grocerylists/${grocerylist}/groceryitems/${token}`, newgroceryitem)
+    await setTyped<GroceryItem>(`grocerylists/${grocerylist}/groceryitems/${token}`, newgroceryitem);
   },
 );
 
@@ -79,6 +96,11 @@ export const updateGroceryItem = functions.https.onCall(
       throw new functions.https.HttpsError('invalid-argument', 'grocerylist is required');
     }
 
+    const houseId = await get(`grocerylists/${grocerylist}/houseId`);
+    if (!(await userInHouse(request.auth.uid, houseId))) {
+      throw new functions.https.HttpsError('permission-denied', 'You must be a part of the house')
+    }
+
     if (!id) {
       throw new functions.https.HttpsError('invalid-argument', 'id is required');
     }
@@ -86,13 +108,16 @@ export const updateGroceryItem = functions.https.onCall(
     if (!name) {
       throw new functions.https.HttpsError('invalid-argument', 'name is required');
     }
+    if (name.length == 0 || name.length > 30) {
+      throw new functions.https.HttpsError('invalid-argument', 'name length must be between 1 and 30');
+    }
 
     if (!changeQuantity) {
       throw new functions.https.HttpsError('invalid-argument', 'quantity is required');
     }
 
-    if (!member) {
-      throw new functions.https.HttpsError('invalid-argument', 'member is required');
+    if (!member || !(await userInHouse(member, houseId))) {
+      throw new functions.https.HttpsError('invalid-argument', 'member is required and must be a part of the house');
     }
 
     const itemexists = await exists(`grocerylists/${grocerylist}/groceryitems/${id}`);
@@ -104,7 +129,7 @@ export const updateGroceryItem = functions.https.onCall(
           [member]: changeQuantity
         }
       }
-      await updateTyped<GroceryItem>(`grocerylists/${grocerylist}/groceryitems/${id}`, groceryitem)
+      await updateTyped<GroceryItem>(`grocerylists/${grocerylist}/groceryitems/${id}`, groceryitem);
     }
     
     if (itemexists){
@@ -162,6 +187,11 @@ export const removeGroceryItem = functions.https.onCall(
       throw new functions.https.HttpsError('invalid-argument', 'grocerylist is required');
     }
 
+    const houseId = await get(`grocerylists/${grocerylist}/houseId`);
+    if (!(await userInHouse(request.auth.uid, houseId))) {
+      throw new functions.https.HttpsError('permission-denied', 'You must be a part of the house');
+    }
+
     if (!id) {
       throw new functions.https.HttpsError('invalid-argument', 'id is required');
     }
@@ -180,6 +210,11 @@ export const clearGroceryItems = functions.https.onCall(
 
     if (!grocerylist) {
       throw new functions.https.HttpsError('invalid-argument', 'grocerylist is required');
+    }
+
+    const houseId = await get(`grocerylists/${grocerylist}/houseId`);
+    if (!(await userInHouse(request.auth.uid, houseId))) {
+      throw new functions.https.HttpsError('permission-denied', 'You must be a part of the house');
     }
 
     await remove(`grocerylists/${grocerylist}/groceryitems`);

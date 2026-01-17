@@ -4,10 +4,10 @@ import { httpsCallable } from 'firebase/functions';
 
 import { db, functions } from './firebase';
 
-export async function writeGroceryList(grocerylist: string, name: string) {
-  const fn = httpsCallable<{ grocerylist: string, name: string }, null>(functions, 'writeGroceryList');
+export async function writeGroceryList(grocerylist: string, name: string, houseId: string) {
+  const fn = httpsCallable<{ grocerylist: string, name: string, houseId: string }, null>(functions, 'writeGroceryList');
 
-  await fn({ grocerylist, name });
+  await fn({ grocerylist, name, houseId });
 }
 
 export async function getGroceryListId(userId: string): Promise<string> {
@@ -28,6 +28,18 @@ export async function getGroceryListId(userId: string): Promise<string> {
   if (!grocerylist) throw new Error('No grocerylist ID found');
 
   return grocerylist;
+}
+
+export async function getHouseIdFromGroceryListId(groceryListId: string) {
+  const houseIdRef = ref(db, `grocerylists/${groceryListId}/houseId`);
+
+  const snap = await get(houseIdRef);
+
+  if (snap.exists()) {
+    return snap.val();
+  }
+
+  throw new Error('No house found from grocery list');
 }
 
 export async function getGroceryListIdFromHouse(houseId: string) {

@@ -1,18 +1,16 @@
 import React from 'react';
 
-import AntDesign from '@expo/vector-icons/AntDesign';
-import { Link, useRouter } from 'expo-router';
-import { Pressable } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useRouter } from 'expo-router';
+import { View } from 'react-native';
 
 const BackButton = () => {
   const router = useRouter();
 
   return (
-    <Link href="/" className="absolute left-8 top-10 h-fit w-fit">
-      <Pressable>
-        <AntDesign name="left" size={24} color="gray" />
-      </Pressable>
-    </Link>
+    <View className="absolute top-8 left-6">
+      <Ionicons name="arrow-back" size={24} onPress={() => router.back()}/>
+    </View>
   );
 };
 

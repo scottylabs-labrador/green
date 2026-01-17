@@ -2,59 +2,22 @@ import React, { useEffect, useState } from 'react';
 
 import type { ReceiptItems } from '@db/types';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Link, useLocalSearchParams, useRouter } from 'expo-router';
+import { Link, useLocalSearchParams } from 'expo-router';
 import { FlatList, ListRenderItemInfo, Pressable, Text, View } from 'react-native';
 
-import { getHouseId, listenForHouseInfo } from '@/api/house';
 import { listenForReceipt } from '@/api/receipt';
-import { useAuth } from '@/context/AuthContext';
 
+import { useHouseInfo } from '@/context/HouseContext';
 import ReceiptItem from '../../components/ReceiptItem';
 
 export default function Bill() {
-  const router = useRouter();
-  const { user } = useAuth();
+  const { houseId, members } = useHouseInfo();
 
   const { receiptId } = useLocalSearchParams<{ receiptId: string }>();
 
-  const [houseId, setHouseId] = useState('');
   const [matchedItems, setMatchedItems] = useState<ReceiptItems>({});
   const [unmatchedItems, setUnmatchedItems] = useState<ReceiptItems>({});
   const [createDate, setCreateDate] = useState('');
-  const [colors, setColors] = useState({});
-
-  useEffect(() => {
-    const fetchHouseId = async () => {
-      try {
-        if (user && user.uid) {
-          setHouseId(await getHouseId(user.uid)); 
-        } else {
-          router.replace('/login');
-        }
-      } catch (err) {
-        console.error("Error while fetching house id:", err);
-      }
-    };
-
-    fetchHouseId();
-  }, [user, router]);
-
-  useEffect(() => {
-    if (!houseId) {
-      return;
-    }
-
-    try {
-      const unsubscribeColors = listenForHouseInfo(houseId, (house) => {
-        setColors(house.members || {});
-      });
-
-      return () => unsubscribeColors();
-    } catch (err) {
-      console.error("Error listening for house info:", err);
-    }
-
-  }, [houseId]);
 
   useEffect(() => {
     if (!receiptId) return;
@@ -69,7 +32,8 @@ export default function Bill() {
 
         for (const key of Object.keys(receiptItems)) {
           const item = receiptItems[key];
-          if (item.groceryItem?.length === 0) unmatched[key] = item;
+          if (item.receiptItem.length === 0) continue;
+          if (item.groceryItem.length === 0) unmatched[key] = item;
           else matched[key] = item;
         }
 
@@ -92,10 +56,9 @@ export default function Bill() {
         key={item}
         id={item}
         name={matchedItems[item].groceryItem}
-        // quantity={matchedItems[item].quantity}
         price={matchedItems[item].price}
         splits={matchedItems[item].splits}
-        colors={colors}
+        colors={members}
         matched={true}
         receiptId={receiptId}
       />

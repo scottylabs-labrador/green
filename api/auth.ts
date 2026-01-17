@@ -26,6 +26,10 @@ export async function createUser(
     throw new Error('Please fill missing fields.');
   }
 
+  if (name.trim().length < 1 || name.trim().length > 30) {
+    throw new Error('Name must be less than 30 characters.');
+  }
+
   // check password is minimum length
   if (password.length < 6) {
     throw new Error('Password must be at least 6 characters.');
@@ -69,7 +73,6 @@ export async function createUser(
   const fn = httpsCallable<{
     userId: string, 
     name: string, 
-    email: string, 
     houses: string[]
   }, null>(functions, 'writeUser');
 
@@ -77,7 +80,7 @@ export async function createUser(
   const houses: string[] = [];
 
   try {
-    await fn({ userId, name, email, houses });
+    await fn({ userId, name, houses });
   } catch (err) {
     console.error("Error creating user:", err);
     throw new Error('Failed to create user data. Please try again.');
@@ -92,6 +95,11 @@ export async function updateUser(
     userId: string, 
     name: string, 
   }, null>(functions, 'updateUser');
+
+  const user = auth.currentUser;
+  if (user && user.uid === userId) {
+    await updateProfile(user, { displayName: name });
+  }
 
   await fn({ userId, name });
 }

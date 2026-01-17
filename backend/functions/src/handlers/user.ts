@@ -4,22 +4,28 @@ import { onValueUpdated } from 'firebase-functions/v2/database';
 
 import { setTyped } from '../db/db';
 import type { Housemate } from '../db/types';
+import { isValidHexColor, userInHouse } from '../validation/verify';
 
 export const writeUser = functions.https.onCall(
-  async (request: functions.https.CallableRequest<{ userId: string, name: string, email: string, houses: string[] }>) => {
-    const { userId, name, email, houses } = request.data;
+  async (request: functions.https.CallableRequest<{ userId: string, name: string, houses: string[] }>) => {
+    const { userId, name, houses } = request.data;
 
     if (!request.auth) {
       throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
     }
 
-    if (!userId || !name || !email || !houses ) {
+    if (!userId || !name || !houses ) {
       throw new functions.https.HttpsError('invalid-argument', 'all arguments are required');
+    }
+    if (userId !== request.auth.uid) {
+      throw new functions.https.HttpsError('permission-denied', 'You can only write your own user data');
+    }
+    if (name.length < 1 || name.length > 30) {
+      throw new functions.https.HttpsError('invalid-argument', 'name must have length between 1 and 30');
     }
 
     const user: Housemate = {
       name, 
-      email, 
       houses,
     }
     await setTyped<Housemate>(`housemates/${userId}`, user);
@@ -36,14 +42,11 @@ export const updateUser = functions.https.onCall(
       throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
     }
 
-    if (!userId) {
-      throw new functions.https.HttpsError('invalid-argument', 'userId is required');
+    if (!userId || userId !== request.auth.uid) {
+      throw new functions.https.HttpsError('invalid-argument', 'userId is required and must match authenticated user');
     }
-    if (!name) {
-      throw new functions.https.HttpsError('invalid-argument', 'name is required');
-    }
-    if (name.length < 1) {
-      throw new functions.https.HttpsError('invalid-argument', 'name must have length at least 1');
+    if (!name || name.trim().length < 1 || name.trim().length > 30) {
+      throw new functions.https.HttpsError('invalid-argument', 'name is required and must have length between 1 and 30');
     }
 
     await setTyped<String>(`housemates/${userId}/name`, name);
@@ -85,13 +88,13 @@ export const updateUserColor = functions.https.onCall(
       throw new functions.https.HttpsError('unauthenticated', 'You must be logged in');
     }
 
-    if (!userId) {
-      throw new functions.https.HttpsError('invalid-argument', 'userId is required');
+    if (!userId || userId !== request.auth.uid) {
+      throw new functions.https.HttpsError('invalid-argument', 'userId is required and must match authenticated user');
     }
-    if (!houseId) {
+    if (!houseId || !(await userInHouse(request.auth.uid, houseId))) {
       throw new functions.https.HttpsError('invalid-argument', 'houseId is required');
     }
-    if (!color) {
+    if (!color || !isValidHexColor(color)) {
       throw new functions.https.HttpsError('invalid-argument', 'color is required');
     }
 

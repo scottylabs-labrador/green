@@ -19,6 +19,11 @@ export async function exists(path: string): Promise<boolean> {
 export async function get(path: string) {
   const db = admin.database();
   const snapshot = await db.ref(path).get();
+  
+  if (!snapshot.exists()) {
+    throw new Error(`Cannot access path ${path}`);
+  }
+
   return snapshot.val();
 }
 

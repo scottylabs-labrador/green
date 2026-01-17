@@ -5,12 +5,14 @@ import { ActivityIndicator, View } from 'react-native';
 import { MenuProvider } from 'react-native-popup-menu';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
+import { HouseProvider, useHouseInfo } from '@/context/HouseContext';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 
 SplashScreen.preventAutoHideAsync();
 
 function RootLayoutNav() {
   const { user, loading } = useAuth();
+  const { houseId } = useHouseInfo();
   const segments = useSegments();
 
   if (loading) {
@@ -21,11 +23,28 @@ function RootLayoutNav() {
     );
   }
 
-  const isAuthGroup = segments[0] === '(auth)';
+  if (segments[0] === 'error') {
+    return <Stack screenOptions={{ headerShown: false }} />;
+  }
 
-  // Redirect to login if not authenticated
-  if (!user && !isAuthGroup) {
+  if (loading) {
+    return (
+      <Stack screenOptions={{ headerShown: false }} />
+    )
+  }
+
+  const root = segments[0];
+
+  if (!user && root !== '(auth)') {
     return <Redirect href="/(auth)/login" />;
+  }
+
+  if (user && !user.emailVerified && root !== '(account)') {
+    return <Redirect href="/(account)/verifyemail" />;
+  }
+
+  if (user && user.emailVerified && houseId === null && root !== '(house)') {
+    return <Redirect href="/(house)/choosehouse" />;
   }
 
   return (
@@ -36,13 +55,15 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <MenuProvider>
-        <SafeAreaProvider>
-          <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
-            <RootLayoutNav />
-          </SafeAreaView>
-        </SafeAreaProvider>
-      </MenuProvider>
+      <HouseProvider>
+        <MenuProvider>
+          <SafeAreaProvider>
+            <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+              <RootLayoutNav />
+            </SafeAreaView>
+          </SafeAreaProvider>
+        </MenuProvider>
+      </HouseProvider>
     </AuthProvider>
   );
 }

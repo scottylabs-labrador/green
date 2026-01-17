@@ -1,73 +1,44 @@
 import React, { useEffect, useState } from 'react';
 
-import type { GroceryItems, Splits } from '@db/types';
+import type { Splits } from '@db/types';
 import { Octicons } from '@expo/vector-icons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
-import { FlatList, ListRenderItemInfo, Pressable, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, FlatList, ListRenderItemInfo, Pressable, Text, TextInput, View } from 'react-native';
 
-import { listenForGroceryItems } from '@/api/grocerylist';
-import { getHouseId, listenForHouseInfo } from '@/api/house';
 import { deleteReceiptItem, listenForReceipt, updateReceiptItem } from '@/api/receipt';
 import EditSplit from '@/components/EditSplit';
 import SplitProfile from '@/components/SplitProfile';
 import { useAuth } from '@/context/AuthContext';
+import { useHouseInfo } from '@/context/HouseContext';
 
 export default function UnmatchedItem() {
   const router = useRouter();
   const { user } = useAuth();
+  const { members } = useHouseInfo();
 
   var { itemId, receiptId } = useLocalSearchParams<{ itemId: string, receiptId: string }>();
   
   const [userId, setUserId] = useState('');
   const [itemName, setItemName] = useState('');
-  const [houseId, setHouseId] = useState('');
-  const [groceryListId, setGroceryListId] = useState('');
-  const [groceryItems, setGroceryItems] = useState<GroceryItems>({});
+  const [groceryItems, setGroceryItems] = useState<Record<string, Splits>>({});
   const [selectedItem, setSelectedItem] = useState('');
-  const [colors, setColors] = useState({});
-  const [price, setPrice] = useState('');
+  const [price, setPrice] = useState(0);
   const [splits, setSplits] = useState<Splits>({});
   const [newItem, setNewItem] = useState('');
+  const [error, setError] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    const fetchHouseId = async () => {
-      if (user && user.email) {
-        setUserId(user.uid);
-
-        if (!splits) {
-          setSplits({ [user.uid]: 1 });
-        }
-
-        try {
-          const id = await getHouseId(user.uid);
-          setHouseId(id);
-        } catch (err) {
-          console.error("Error fetching house ID:", err);
-        }
-      } else {
-        router.replace('/login');
-      }
+    if (user && user.uid) {
+      setUserId(user.uid);
+    } else {
+      router.replace('/login');
     }
-
-    fetchHouseId();
-  }, [user]);
-
-  useEffect(() => {
-      if (!houseId) return;
-  
-      try {
-        const unsubscribe = listenForHouseInfo(houseId, (house) => {
-          setColors(house.members || {});
-        });
-  
-        return () => unsubscribe();
-      } catch (err) {
-        console.error("Error listening for house info:", err);
-      }
-    }, [houseId]);
+  })
 
   useEffect(() => {
     if (!receiptId) return;
@@ -75,7 +46,17 @@ export default function UnmatchedItem() {
     try {
       const unsubscribeReceipt = listenForReceipt(receiptId, (receipt) => {
         const receiptItems = receipt.receiptitems || {};
-        const groceryListId = receipt.groceryListId || '';
+
+        const groceryItems: Record<string, Splits> = {};
+
+        for (const key of Object.keys(receiptItems)) {
+          const item = receiptItems[key];
+          if (item.groceryItem.length > 0) {
+            groceryItems[item.groceryItem] = item.splits;
+          } 
+        }
+
+        setGroceryItems(groceryItems);
         
         if (itemId === undefined) {
           itemId = window.crypto.randomUUID();
@@ -86,13 +67,11 @@ export default function UnmatchedItem() {
         if (item) {
           setItemName(item.receiptItem);
           setSelectedItem(item.groceryItem);
-          setPrice(item.price.toFixed(2).toString());
+          setPrice(item.price);
           setSplits(item.splits);
         } else {
           console.error('Item not found in receipt');
         }
-
-        setGroceryListId(groceryListId);
       });
 
       return () => unsubscribeReceipt();
@@ -101,26 +80,16 @@ export default function UnmatchedItem() {
     }
   }, [receiptId, itemId]);
 
-  useEffect(() => {
-    if (!groceryListId) return;
-
-    const unsubscribeItems = listenForGroceryItems(groceryListId, (items) => {
-      setGroceryItems(items);
-    });
-
-    return () => unsubscribeItems();
-  }, [groceryListId]);
-
-  const toggleOption = (id: string) => {
-    setSelectedItem(groceryItems[id].name);
-    setSplits({ ...groceryItems[id].splits });
+  const toggleOption = (name: string) => {
+    setSelectedItem(name);
+    setSplits({ ...groceryItems[name] });
   };
 
   const renderColor = ({ item }: ListRenderItemInfo<string>) => {
     return (
       <SplitProfile
         key={item}
-        colors={colors}
+        colors={members}
         housemateId={item}
         size={10}
         fontSize={'1xl'}
@@ -145,15 +114,14 @@ export default function UnmatchedItem() {
   };
 
   type UnmatchedItemProps = {
-    id: string;
     name: string;
   }
 
-  const UnmatchedItem = ({ id, name }: UnmatchedItemProps) => {
+  const UnmatchedItem = ({ name }: UnmatchedItemProps) => {
     return (
       <Pressable
         className="h-12 w-full flex-row items-center justify-start self-center border-y border-gray-200 px-2"
-        onPress={() => toggleOption(id)}
+        onPress={() => toggleOption(name)}
       >
         <Text className="text-1xl w-1/2 grow text-left font-medium">{name}</Text>
         <Octicons
@@ -166,7 +134,7 @@ export default function UnmatchedItem() {
   };
 
   const renderUnmatchedItem = ({ item }: ListRenderItemInfo<string>) => {
-    return <UnmatchedItem key={item} id={item} name={groceryItems[item].name} />;
+    return <UnmatchedItem key={item} name={item} />;
   };
 
   const handlePriceChange = (value: string) => {
@@ -182,7 +150,7 @@ export default function UnmatchedItem() {
       sanitized = `${integerPart}.${decimalPart.slice(0, 2)}`;
     }
 
-    setPrice(sanitized);
+    setPrice(parseFloat(sanitized));
   };
 
   const handleNewItem = (value: string) => {
@@ -192,6 +160,71 @@ export default function UnmatchedItem() {
       [userId]: 1,
     });
   };
+
+  const handleSubmit = async () => {
+    if (!price) {
+      setError('Please enter a valid price.');
+      return;
+    }
+    if (itemName.length < 1) {
+      setError('Please enter an item name.');
+      return;
+    }
+    if (selectedItem.length < 1) {
+      setError('Please match the item.');
+      return;
+    }
+
+    if (!itemId) {
+      itemId = window.crypto.randomUUID();
+    }
+
+    try {
+      setLoading(true);
+
+      await updateReceiptItem(
+        receiptId,
+        itemId,
+        itemName,
+        selectedItem,
+        splits,
+        price,
+      );
+
+      setLoading(false);
+
+      router.push({
+        pathname: '/bill',
+        params: { receiptId: receiptId },
+      });
+    } catch (err) {
+      console.error("Error updating receipt item:", err);
+      setError("Failed to update item.");
+    }
+  }
+
+  const handleDeleteItem = async () => {
+    if (!itemId) {
+      router.push({
+        pathname: '/bill',
+        params: { receiptId: receiptId },
+      });
+    }
+
+    try {
+      setDeleteLoading(true);
+      await deleteReceiptItem(receiptId, itemId);
+      setDeleteLoading(false);
+
+      router.push({
+        pathname: '/bill',
+        params: { receiptId: receiptId },
+      });
+    } catch (err) {
+      console.error("Error deleting item:", err);
+      setError("Failed to delete item.");
+    }
+  }
 
   const toggleModal = () => {
     setModalVisible(!modalVisible);
@@ -227,7 +260,7 @@ export default function UnmatchedItem() {
             Match the product to a grocery list item from this week!
           </Text>
           {groceryItems && Object.keys(groceryItems).length > 0 ? (
-            <View className="flex-grow">
+            <View className="h-10 flex-grow">
               <FlatList
                 className="mb-2"
                 data={Object.keys(groceryItems)}
@@ -252,7 +285,7 @@ export default function UnmatchedItem() {
             </View>
           ) : (
             <View className="flex-grow">
-              <View className="h-12  w-full flex-row items-center justify-start self-center border-y border-gray-200 px-2">
+              <View className="h-12 w-full flex-row items-center justify-start self-center border-y border-gray-200 px-2">
                   <TextInput
                     className="h-fit w-1/2 grow rounded-md text-left text-gray-400 outline-none"
                     placeholder="New Item"
@@ -267,13 +300,14 @@ export default function UnmatchedItem() {
                 </View>
             </View>
           )}
-          <View className="mb-2 flex-row items-center justify-between">
+          
+          <View className="my-2 flex-row items-center justify-between h-10">
             <Text className="text-left text-2xl font-medium text-black">Price:</Text>
             <TextInput
               className={`h-fit w-14 rounded-md border-solid bg-slate-100 p-2 text-center text-${price ? 'black' : 'slate-400'}`}
               placeholder={`0.00`}
               keyboardType="decimal-pad"
-              value={price}
+              value={price.toFixed(2).toString()}
               onChangeText={handlePriceChange}
             />
           </View>
@@ -293,53 +327,33 @@ export default function UnmatchedItem() {
               <AddSplit />
             )}
           </View>
+          {error && <Text className="text-red-500 mt-2">{error}</Text> }
           <View className="absolute bottom-8 right-6 flex flex-row items-center justify-center gap-3">
-            <Pressable className="">
-              <Link
-                href={{
-                  pathname: '/bill',
-                  params: { receiptId: receiptId },
-                }}
-                onPress={async () => await deleteReceiptItem(receiptId, itemId)}
-              >
-                <FontAwesome6 name="trash-can" size={24} color="gray" />
-              </Link>
-            </Pressable>
-            {selectedItem ? (
-              <Pressable>
-                <Link
-                  href={{
-                    pathname: '/bill',
-                    params: { receiptId: receiptId },
-                  }}
-                  onPress={() => {
-                    if (!itemId) {
-                      itemId = window.crypto.randomUUID();
-                    }
-                    if (price.length == 0) {
-                      setPrice('0.00');
-                    }
-                    updateReceiptItem(
-                      receiptId,
-                      itemId,
-                      itemName,
-                      selectedItem,
-                      splits,
-                      parseFloat(price),
-                    );
-                  }}
-                >
-                  <Octicons name="check-circle-fill" size={24} color="#064e3b" />
-                </Link>
-              </Pressable>
+            {deleteLoading ? (
+              <ActivityIndicator size="small" />
             ) : (
+              <Pressable className="w-fit h-fit" onPress={handleDeleteItem}>
+                <FontAwesome6 name="trash-can" size={24} color="gray" />
+              </Pressable>
+            )}
+            {selectedItem && loading ? (
+              <ActivityIndicator size="small" />
+            ) : selectedItem ? (
+              <Pressable
+                onPress={handleSubmit}
+              >
+                <Octicons name="check-circle-fill" size={24} color="#064e3b" />
+              </Pressable>
+            ): (
               <View></View>
             )}
+            
           </View>
 
-          <EditSplit colors={colors} splits={splits} visible={modalVisible} onClose={toggleModal} onSplitsChange={setSplits} />
+          <EditSplit colors={members} splits={splits} visible={modalVisible} onClose={toggleModal} onSplitsChange={setSplits} />
           
         </View>
+        
       </View>
     </View>
   );

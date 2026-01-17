@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import { reauthenticateAndChangePassword, userSignOut } from '@/api/auth';
+import BackButton from '@/components/BackButton';
 import Button from '@/components/CustomButton';
 import SecureTextInput from '@/components/SecureTextInput';
 import { useAuth } from '@/context/AuthContext';
@@ -56,27 +57,28 @@ export default function ChangePassword() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView className="h-full">
-        <View className="mx-auto mt-32 w-9/12 max-w-6xl flex-1 justify-center">
-          <Text className="mb-9 text-3xl font-semibold">Change Password</Text>
-
-          <Text className="mb-2">Current Password</Text>
-          <SecureTextInput value={currPassword} onChangeText={setCurrPassword} />
-          <Text className="text-blue-500 font-medium text-right mb-2" onPress={() => router.push('/forgotpassword')}>
-            Forgot Password?
-          </Text>
-
-          <Text className="mb-2">New Password</Text>
-          <SecureTextInput value={newPassword} onChangeText={setNewPassword} />
-
-          <Text className="mb-2">Confirm Password</Text>
-          <SecureTextInput value={confirmPassword} onChangeText={setConfirmPassword} />
+        <BackButton />
+        <View className="mx-auto mt-16 flex-1 justify-center w-full px-8">
+          <Text className="mb-6 text-center text-lg font-medium">Change Password</Text>
+          <View className="px-2 mb-2">
+            <Text className="mb-2">Current Password</Text>
+            <SecureTextInput value={currPassword} onChangeText={setCurrPassword} />
+            <Text className="text-blue-500 font-medium text-right mb-2" onPress={() => router.push('/forgotpassword')}>
+              Forgot Password?
+            </Text>
+          </View>
+          <View className="px-2 mb-2">
+            <Text className="mb-2">New Password</Text>
+            <SecureTextInput value={newPassword} onChangeText={setNewPassword} />
+          </View>
+          <View className="px-2 mb-2">
+            <Text className="mb-2">Confirm Password</Text>
+            <SecureTextInput value={confirmPassword} onChangeText={setConfirmPassword} />
+          </View>
 
           <Text className="mb-4 text-red-500">{errorText}</Text>
 
-          <Button buttonLabel="Reset Password" onPress={handleChangePassword} isLoading={loading}/>
-          <Text className={`text-center mt-2 text-blue-500 font-medium`} onPress={() => {router.back();}}>
-            Back
-          </Text>
+          <Button buttonLabel="Reset Password" onPress={handleChangePassword} isLoading={loading} fontSize={"text-sm"} />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
