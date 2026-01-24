@@ -15,7 +15,7 @@ type ButtonProps = {
 const CustomButton = ({ buttonLabel, color, hoverColor, fontSize, isLoading, isDisabled, onPress }: ButtonProps) => {
   return (
     <Pressable
-      className={`${color ? color : 'bg-emerald-900'} ${(isLoading || isDisabled) && 'bg-opacity-50'} self-center rounded-lg px-6 py-3 mb-4 min-w-[120px] min-h-[50px] justify-center items-center ${isLoading ? '' : (hoverColor ? hoverColor : 'hover:bg-emerald-950')}`}
+      className={`${color ? color : 'bg-emerald-900'} ${(isLoading || isDisabled) && 'bg-opacity-50'} self-center rounded-lg px-6 py-3 mb-4 min-w-[100px] min-h-[50px] justify-center items-center ${isLoading ? '' : (hoverColor ? hoverColor : 'hover:bg-emerald-950')}`}
       onPress={onPress}
       disabled={isLoading || isDisabled}
     >
