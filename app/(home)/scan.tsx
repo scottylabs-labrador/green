@@ -219,6 +219,7 @@ export default function Page() {
               <Button
                 buttonLabel="Finish"
                 fontSize="text-sm"
+                isLoading={loading}
                 onPress={analyzePicture}
               />
             </View>

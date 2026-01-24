@@ -75,7 +75,7 @@ export default function Message() {
         </View>
         <View className="mb-20 w-full flex-grow flex-col items-center justify-center justify-self-center">
           <View className="h-fit w-64 flex-col gap-4 rounded-3xl bg-white p-6">
-            <Link href={{ pathname: '/bill', params: { receiptId: receiptId } }} asChild>
+            <Link href={{ pathname: '/list', params: { receiptId: receiptId } }} asChild>
               <Pressable className="absolute right-5 top-4 h-fit w-fit items-center justify-center">
                 <Feather name="x" size={24} color="black" />
               </Pressable>
