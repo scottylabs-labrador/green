@@ -23,10 +23,11 @@ export default function Page() {
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
   const [imageUri, setImageUri] = useState<string | null>(null);
-  const [currentPhoto, setCurrentPhoto] = useState<CameraCapturedPicture|null>(null);
+  const [currentPhoto, setCurrentPhoto] = useState<CameraCapturedPicture | null>(null);
   const [photos, setPhotos] = useState<CameraCapturedPicture[]>([]);
   const cameraRef = useRef<CameraView>(null);
   const [groceryItems, setGroceryItems] = useState<GroceryItems>({});
+  const [loading, setLoading] = useState(false);
 
   let RECEIPT_API_URL = 'http://127.0.0.1:8000/receiptLines';
 
@@ -56,7 +57,7 @@ export default function Page() {
     });
 
     return () => unsubscribeGroceryItems();
-  }, [groceryListId])
+  }, [groceryListId]);
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -98,13 +99,14 @@ export default function Page() {
     setCurrentPhoto(null);
     setImageUri(null);
   }
-  
-  
+
   async function analyzePicture() {
+    setLoading(true);
+
     var allreceiptLines: any[] = [];
-    photos.map(photo => {
+    for (const photo of photos) {
       console.log(photo.base64)
-      fetch(RECEIPT_API_URL, {
+      await fetch(RECEIPT_API_URL, {
         method: 'POST',
         mode: 'cors',
         headers: {
@@ -120,11 +122,11 @@ export default function Page() {
       })
       .then(async data => {
         console.log('data:', data);
-        let receiptLines = JSON.parse(data).items;
+        let receiptLines = data.items;
         allreceiptLines = [...allreceiptLines, receiptLines]
         
       });
-    });
+    }
 
     const combinedLines = allreceiptLines.reduce((acc, curr) => ({ ...acc, ...curr }), {});
 
@@ -136,15 +138,17 @@ export default function Page() {
     console.log(receiptItems);
     
     try {
-        const receiptId = window.crypto.randomUUID();
-        await writeReceipt(receiptId, houseId, receiptItems, groceryListId);
-        router.replace({
-          pathname: '/bill',
-          params: { receiptId: receiptId },
-        });
-      } catch (err) {
-        console.error("Error while writing receipt:", err);
-      }
+      const receiptId = window.crypto.randomUUID();
+      await writeReceipt(receiptId, houseId, receiptItems);
+      setLoading(false);
+      router.replace({
+        pathname: '/bill',
+        params: { receiptId: receiptId },
+      });
+    } catch (err) {
+      setLoading(false);
+      console.error("Error while writing receipt:", err);
+    }
   }
 
   return (
@@ -152,22 +156,25 @@ export default function Page() {
       {imageUri ? (
         <View className="h-full w-full">
           <Image source={{ uri: imageUri }} className="h-full w-full" />
-          <View className="absolute bg-black bottom-0 left-0 w-full flex-row items-center justify-center px-2 py-4">
+          <View className="absolute bg-black bottom-0 left-0 w-full flex-row items-center justify-center px-2 py-4 gap-2">
             <View className="flex-1 items-center justify-center">
               <LinkButton
                 buttonLabel="Cancel"
+                fontSize="text-sm"
                 page="/list"
               />
             </View>
             <View className="flex-1 items-center justify-center">
               <Button
                 buttonLabel="Retake"
+                fontSize="text-sm"
                 onPress={retakePicture}
               />
             </View>
             <View className="flex-1 items-center justify-center">
               <Button
                 buttonLabel="Continue"
+                fontSize="text-sm"
                 onPress={savePicture}
               />
             </View>
@@ -198,6 +205,7 @@ export default function Page() {
             <View className="flex-1 items-center justify-center">
               <LinkButton
                 buttonLabel="Cancel"
+                fontSize="text-sm"
                 page="/list"
               />
             </View>
@@ -210,6 +218,7 @@ export default function Page() {
             <View className="flex-1 items-center justify-center">
               <Button
                 buttonLabel="Finish"
+                fontSize="text-sm"
                 onPress={analyzePicture}
               />
             </View>
