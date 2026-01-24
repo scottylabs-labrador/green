@@ -1,13 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 import { FontAwesome6 } from '@expo/vector-icons';
-import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
+import { CameraCapturedPicture, CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 import { listenForGroceryItems } from '@/api/grocerylist';
 import { matchWords, writeReceipt } from '@/api/receipt';
 import Button from '@/components/CustomButton';
+import LinkButton from '@/components/LinkButton';
 import Loading from '@/components/Loading';
 import { useAuth } from '@/context/AuthContext';
 import { useHouseInfo } from '@/context/HouseContext';
@@ -22,8 +23,11 @@ export default function Page() {
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [currentPhoto, setCurrentPhoto] = useState<CameraCapturedPicture | null>(null);
+  const [photos, setPhotos] = useState<CameraCapturedPicture[]>([]);
   const cameraRef = useRef<CameraView>(null);
   const [groceryItems, setGroceryItems] = useState<GroceryItems>({});
+  const [loading, setLoading] = useState(false);
 
   let RECEIPT_API_URL = 'http://127.0.0.1:8000/receiptLines';
 
@@ -53,7 +57,7 @@ export default function Page() {
     });
 
     return () => unsubscribeGroceryItems();
-  }, [groceryListId])
+  }, [groceryListId]);
 
   if (!permission) {
     // Camera permissions are still loading.
@@ -78,9 +82,31 @@ export default function Page() {
     if (cameraRef.current) {
       const options = { quality: 0.5, base64: true, exif: true };
       const photo = await cameraRef.current.takePictureAsync(options);
+      setCurrentPhoto(photo);
       setImageUri(photo.uri);
+    }
+  }
 
-      fetch(RECEIPT_API_URL, {
+  async function retakePicture() {
+    setCurrentPhoto(null);
+    setImageUri(null);
+  }
+
+  async function savePicture(){
+    if (currentPhoto != null){
+      setPhotos([...photos, currentPhoto]);
+    }
+    setCurrentPhoto(null);
+    setImageUri(null);
+  }
+
+  async function analyzePicture() {
+    setLoading(true);
+
+    var allreceiptLines: any[] = [];
+    for (const photo of photos) {
+      console.log(photo.base64)
+      await fetch(RECEIPT_API_URL, {
         method: 'POST',
         mode: 'cors',
         headers: {
@@ -90,38 +116,70 @@ export default function Page() {
           image: photo.base64,
         }),
       })
-        .then(response => {
-          // receipt lines
-          return response.json();
-        })
-        .then(async data => {
-          console.log('data:', data);
-          let receiptLines = JSON.parse(data).items;
-          let receiptItems = matchWords(
-            userId,
-            receiptLines,
-            groceryItems,
-          );
-          console.log(receiptItems);
+      .then(response => {
+        // receipt lines
+        return response.json();
+      })
+      .then(async data => {
+        console.log('data:', data);
+        let receiptLines = data.items;
+        allreceiptLines = [...allreceiptLines, receiptLines]
+        
+      });
+    }
 
-          try {
-            const receiptId = window.crypto.randomUUID();
-            await writeReceipt(receiptId, houseId, receiptItems);
-            router.replace({
-              pathname: '/bill',
-              params: { receiptId: receiptId },
-            });
-          } catch (err) {
-            console.error("Error while writing receipt:", err);
-          }
-        });
+    const combinedLines = allreceiptLines.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+
+    let receiptItems = matchWords(
+      userId,
+      combinedLines,
+      groceryItems,
+    );
+    console.log(receiptItems);
+    
+    try {
+      const receiptId = window.crypto.randomUUID();
+      await writeReceipt(receiptId, houseId, receiptItems);
+      setLoading(false);
+      router.replace({
+        pathname: '/bill',
+        params: { receiptId: receiptId },
+      });
+    } catch (err) {
+      setLoading(false);
+      console.error("Error while writing receipt:", err);
     }
   }
 
   return (
     <View className="h-full w-full flex-1 justify-center">
       {imageUri ? (
-        <Image source={{ uri: imageUri }} className="h-full w-full" />
+        <View className="h-full w-full">
+          <Image source={{ uri: imageUri }} className="h-full w-full" />
+          <View className="absolute bg-black bottom-0 left-0 w-full flex-row items-center justify-center px-2 py-4 gap-2">
+            <View className="flex-1 items-center justify-center">
+              <LinkButton
+                buttonLabel="Cancel"
+                fontSize="text-sm"
+                page="/list"
+              />
+            </View>
+            <View className="flex-1 items-center justify-center">
+              <Button
+                buttonLabel="Retake"
+                fontSize="text-sm"
+                onPress={retakePicture}
+              />
+            </View>
+            <View className="flex-1 items-center justify-center">
+              <Button
+                buttonLabel="Continue"
+                fontSize="text-sm"
+                onPress={savePicture}
+              />
+            </View>
+          </View>
+        </View>
       ) : (
         <View className="h-full w-full">
           <CameraView ref={cameraRef} className="flex-1" facing={facing}>
@@ -131,14 +189,9 @@ export default function Page() {
               </Text>
             </View>
           </CameraView>
-          <View className="absolute bottom-0 left-0 w-full flex-row items-center justify-center px-2 py-4">
+          <View className="absolute bottom-20 left-0 w-full flex-row items-center justify-center px-2 py-4">
             <View className="h-16 w-16"></View>
-            <View className="flex-1 items-center justify-center">
-              <TouchableOpacity
-                className="h-16 w-16 rounded-full bg-white shadow-lg"
-                onPress={takePicture}
-              ></TouchableOpacity>
-            </View>
+            <View className="flex-1 items-center justify-center"></View>
             <View className="flex h-16 w-16 items-center justify-center">
               <TouchableOpacity
                 className="h-14 w-14 items-center justify-center rounded-full bg-black shadow-lg"
@@ -146,6 +199,29 @@ export default function Page() {
               >
                 <FontAwesome6 name="arrows-rotate" size={24} color="white" />
               </TouchableOpacity>
+            </View>
+          </View>
+          <View className="absolute bg-black bottom-0 left-0 w-full flex-row items-center justify-center px-2 py-4">
+            <View className="flex-1 items-center justify-center">
+              <LinkButton
+                buttonLabel="Cancel"
+                fontSize="text-sm"
+                page="/list"
+              />
+            </View>
+            <View className="flex-1 items-center justify-center">
+              <TouchableOpacity
+                className="h-16 w-16 rounded-full bg-white shadow-lg"
+                onPress={takePicture}
+              ></TouchableOpacity>
+            </View>
+            <View className="flex-1 items-center justify-center">
+              <Button
+                buttonLabel="Finish"
+                fontSize="text-sm"
+                isLoading={loading}
+                onPress={analyzePicture}
+              />
             </View>
           </View>
         </View>

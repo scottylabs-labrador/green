@@ -35,6 +35,4 @@ def scan_receipt_image(args: ReceiptLinesArgs):
     image_path = Path(f"imgs") / f"{datetime.now().strftime('%Y%m%d%H%M%S')}.png"
     image.save(image_path)
 
-    return json.dumps(
-        scan_receipt(str(image_path), debug=True)
-    )
+    return scan_receipt(str(image_path), debug=True)
