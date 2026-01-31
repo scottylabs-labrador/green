@@ -16,7 +16,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.scottylabs.green",
+      "bundleIdentifier": "org.scottylabs.green",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
