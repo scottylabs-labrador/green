@@ -29,7 +29,7 @@ export default function Page() {
   const [groceryItems, setGroceryItems] = useState<GroceryItems>({});
   const [loading, setLoading] = useState(false);
 
-  let RECEIPT_API_URL = 'http://127.0.0.1:8000/receiptLines';
+  let RECEIPT_API_URL = 'http://localhost:8000/receiptLines';
 
   useEffect(() => {
     const fetchHouseId = async () => {

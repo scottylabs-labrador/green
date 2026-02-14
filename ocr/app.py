@@ -21,6 +21,10 @@ app.add_middleware(
 class ReceiptLinesArgs(BaseModel):
     image: str
 
+@app.get("/status")
+def ping():
+    print("Hello")
+
 @app.post("/receiptLines")
 def scan_receipt_image(args: ReceiptLinesArgs):
     image_url = args.image
